@@ -1,6 +1,20 @@
-import type { ThemeConfig, ThemeName, ColorMode, ThemeColors, IconColor } from '@zpress/theme'
+import type {
+  ThemeConfig,
+  ThemeName,
+  ColorMode,
+  ThemeColors,
+  IconColor,
+  ZpressThemeInput,
+} from '@zpress/theme'
 
-export type { ThemeConfig, ThemeName, ColorMode, ThemeColors, IconColor } from '@zpress/theme'
+export type {
+  ThemeConfig,
+  ThemeName,
+  ColorMode,
+  ThemeColors,
+  IconColor,
+  ZpressThemeInput,
+} from '@zpress/theme'
 
 /**
  * Installed Iconify icon-set prefixes.
@@ -514,6 +528,26 @@ export interface ZpressConfig {
   readonly title?: string
   readonly description?: string
   readonly theme?: ThemeConfig
+  /**
+   * Custom theme definitions registered at config time.
+   *
+   * Each entry is a `ZpressThemeInput` (the same shape accepted by
+   * `defineTheme`). Registering a theme here makes its `name` selectable
+   * via `theme.name` and via the theme switcher. Built-in themes
+   * (`base`, `midnight`, `arcade`) remain available regardless of this field.
+   *
+   * @example
+   * ```ts
+   * import { defineTheme } from 'zpress'
+   *
+   * export default defineConfig({
+   *   themes: [
+   *     defineTheme({ name: 'custom', tokens: myTokens }),
+   *   ],
+   * })
+   * ```
+   */
+  readonly themes?: readonly ZpressThemeInput[]
   readonly icon?: IconId
   readonly tagline?: string
   readonly actions?: readonly HeroAction[]

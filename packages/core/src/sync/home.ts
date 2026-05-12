@@ -95,9 +95,19 @@ export async function generateDefaultHomePage(
   const frontmatterFeatures = buildFrontmatterFeatures(features)
   const workspaceResult = buildWorkspaceData(config)
 
+  // Read optional landing-page extensions from config.home (loose typing — these
+  // are zpress-specific landing fields not in the strict HomeConfig type).
+  const homeExt = (config.home ?? {}) as Record<string, unknown>
+  const eyebrow = homeExt.eyebrow as string | undefined
+  const trust = homeExt.trust as Record<string, unknown> | undefined
+  const cta = homeExt.cta as Record<string, unknown> | undefined
+
   const heroConfig: Record<string, unknown> = {
     name: title,
     text: description,
+    ...match(eyebrow)
+      .with(P.nonNullable, (e) => ({ eyebrow: e }))
+      .otherwise(() => ({})),
     ...match(tagline)
       .with(P.nonNullable, (t) => ({ tagline: t }))
       .otherwise(() => ({})),
@@ -115,6 +125,12 @@ export async function generateDefaultHomePage(
     hero: heroConfig,
     ...match(frontmatterFeatures.length > 0)
       .with(true, () => ({ features: frontmatterFeatures }))
+      .otherwise(() => ({})),
+    ...match(trust)
+      .with(P.nonNullable, (t) => ({ trust: t }))
+      .otherwise(() => ({})),
+    ...match(cta)
+      .with(P.nonNullable, (c) => ({ cta: c }))
       .otherwise(() => ({})),
   }
 

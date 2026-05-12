@@ -1,17 +1,288 @@
 /**
  * zpress structural tokens (--zp-* prefix).
  *
- * Color definitions have moved to theme files (styles/themes/*.css).
- * This file retains only structural tokens: fonts, layout, radii.
+ * Color definitions live in theme files (styles/themes/*.css).
+ * This file holds non-color structural tokens only: spacing, radii, shadows,
+ * motion, z-index, line-heights, letter-spacings, opacities, sizes,
+ * breakpoints, blurs, and font-families.
+ *
+ * Naming follows `TOKEN_TO_CSS_VAR` in `@zpress/theme` (packages/theme/src/tokens.ts):
+ *   --zp-s-{N}         spacing scale (N = px value on a 2-px grid)
+ *   --zp-radius-*      border-radius
+ *   --zp-shadow-*      box-shadow recipes
+ *   --zp-duration-*    transition durations
+ *   --zp-ease-*        transition easings
+ *   --zp-z-*           z-index
+ *   --zp-lh-*          line-height
+ *   --zp-letter-*      letter-spacing
+ *   --zp-opacity-*     opacity
+ *   --zp-size-*        component sizes (non-spacing)
+ *   --zp-bp-*          breakpoint widths
+ *   --zp-blur-*        backdrop blur
+ *   --zp-ff-*          font-family
+ *   --zp-fw-*          font-weight
+ *   --zp-fs-*          font-size
+ *
+ * Values are mirrored from `.snapshots/baseline/token-audit.txt` so the
+ * defaults match the implicit values previously inlined across component CSS.
+ * DO NOT change a default here without re-running the audit — visual output
+ * must remain stable.
+ *
+ * Cascade layer: `zpress.tokens` (see styles/layers.css).
  */
 
-:root {
-  --zp-font-family-base: 'Geist Pixel Square', ui-sans-serif, system-ui, sans-serif;
-  --zp-font-family-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
-  --zp-layout-max-width: 1680px;
+@layer zpress.tokens {
+  :root {
+    /* ── Font families ──────────────────────────────────────── */
+    /**
+   * Default body / UI font — Geist Mono. Whole site reads as a
+   * terminal-style mono surface.
+   */
+    --zp-font-family-base: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+    /**
+   * Optional sans fallback — exposed for cases that explicitly want
+   * proportional Geist (e.g. very long prose passages).
+   */
+    --zp-font-family-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    /**
+   * Decorative pixel-art font — opt-in for brand marks, headlines, etc.
+   * Apply with `font-family: var(--zp-font-family-pixel)` on the target.
+   */
+    --zp-font-family-pixel: 'Geist Pixel Square', ui-sans-serif, system-ui, sans-serif;
+    /**
+   * Monospace alias — same as base. Kept for callsites that explicitly
+   * tag "this should be monospace" (code, shortcuts, eyebrow labels) so
+   * the intent stays readable in the stylesheet.
+   */
+    --zp-font-family-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
 
-  /* Radii — override Rspress defaults (1rem / 0.5rem / 1.5rem) */
-  --rp-radius: 0.25rem;
-  --rp-radius-small: 0.125rem;
-  --rp-radius-large: 0.5rem;
+    /* Canonical aliases matching TOKEN_TO_CSS_VAR (fonts.family.sans/mono). */
+    --zp-ff-sans: var(--zp-font-family-sans);
+    --zp-ff-mono: var(--zp-font-family-mono);
+
+    /* ── Font weights ───────────────────────────────────────── */
+    --zp-fw-regular: 400;
+    --zp-fw-medium: 500;
+    --zp-fw-semibold: 600;
+    --zp-fw-bold: 700;
+
+    /* ── Font sizes ─────────────────────────────────────────── */
+    --zp-fs-body: 16px;
+    --zp-fs-btn: 14px;
+    --zp-fs-bullet: 14px;
+    --zp-fs-code: 13px;
+    --zp-fs-eyebrow: 11px;
+    --zp-fs-tagline: 18px;
+    --zp-fs-hero-title: clamp(40px, 6.5vw, 76px);
+    --zp-fs-split-title: clamp(28px, 4vw, 40px);
+    --zp-fs-feature-title: 18px;
+    --zp-fs-feature-desc: 16px;
+    --zp-fs-feature-link: 12px;
+    --zp-fs-section-title: 14px;
+    --zp-fs-section-desc: 12.5px;
+    --zp-fs-badge: 11px;
+    --zp-fs-tooltip: 13px;
+    --zp-fs-tooltip-headline: 13px;
+    --zp-fs-tooltip-cta: 12px;
+    --zp-fs-check: 11px;
+    --zp-fs-field-name: 14px;
+    --zp-fs-field-type: 11px;
+    --zp-fs-field-badge: 11px;
+    --zp-fs-field-default: 12px;
+    --zp-fs-field-default-code: 11px;
+    --zp-fs-field-body: 14px;
+    --zp-fs-field-group-title: 14px;
+    --zp-fs-field-trigger: 12px;
+    --zp-fs-prompt-desc: 14px;
+    --zp-fs-prompt-feedback: 12px;
+    --zp-fs-prompt-btn: 12px;
+    --zp-fs-prompt-menu-item: 13px;
+    --zp-fs-prompt-menu-desc: 11px;
+    --zp-fs-color-name: 12px;
+    --zp-fs-color-value: 11px;
+    --zp-fs-window-title: 12px;
+    --zp-fs-window-tab: 12px;
+    --zp-fs-window-url: 11px;
+    --zp-fs-term-body: 13px;
+    --zp-fs-demo-title: 11px;
+    --zp-fs-demo-body: 13px;
+    --zp-fs-ask-ai: 13px;
+    --zp-fs-ask-ai-mark: 10px;
+    --zp-fs-ask-ai-shortcut: 10px;
+    --zp-fs-sidebar-link: 14px;
+
+    /* ── Spacing scale (2-px grid) ──────────────────────────── */
+    --zp-s-1: 1px;
+    --zp-s-2: 2px;
+    --zp-s-3: 3px;
+    --zp-s-4: 4px;
+    --zp-s-5: 5px;
+    --zp-s-6: 6px;
+    --zp-s-8: 8px;
+    --zp-s-10: 10px;
+    --zp-s-12: 12px;
+    --zp-s-14: 14px;
+    --zp-s-16: 16px;
+    --zp-s-18: 18px;
+    --zp-s-20: 20px;
+    --zp-s-24: 24px;
+    --zp-s-28: 28px;
+    --zp-s-32: 32px;
+    --zp-s-40: 40px;
+    --zp-s-48: 48px;
+    --zp-s-56: 56px;
+    --zp-s-64: 64px;
+    --zp-s-72: 72px;
+    --zp-s-96: 96px;
+
+    /* ── Radii ──────────────────────────────────────────────── */
+    --zp-radius-xs: 2px;
+    --zp-radius-xs-sm: 3px;
+    --zp-radius-sm: 4px;
+    --zp-radius-md-sm: 6px;
+    --zp-radius-md: 8px;
+    --zp-radius-lg: 10px;
+    --zp-radius-md-lg: 12px;
+    --zp-radius-pill: 9999px;
+
+    /* Legacy radius aliases — preserved for back-compat with existing callsites. */
+    --zp-radius-card: 6px;
+    --zp-radius-frame: 10px;
+
+    /* Override Rspress radius defaults to favor sharper corners. */
+    --rp-radius: 0.25rem;
+    --rp-radius-small: 0.125rem;
+    --rp-radius-large: 0.5rem;
+
+    /* ── Shadows ────────────────────────────────────────────── */
+    /**
+   * Card hover lift — uses the purple-glow tint (rgba(167,139,250,.08)).
+   * The tint var is supplied by the theme palette files.
+   */
+    --zp-shadow-card-hover: 0 2px 12px var(--zp-c-tint-purple-glow);
+    --zp-shadow-menu: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --zp-shadow-tooltip: 0 4px 12px rgba(0, 0, 0, 0.08);
+    /**
+   * Hero demo — 3-layer composite: hairline outline, large drop shadow,
+   * and a soft brand-soft glow.
+   */
+    --zp-shadow-hero-demo:
+      0 0 0 1px rgba(0, 0, 0, 0.5), 0 24px 48px -12px rgba(0, 0, 0, 0.6),
+      0 0 80px var(--zp-c-brand-soft);
+    /**
+   * Ask-AI floating button — 2-layer composite: large drop shadow plus
+   * focus halo ring.
+   */
+    --zp-shadow-ask-ai: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(0, 0, 0, 0.5);
+
+    /* ── Motion ─────────────────────────────────────────────── */
+    --zp-duration-fast: 0.15s;
+    --zp-duration-base: 0.2s;
+    --zp-ease-base: ease;
+
+    /* ── Z-index ────────────────────────────────────────────── */
+    --zp-z-dropdown: 50;
+    --zp-z-floating: 60;
+    --zp-z-tooltip: 100;
+
+    /* ── Line-heights ───────────────────────────────────────── */
+    --zp-lh-display: 1;
+    --zp-lh-tight: 1.4;
+    --zp-lh-tighter: 1.3;
+    --zp-lh-snug: 1.45;
+    --zp-lh-base: 1.5;
+    --zp-lh-relaxed: 1.6;
+    --zp-lh-demo: 1.65;
+    --zp-lh-code: 1.7;
+    --zp-lh-sidebar: 24px;
+
+    /* ── Letter-spacings ────────────────────────────────────── */
+    --zp-letter-wide: 0.02em;
+    --zp-letter-eyebrow: 0.1em;
+    --zp-letter-display: -0.025em;
+    --zp-letter-hero: -0.04em;
+
+    /* ── Opacities ──────────────────────────────────────────── */
+    --zp-opacity-muted: 0.5;
+    --zp-opacity-deprecated: 0.6;
+    --zp-opacity-hover: 0.8;
+
+    /* ── Sizes (component sizes that aren't pure spacing) ──── */
+    --zp-size-titlebar: 36px;
+    --zp-size-window-dot: 10px;
+    --zp-size-window-tab-dot: 6px;
+    --zp-size-browser-tab-max: 200px;
+    --zp-size-browser-icon: 14px;
+    --zp-size-browser-urlbar: 28px;
+    --zp-size-icon-box: 36px;
+    --zp-size-icon-box-sm: 28px;
+    --zp-size-icon-svg: 18px;
+    --zp-size-icon-svg-sm: 16px;
+    --zp-size-icon-sm: 16px;
+    --zp-size-content-max: 1152px;
+    --zp-size-focus-ring: 2px;
+    --zp-size-focus-ring-offset: 2px;
+    --zp-size-tooltip-max: 320px;
+    --zp-size-swatch: 24px;
+    --zp-size-demo-max: 920px;
+    --zp-size-split-max: 1200px;
+    --zp-size-hero-grid: 24px;
+    --zp-size-hero-max: 1100px;
+    --zp-size-tagline-max: 640px;
+    --zp-size-prompt-icon: 20px;
+    --zp-size-prompt-btn: 30px;
+    --zp-size-menu-min: 220px;
+    --zp-size-prompt-menu-icon: 18px;
+    --zp-size-check: 18px;
+    --zp-size-chevron: 14px;
+    --zp-size-ask-ai-icon: 18px;
+    --zp-size-sidebar-circle: 36px;
+    --zp-size-scrollbar: 6px;
+
+    /* ── Breakpoints ────────────────────────────────────────── */
+    --zp-bp-sm: 768px;
+    --zp-bp-md: 720px;
+    --zp-bp-md-lg: 880px;
+    --zp-bp-content: 1184px;
+
+    /* ── Backdrop blur ──────────────────────────────────────── */
+    --zp-blur-base: 8px;
+
+    /* ── Gradients ──────────────────────────────────────────── */
+    /**
+   * Brand gradient — used by the ask-ai icon. 135deg sweep from brand-1
+   * through brand-3.
+   */
+    --zp-gradient-brand: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-3));
+    /**
+   * Hero title gradient — 3-stop sweep from brand-1 through hero-cyan to
+   * hero-purple.
+   */
+    --zp-gradient-hero-title: linear-gradient(
+      120deg,
+      var(--zp-c-brand-1) 0%,
+      var(--zp-c-gradient-hero-cyan) 50%,
+      var(--zp-c-gradient-hero-purple) 100%
+    );
+
+    /* ── Legacy layout aliases ──────────────────────────────── */
+    --zp-layout-max-width: 1680px;
+    --zp-landing-max-width: 1200px;
+    --zp-frame-gutter: 12px;
+    --zp-announce-h: 36px;
+  }
+
+  /* ── Typography defaults — match the mockup (14px / 1.5 / Geist) ── */
+  html body,
+  html .rp-doc,
+  html .rspress-doc,
+  html .rp-home-hero,
+  html .rp-nav {
+    font-family: var(--zp-font-family-base);
+  }
+
+  html body {
+    font-size: 14px;
+    line-height: 1.5;
+  }
 }

@@ -1,15 +1,25 @@
 /**
  * Built-in theme definitions and utilities.
+ *
+ * Every value here is derived from `BUILT_IN_THEMES` in `theme-registry.ts` —
+ * the registry is the single source of truth for what themes exist, which
+ * color modes they render correctly under, and which mode they default to.
+ * Adding a new built-in theme is a one-file change in `theme-registry.ts`.
  */
 
-import { match } from 'ts-pattern'
-
+import { BUILT_IN_THEMES } from './theme-registry.ts'
 import type { BuiltInIconColor, BuiltInThemeName, ColorMode } from './types.ts'
 
 /**
  * All built-in theme names — used for validation and iteration.
+ *
+ * Derived from `BUILT_IN_THEMES` insertion order so adding a theme to the
+ * registry automatically extends this list (and every consumer that iterates
+ * it: config validation, the theme switcher, asset generators).
  */
-export const THEME_NAMES: readonly BuiltInThemeName[] = ['base', 'midnight', 'arcade'] as const
+export const THEME_NAMES: readonly BuiltInThemeName[] = Object.freeze(
+  Object.keys(BUILT_IN_THEMES) as BuiltInThemeName[]
+)
 
 /**
  * All valid color modes — used for validation.
@@ -33,29 +43,29 @@ export const ICON_COLORS: readonly BuiltInIconColor[] = [
 /**
  * Resolve the default color mode for a given built-in theme.
  *
+ * Reads `defaultMode` straight off the registry entry — no hard-coded match
+ * arms, so changing a theme's default in `theme-registry.ts` is the only
+ * edit required.
+ *
  * @param theme - Built-in theme identifier
  * @returns The theme's natural color mode
  */
 export function resolveDefaultColorMode(theme: BuiltInThemeName): ColorMode {
-  return match(theme)
-    .with('base', () => 'toggle' as const)
-    .with('midnight', () => 'dark' as const)
-    .with('arcade', () => 'dark' as const)
-    .exhaustive()
+  return BUILT_IN_THEMES[theme].defaultMode
 }
 
 /**
  * Resolve the supported color modes for a given built-in theme.
  *
+ * Reads `modes` straight off the registry entry — no hard-coded match arms,
+ * so changing a theme's supported modes in `theme-registry.ts` is the only
+ * edit required.
+ *
  * @param theme - Built-in theme identifier
  * @returns The color modes the theme supports
  */
 export function resolveThemeModes(theme: BuiltInThemeName): readonly ('dark' | 'light')[] {
-  return match(theme)
-    .with('base', () => ['dark', 'light'] as const)
-    .with('midnight', () => ['dark'] as const)
-    .with('arcade', () => ['dark'] as const)
-    .exhaustive()
+  return BUILT_IN_THEMES[theme].modes
 }
 
 /**

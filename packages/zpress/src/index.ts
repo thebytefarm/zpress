@@ -1,6 +1,6 @@
 /**
  * Public API for `@zpress/kit` — re-exports all user-facing functions,
- * values, and types from `@zpress/core` and `@zpress/ui`.
+ * values, and types from `@zpress/core`, `@zpress/config`, and `@zpress/ui`.
  *
  * @module
  */
@@ -13,6 +13,9 @@ export {
   createPaths,
   hasGlobChars,
 } from '@zpress/core'
+
+export { defineTheme } from '@zpress/config'
+export type { ZpressThemeInput } from '@zpress/config'
 
 export { createRspressConfig, zpressPlugin } from '@zpress/ui'
 

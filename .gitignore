@@ -65,4 +65,7 @@ Thumbs.db
 .zpress/*
 !.zpress/public/
 
+# Visual-parity baselines
+.snapshots/
+
 

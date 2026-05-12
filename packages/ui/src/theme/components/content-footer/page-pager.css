@@ -1,0 +1,61 @@
+/* Content-footer wrapper — the band below the doc body containing the
+   feedback widget, meta-actions row, and prev/next pager. */
+.zp-content-footer {
+  margin-top: 56px;
+  border-top: 1px solid var(--zp-c-border);
+  padding-top: 32px;
+}
+
+.zp-pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.zp-pager__link {
+  border: 1px solid var(--zp-c-border);
+  border-radius: var(--zp-radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.15s ease;
+}
+
+.zp-pager__link:hover {
+  border-color: var(--zp-c-border);
+  background: var(--zp-c-bg-soft);
+  text-decoration: none;
+}
+
+.zp-pager__link--next {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.zp-pager__placeholder {
+  /* keeps the grid cell open when only one side is provided */
+}
+
+.zp-pager__label {
+  font-family: var(--zp-font-family-mono);
+  font-size: 11px;
+  color: var(--zp-c-text-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zp-pager__title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--zp-c-text-1);
+}
+
+@media (max-width: 720px) {
+  .zp-pager {
+    grid-template-columns: 1fr;
+  }
+}

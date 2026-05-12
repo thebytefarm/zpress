@@ -5,6 +5,7 @@ import { Icon } from '../shared/icon.tsx'
 import './theme-switcher.css'
 
 declare const __ZPRESS_THEME_SWITCHER__: boolean
+declare const __ZPRESS_THEME_REGISTRY__: string
 
 interface ThemeOption {
   readonly name: string
@@ -14,23 +15,7 @@ interface ThemeOption {
   readonly modes: readonly ('dark' | 'light')[]
 }
 
-const THEME_OPTIONS: readonly ThemeOption[] = [
-  {
-    name: 'base',
-    label: 'Base',
-    swatch: '#a78bfa',
-    defaultColorMode: 'toggle',
-    modes: ['dark', 'light'],
-  },
-  {
-    name: 'midnight',
-    label: 'Midnight',
-    swatch: '#60a5fa',
-    defaultColorMode: 'dark',
-    modes: ['dark'],
-  },
-  { name: 'arcade', label: 'Arcade', swatch: '#00ff88', defaultColorMode: 'dark', modes: ['dark'] },
-]
+const THEME_OPTIONS: readonly ThemeOption[] = parseThemeRegistry(__ZPRESS_THEME_REGISTRY__)
 
 const VALID_THEME_NAMES = new Set(THEME_OPTIONS.map((t) => t.name))
 
@@ -91,17 +76,17 @@ export function ThemeSwitcher(): React.ReactElement | null {
   }
 
   return (
-    <div className="theme-switcher" ref={containerRef}>
+    <div className="zp-theme-switcher" ref={containerRef}>
       <button
-        className="theme-switcher-btn"
+        className="zp-theme-switcher__btn"
         onClick={handleToggle}
         aria-label="Switch theme"
         type="button"
       >
-        <Icon icon="pixelarticons:paint-bucket" width={16} height={16} />
+        <Icon icon="mdi:palette-outline" width={16} height={16} />
       </button>
       {isOpen && (
-        <div className="theme-switcher-dropdown">
+        <div className="zp-theme-switcher__dropdown">
           {THEME_OPTIONS.map((theme) => (
             <button
               key={theme.name}
@@ -109,10 +94,13 @@ export function ThemeSwitcher(): React.ReactElement | null {
               onClick={() => handleSelect(theme)}
               type="button"
             >
-              <span className="theme-switcher-swatch" style={{ backgroundColor: theme.swatch }} />
-              <span className="theme-switcher-name">{theme.label}</span>
+              <span
+                className="zp-theme-switcher__swatch"
+                style={{ backgroundColor: theme.swatch }}
+              />
+              <span className="zp-theme-switcher__name">{theme.label}</span>
               {activeTheme === theme.name && (
-                <span className="theme-switcher-check">{'\u2713'}</span>
+                <span className="zp-theme-switcher__check">{'\u2713'}</span>
               )}
             </button>
           ))}
@@ -152,9 +140,9 @@ function sanitizeThemeName(raw: string | null): string {
  */
 function optionClassName(isActive: boolean): string {
   if (isActive) {
-    return 'theme-switcher-option theme-switcher-option--active'
+    return 'zp-theme-switcher__option zp-theme-switcher__option--active'
   }
-  return 'theme-switcher-option'
+  return 'zp-theme-switcher__option'
 }
 
 /**
@@ -181,4 +169,61 @@ function applyTheme(theme: ThemeOption): void {
     html.dataset.dark = 'false'
     localStorage.setItem('rspress-theme-appearance', 'light')
   }
+}
+
+/**
+ * Parse the `__ZPRESS_THEME_REGISTRY__` build-time define into a typed
+ * list of theme options. The define is a JSON string emitted by
+ * `packages/ui/src/config.ts` from `BUILT_IN_THEMES`, so iteration order
+ * matches the registry's insertion order (base, midnight, arcade).
+ * Falls back to an empty list when the define is missing or malformed —
+ * the switcher then renders no options, which is the safest no-op.
+ *
+ * @private
+ * @param raw - Raw JSON string from the build-time define
+ * @returns Validated list of theme options
+ */
+function parseThemeRegistry(raw: string): readonly ThemeOption[] {
+  if (!raw || raw === '""' || raw === 'undefined') {
+    return []
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+    return parsed.filter(isThemeOption)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Type-guard that validates a registry entry has the shape expected by
+ * the switcher. Any entry missing required fields or carrying the wrong
+ * runtime types is dropped silently.
+ *
+ * @private
+ * @param value - Candidate registry entry
+ * @returns True when the entry matches the ThemeOption shape
+ */
+function isThemeOption(value: unknown): value is ThemeOption {
+  if (value === null || typeof value !== 'object') {
+    return false
+  }
+  const v = value as Record<string, unknown>
+  if (typeof v.name !== 'string' || typeof v.label !== 'string' || typeof v.swatch !== 'string') {
+    return false
+  }
+  if (
+    v.defaultColorMode !== 'dark' &&
+    v.defaultColorMode !== 'light' &&
+    v.defaultColorMode !== 'toggle'
+  ) {
+    return false
+  }
+  if (!Array.isArray(v.modes)) {
+    return false
+  }
+  return v.modes.every((m) => m === 'dark' || m === 'light')
 }

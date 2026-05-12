@@ -1,53 +1,53 @@
 /* ── Base desktop window ─────────────────────────────────── */
 .zp-window {
   border: 1px solid var(--zp-c-border);
-  border-radius: 8px;
+  border-radius: var(--zp-radius-md);
   overflow: hidden;
   background: var(--zp-c-bg-soft);
-  margin: 16px 0;
+  margin: var(--zp-s-16) 0;
 }
 
 .zp-window__titlebar {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  gap: 12px;
+  padding: var(--zp-s-8) var(--zp-s-12);
+  gap: var(--zp-s-12);
   background: var(--zp-c-bg-elv);
   border-bottom: 1px solid var(--zp-c-border);
-  min-height: 36px;
+  min-height: var(--zp-size-titlebar);
 }
 
 .zp-window__dots {
   display: flex;
-  gap: 6px;
+  gap: var(--zp-s-6);
   flex-shrink: 0;
 }
 
 .zp-window__dot {
-  width: 10px;
-  height: 10px;
+  width: var(--zp-size-window-dot);
+  height: var(--zp-size-window-dot);
   border-radius: 50%;
 }
 
 .zp-window__dot--close {
-  background: #ff5f57;
+  background: var(--zp-c-window-dot-close);
 }
 
 .zp-window__dot--minimize {
-  background: #febc2e;
+  background: var(--zp-c-window-dot-minimize);
 }
 
 .zp-window__dot--maximize {
-  background: #28c840;
+  background: var(--zp-c-window-dot-maximize);
 }
 
 /* ── Default title (all variants inherit this) ─────────── */
 .zp-window__title {
   flex: 1;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--zp-fs-window-title);
   font-family: var(--rp-font-family-mono);
-  color: var(--zp-c-text-3, #888);
+  color: var(--zp-c-window-title-fallback);
 }
 
 /* ── Tabs (built into base) ────────────────────────────── */
@@ -63,9 +63,9 @@
 .zp-window__tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  font-size: 12px;
+  gap: var(--zp-s-6);
+  padding: var(--zp-s-6) var(--zp-s-14);
+  font-size: var(--zp-fs-window-tab);
   font-family: var(--rp-font-family-mono);
   color: var(--zp-c-text-3);
   border-right: 1px solid var(--zp-c-border);
@@ -79,17 +79,17 @@
 }
 
 .zp-window__tab-dot {
-  width: 6px;
-  height: 6px;
+  width: var(--zp-size-window-tab-dot);
+  height: var(--zp-size-window-tab-dot);
   border-radius: 50%;
   background: var(--zp-c-text-3);
-  opacity: 0.5;
+  opacity: var(--zp-opacity-muted);
 }
 
 /* ── Content area (isolated from Rspress global styles) ── */
 .zp-window__content {
   position: relative;
-  padding: 16px;
+  padding: var(--zp-s-16);
 }
 
 .zp-window__content p {
@@ -118,7 +118,7 @@
 }
 
 .zp-window--browser .zp-window__dots {
-  padding: 8px 12px;
+  padding: var(--zp-s-8) var(--zp-s-12);
 }
 
 .zp-window--browser .zp-window__content {
@@ -129,24 +129,24 @@
 .zp-browser__tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  font-size: 12px;
+  gap: var(--zp-s-6);
+  padding: var(--zp-s-6) var(--zp-s-14);
+  font-size: var(--zp-fs-window-tab);
   font-family: var(--rp-font-family-mono);
   color: var(--zp-c-text-1);
   background: var(--zp-c-bg-soft);
   border-right: 1px solid var(--zp-c-border);
   white-space: nowrap;
   cursor: default;
-  max-width: 200px;
+  max-width: var(--zp-size-browser-tab-max);
 }
 
 .zp-browser__tab-icon {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
+  width: var(--zp-size-browser-icon);
+  height: var(--zp-size-browser-icon);
 }
 
 .zp-browser__tab-icon svg,
@@ -165,11 +165,11 @@
 .zp-browser__url-bar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 8px;
+  gap: var(--zp-s-6);
+  padding: var(--zp-s-2) var(--zp-s-8);
   border-bottom: 1px solid var(--zp-c-border);
   background: var(--zp-c-bg-elv);
-  min-height: 28px;
+  min-height: var(--zp-size-browser-urlbar);
 }
 
 .zp-browser__nav {
@@ -180,8 +180,8 @@
 }
 
 .zp-browser__nav-icon {
-  width: 14px;
-  height: 14px;
+  width: var(--zp-size-browser-icon);
+  height: var(--zp-size-browser-icon);
   color: var(--zp-c-text-3);
   cursor: default;
 }
@@ -189,20 +189,20 @@
 .zp-browser__url {
   flex: 1;
   min-width: 0;
-  font-size: 11px;
+  font-size: var(--zp-fs-window-url);
   color: var(--zp-c-text-3);
   background: var(--zp-c-bg-soft);
-  border-radius: 12px;
-  padding: 2px 10px;
+  border-radius: var(--zp-radius-md-lg);
+  padding: var(--zp-s-2) var(--zp-s-10);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.4;
+  line-height: var(--zp-lh-tight);
 }
 
 .zp-browser__menu-icon {
-  width: 14px;
-  height: 14px;
+  width: var(--zp-size-browser-icon);
+  height: var(--zp-size-browser-icon);
   color: var(--zp-c-text-3);
   flex-shrink: 0;
   cursor: default;
@@ -215,7 +215,7 @@
 }
 
 .zp-window--ide .zp-window__dots {
-  padding: 8px 12px;
+  padding: var(--zp-s-8) var(--zp-s-12);
 }
 
 .zp-window--ide .zp-window__content {
@@ -242,23 +242,23 @@
 
 /* ── Terminal variant ───────────────────────────────────── */
 .zp-window--terminal {
-  background: #0d0d0d;
+  background: var(--zp-c-term-bg);
 }
 
 .zp-window--terminal .zp-window__titlebar {
-  background: #161616;
-  border-bottom-color: #222;
+  background: var(--zp-c-term-titlebar-bg);
+  border-bottom-color: var(--zp-c-term-border);
 }
 
 .zp-window--terminal .zp-window__title {
-  color: #888;
+  color: var(--zp-c-term-title);
 }
 
 .zp-window--terminal .zp-window__content {
   font-family: var(--rp-font-family-mono);
-  font-size: 13px;
-  line-height: 1.6;
-  color: #d4d4d4;
+  font-size: var(--zp-fs-term-body);
+  line-height: var(--zp-lh-relaxed);
+  color: var(--zp-c-term-text);
 }
 
 /* Terminal line structure */
@@ -270,44 +270,44 @@
 
 .zp-term-line--command::before {
   content: '$ ';
-  color: #888;
+  color: var(--zp-c-term-prompt-prefix);
 }
 
 .zp-term-line--output {
-  color: #aaa;
+  color: var(--zp-c-term-output);
 }
 
 .zp-term-line + .zp-term-line--command {
-  margin-top: 8px;
+  margin-top: var(--zp-s-8);
 }
 
 /* Terminal text colors */
 .zp-term-text--red {
-  color: #f87171;
+  color: var(--zp-c-term-red);
 }
 .zp-term-text--green {
-  color: #4ade80;
+  color: var(--zp-c-term-green);
 }
 .zp-term-text--blue {
-  color: #60a5fa;
+  color: var(--zp-c-term-blue);
 }
 .zp-term-text--yellow {
-  color: #fbbf24;
+  color: var(--zp-c-term-yellow);
 }
 .zp-term-text--cyan {
-  color: #22d3ee;
+  color: var(--zp-c-term-cyan);
 }
 .zp-term-text--magenta {
-  color: #c084fc;
+  color: var(--zp-c-term-magenta);
 }
 .zp-term-text--white {
-  color: #f5f5f5;
+  color: var(--zp-c-term-white);
 }
 .zp-term-text--gray {
-  color: #888;
+  color: var(--zp-c-term-gray);
 }
 .zp-term-text--dim {
-  opacity: 0.5;
+  opacity: var(--zp-opacity-muted);
 }
 .zp-term-text--bold {
   font-weight: 700;
@@ -315,25 +315,25 @@
 
 /* Terminal semantic colors (clack-style) */
 .zp-term-text--success {
-  color: #4ade80;
+  color: var(--zp-c-term-success);
 }
 .zp-term-text--error {
-  color: #f87171;
+  color: var(--zp-c-term-error);
 }
 .zp-term-text--warn {
-  color: #fbbf24;
+  color: var(--zp-c-term-warn);
 }
 .zp-term-text--info {
-  color: #60a5fa;
+  color: var(--zp-c-term-info);
 }
 .zp-term-text--muted {
-  color: #888;
+  color: var(--zp-c-term-muted);
 }
 
 /* Terminal clack-style symbols */
 .zp-term-text--bar {
-  color: #888;
+  color: var(--zp-c-term-bar);
 }
 .zp-term-text--step {
-  color: #c084fc;
+  color: var(--zp-c-term-step);
 }

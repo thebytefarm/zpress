@@ -42,8 +42,9 @@
   },
   "scripts": {
     "build": "rslib build",
-    "postbuild": "node scripts/minify-head.mjs",
+    "postbuild": "node scripts/generate-theme-css.mjs && node scripts/minify-head.mjs",
     "dev": "rslib build --watch --no-clean",
+    "generate:theme-css": "node scripts/generate-theme-css.mjs",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit"
   },

@@ -1,4 +1,4 @@
-import type { BuiltInThemeName } from '@zpress/config'
+import { BUILT_IN_THEMES } from '@zpress/theme'
 
 import { readCss } from './head/read.ts'
 
@@ -9,11 +9,11 @@ import { readCss } from './head/read.ts'
  * and the loading overlay styles.
  */
 
-const THEME_CSS_MAP: Record<BuiltInThemeName, string> = {
-  base: readCss('css/themes/base.css'),
-  midnight: readCss('css/themes/midnight.css'),
-  arcade: readCss('css/themes/arcade.css'),
-}
+const THEME_CSS_MAP: Readonly<Record<string, string>> = Object.freeze(
+  Object.fromEntries(
+    Object.keys(BUILT_IN_THEMES).map((name) => [name, readCss(`css/themes/${name}.css`)])
+  )
+)
 
 const BACKDROP_CSS = readCss('css/loader-backdrop.css')
 const DOTS_LOADER_CSS = readCss('css/loader-dots.css')
@@ -33,7 +33,7 @@ export function getThemeCss(themeName: string): string {
   if (!Object.hasOwn(THEME_CSS_MAP, themeName)) {
     return LOADER_CSS
   }
-  const themeColors = THEME_CSS_MAP[themeName as BuiltInThemeName]
+  const themeColors = THEME_CSS_MAP[themeName]
   if (themeColors) {
     return themeColors + LOADER_CSS
   }

@@ -13,26 +13,26 @@
   text-decoration: underline;
   text-decoration-style: dotted;
   text-decoration-color: var(--zp-c-text-3);
-  text-underline-offset: 3px;
+  text-underline-offset: var(--zp-s-3);
 }
 
 .zp-tooltip__trigger:focus-visible {
-  outline: 2px solid var(--zp-c-brand-1);
-  outline-offset: 2px;
-  border-radius: 2px;
+  outline: var(--zp-size-focus-ring) solid var(--zp-c-brand-1);
+  outline-offset: var(--zp-size-focus-ring-offset);
+  border-radius: var(--zp-radius-xs);
 }
 
 .zp-tooltip__overlay {
-  max-width: 320px;
-  padding: 10px 14px;
+  max-width: var(--zp-size-tooltip-max);
+  padding: var(--zp-s-10) var(--zp-s-14);
   background: var(--zp-c-bg-elv);
   border: 1px solid var(--zp-c-border);
   border-radius: var(--rp-radius-large);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  font-size: 13px;
-  line-height: 1.5;
+  box-shadow: var(--zp-shadow-tooltip);
+  font-size: var(--zp-fs-tooltip);
+  line-height: var(--zp-lh-base);
   color: var(--zp-c-text-1);
-  z-index: 100;
+  z-index: var(--zp-z-tooltip);
 }
 
 .zp-tooltip__arrow svg {
@@ -42,11 +42,11 @@
 .zp-tooltip__body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--zp-s-4);
 }
 
 .zp-tooltip__headline {
-  font-size: 13px;
+  font-size: var(--zp-fs-tooltip-headline);
   font-weight: 600;
   color: var(--zp-c-text-1);
 }
@@ -57,8 +57,8 @@
 
 .zp-tooltip__cta {
   display: inline-block;
-  margin-top: 4px;
-  font-size: 12px;
+  margin-top: var(--zp-s-4);
+  font-size: var(--zp-fs-tooltip-cta);
   font-weight: 500;
   color: var(--zp-c-brand-1);
   text-decoration: none;

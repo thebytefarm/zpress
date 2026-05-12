@@ -1,0 +1,162 @@
+/**
+ * Page rail — the structural pattern that bounds the docs body content
+ * with hairlines on each side and a thin canvas gutter between the rail
+ * and the viewport.
+ *
+ * Applied to Rspress's `.rp-doc-layout__container` (the flex row that
+ * holds sidebar / content / outline). Selectors are prefixed with `html`
+ * to win the specificity war against Rspress's default DocLayout CSS,
+ * which loads after our overrides in the bundle and would otherwise
+ * reset the gutter.
+ *
+ * Mirrors the approved `gutter` mockup variant.
+ */
+
+/* ── Token overrides — tighten Rspress defaults to match mockup ── */
+html:root {
+  --rp-nav-height: 48px;
+  --rp-sidebar-width: 260px;
+  --rp-sidebar-padding: 0px;
+  --rp-outline-width: 240px;
+  --rp-content-padding-x: 64px;
+  --rp-content-padding-y: 56px;
+  /* Set this MUCH wider than typical viewports so Rspress's `.rp-doc-layout__doc`
+     fills the available flex space between sidebar and outline. The reading
+     width cap lives on the inner doc-container instead — see below. */
+  --rp-content-max-width: 100vw;
+  /* Zero out Rspress's calculated gap that pushes the sidebar away from
+     the rail's left edge and the outline away from the rail's right edge.
+     The mockup wants sidebar / content / outline to butt up against each
+     other with hairlines as the only separator. */
+  --rp-sidebar-margin-left: 0px;
+  --rp-outline-margin-right: 0px;
+}
+
+html body {
+  background: var(--zp-c-bg);
+}
+
+/* ── Doc body rail ──────────────────────────────────────── */
+/* `width: auto` overrides Rspress's default `width: 100%` so that the
+   horizontal margins actually inset the rail (otherwise margin pushes
+   the box past the viewport edge). */
+html .rp-doc-layout__container {
+  width: auto;
+  margin: 0 var(--zp-frame-gutter);
+  background: var(--zp-c-bg-elv);
+  border-left: 1px solid var(--zp-c-border);
+  border-right: 1px solid var(--zp-c-border);
+}
+
+html .rp-doc-layout__menu {
+  width: auto;
+  margin: 0 var(--zp-frame-gutter);
+  background: var(--zp-c-bg-elv);
+  border-left: 1px solid var(--zp-c-border);
+  border-right: 1px solid var(--zp-c-border);
+  border-bottom: 1px solid var(--zp-c-border);
+}
+
+/* ── Sidebar / content / outline dividers ──────────────── */
+html .rp-doc-layout__sidebar {
+  background: var(--zp-c-bg-elv);
+  border-right: 1px solid var(--zp-c-border);
+  padding: 12px 8px;
+}
+
+html .rp-doc-layout__outline {
+  background: var(--zp-c-bg-elv);
+  border-left: 1px solid var(--zp-c-border);
+  box-shadow: none;
+  padding: 24px 16px;
+}
+
+html .rp-doc-layout__doc {
+  background: var(--zp-c-bg-elv);
+}
+
+/* Cap the prose reading width INSIDE the doc-container — sidebar and
+   outline stay pinned to the rail edges; the gutter lives here as
+   centered whitespace around the article body. */
+html .rp-doc-layout__doc-container {
+  max-width: var(--zp-content-reading-max, 1000px);
+  margin: 0 auto;
+}
+
+/* ── H1 — match mockup (36px / weight 600 / tight line-height) ── */
+html .rp-doc-layout__doc-container h1,
+html .rp-doc h1 {
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+/* ── Right rail (TOC) typography — tighten to mockup ── */
+html .rp-doc-layout__outline a,
+html .rp-aside a {
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* ── Topbar ────────────────────────────────────────────── */
+/* Default: full-width topbar (docs pages, mockup gutter pattern).
+   No vertical hairlines on the navbar — only the body grid has them. */
+html .rspress-nav,
+html .rp-nav {
+  background: var(--zp-c-bg-elv);
+  border-bottom: 1px solid var(--zp-c-border);
+  padding: 0 16px;
+  backdrop-filter: blur(8px);
+}
+
+/* Tighten nav typography to match the mockup */
+html .rp-nav-menu__item,
+html .rp-nav-menu a,
+html .rp-nav__menu a {
+  font-size: 13px;
+}
+
+/* ── Landing page navbar — wraps the rail with vertical hairlines so
+   the lines run continuously from the top of the navbar to the bottom
+   of the footer. Detected by the presence of `.zp-page-rail` in the
+   document. ───────────────────────────────────────────── */
+html body:has(.zp-page-rail) .rspress-nav,
+html body:has(.zp-page-rail) .rp-nav {
+  border-left: 1px solid var(--zp-c-border);
+  border-right: 1px solid var(--zp-c-border);
+  margin: 0 var(--zp-frame-gutter);
+  max-width: var(--zp-landing-max-width);
+}
+
+@media (min-width: 1248px) {
+  html body:has(.zp-page-rail) .rspress-nav,
+  html body:has(.zp-page-rail) .rp-nav {
+    margin: 0 auto;
+  }
+}
+
+/* ── Footer ────────────────────────────────────────────── */
+html .zp-site-footer {
+  background: var(--zp-c-bg-elv);
+  border-top: 1px solid var(--zp-c-border);
+}
+
+/* The docs rail keeps its 12px frame gutter at all viewport widths.
+   Sidebar and outline stay pinned to the rail's edges; only the prose
+   inside the doc-container is capped + centered to keep reading width
+   comfortable at wide viewports. */
+
+/* ── Mobile: drop the gutter + vertical hairlines on the rail so it
+   goes edge-to-edge, matching the navbar and footer above/below it.
+   Reclaims the 24px of horizontal space that's noticeable at narrow
+   viewports, and removes the visual stairstep between full-bleed
+   navbar/footer and the inset rail. */
+@media (max-width: 720px) {
+  html .rp-doc-layout__container,
+  html .rp-doc-layout__menu {
+    margin: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+}

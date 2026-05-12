@@ -2,7 +2,7 @@
  * VS Code tag pill — mode indicator badge positioned in the nav bar.
  */
 
-.vscode-tag {
+.zp-vscode-tag {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -10,8 +10,8 @@
   padding: 3px 10px;
   border-radius: 20px;
   background: var(--zp-c-bg-soft);
-  border: 1px solid var(--zp-c-brand-1, #a78bfa);
-  color: var(--zp-c-brand-1, #a78bfa);
+  border: 1px solid var(--zp-c-brand-1, #60a5fa);
+  color: var(--zp-c-brand-1, #60a5fa);
   font-family: var(--zp-font-family-mono);
   font-size: 11px;
   font-weight: 600;
@@ -19,14 +19,14 @@
   white-space: nowrap;
 }
 
-.vscode-tag svg {
+.zp-vscode-tag svg {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
-  .vscode-tag-text {
+  .zp-vscode-tag__text {
     display: none;
   }
 }

@@ -12,7 +12,15 @@ import type {
   ZpressConfig,
 } from '@zpress/config'
 import type { Paths } from '@zpress/core'
-import { isBuiltInTheme, resolveDefaultColorMode, resolveThemeModes } from '@zpress/theme'
+import {
+  BUILT_IN_THEMES,
+  defineTheme,
+  isBuiltInTheme,
+  resolveDefaultColorMode,
+  resolveThemeModes,
+  themeToCss,
+} from '@zpress/theme'
+import type { ZpressTheme } from '@zpress/theme'
 import fileTree from 'rspress-plugin-file-tree'
 import katex from 'rspress-plugin-katex'
 import supersub from 'rspress-plugin-supersub'
@@ -38,11 +46,32 @@ interface HeadScriptOptions {
   readonly vscode: boolean
 }
 
+/**
+ * Serialized theme registry entry consumed by the theme switcher.
+ * Carries the minimum metadata needed to render and apply a theme
+ * without re-importing `@zpress/theme` at runtime.
+ */
+interface ThemeRegistryEntry {
+  readonly name: string
+  readonly label: string
+  readonly swatch: string
+  readonly modes: readonly ('dark' | 'light')[]
+  readonly defaultColorMode: 'dark' | 'light' | 'toggle'
+}
+
 const COLOR_MODE_DARK_JS = readJs('js/color-mode-dark.js')
 const COLOR_MODE_LIGHT_JS = readJs('js/color-mode-light.js')
 const VSCODE_SET_JS = `document.documentElement.dataset.zpressEnv='vscode'`
 const VSCODE_NAV_JS = readJs('js/vscode-nav.js')
 const LOADER_DOTS_JS = readJs('js/loader-dots.js')
+
+/**
+ * Serialized registry of built-in themes — the static portion of the
+ * `__ZPRESS_THEME_REGISTRY__` define. User-defined themes from
+ * `config.themes` are appended per build inside `createRspressConfig`.
+ */
+const BUILT_IN_THEME_REGISTRY: readonly ThemeRegistryEntry[] =
+  Object.values(BUILT_IN_THEMES).map(buildRegistryEntry)
 
 /**
  * Translate zpress config + sync engine output into a complete
@@ -72,7 +101,13 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
   const themeColors = resolveThemeColors(config)
   const themeDarkColors = resolveThemeDarkColors(config)
 
-  const themeCss = getThemeCss(themeName)
+  const userThemes = resolveUserThemes(config)
+  const userThemesCss = userThemes.map(themeToCss).join('')
+  const themeCss = getThemeCss(themeName) + userThemesCss
+  const themeRegistry: readonly ThemeRegistryEntry[] = [
+    ...BUILT_IN_THEME_REGISTRY,
+    ...userThemes.map(buildRegistryEntry),
+  ]
   const isVscode = vscode === true
   const headScriptBody = buildHeadScriptBody({ colorMode, themeName, vscode: isVscode })
 
@@ -157,6 +192,7 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
           __ZPRESS_THEME_COLORS__: JSON.stringify(JSON.stringify(themeColors)),
           __ZPRESS_THEME_DARK_COLORS__: JSON.stringify(JSON.stringify(themeDarkColors)),
           __ZPRESS_THEME_SWITCHER__: JSON.stringify(themeSwitcher),
+          __ZPRESS_THEME_REGISTRY__: JSON.stringify(JSON.stringify(themeRegistry)),
           __ZPRESS_VSCODE__: JSON.stringify(isVscode),
         },
       },
@@ -179,6 +215,8 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
         sidebarBelow: resolveSidebarLinks({ config, position: 'below' }),
         home: resolveHomeConfig(config),
         zpressFooter: config.footer,
+        announcement: (config as unknown as { announcement?: unknown }).announcement,
+        zpressVersion: config.title,
       } as Record<string, unknown>),
     },
   }
@@ -338,6 +376,26 @@ function resolveThemeDarkColors(config: ZpressConfig): ThemeColors {
 }
 
 /**
+ * Validate and freeze every `ZpressThemeInput` declared in `config.themes`,
+ * producing fully-typed `ZpressTheme` instances ready for CSS emission and
+ * registry serialisation.
+ *
+ * Each input flows through `defineTheme`, which runs the token tree through
+ * `tokensSchema` — surfaced validation errors are intentional config-time
+ * failures (same contract as `defineTheme` documented in `@zpress/theme`).
+ *
+ * @private
+ * @param config - Zpress config object
+ * @returns Resolved user theme definitions, in declaration order
+ */
+function resolveUserThemes(config: ZpressConfig): readonly ZpressTheme[] {
+  if (!config.themes) {
+    return []
+  }
+  return config.themes.map(defineTheme)
+}
+
+/**
  * Resolve sidebar link items for a given position, defaulting to empty array.
  *
  * @private
@@ -423,4 +481,40 @@ function buildHeadScriptBody(options: HeadScriptOptions): string {
     return ''
   })()
   return [colorModeJs, themeAttrJs, vscodeJs, LOADER_DOTS_JS].filter(Boolean).join(';')
+}
+
+/**
+ * Map a `ZpressTheme` to its serialized registry entry. The swatch is the
+ * theme's `colors.brand.primary` — the single hex value the theme switcher
+ * paints into each option's swatch dot.
+ *
+ * @private
+ * @param theme - Built-in theme definition
+ * @returns Registry entry consumed by the theme switcher
+ */
+function buildRegistryEntry(theme: ZpressTheme): ThemeRegistryEntry {
+  return {
+    name: theme.name,
+    label: toLabel(theme.name),
+    swatch: theme.tokens.colors.brand.primary,
+    modes: theme.modes,
+    defaultColorMode: theme.defaultMode,
+  }
+}
+
+/**
+ * Capitalize the first character of a theme name for display in the switcher.
+ * Built-in theme names are single lowercase tokens (`base`, `midnight`,
+ * `arcade`) so a simple capitalization is sufficient — no spaces or casing
+ * tricks needed.
+ *
+ * @private
+ * @param name - Theme identifier
+ * @returns Display label
+ */
+function toLabel(name: string): string {
+  if (name.length === 0) {
+    return name
+  }
+  return name.charAt(0).toUpperCase() + name.slice(1)
 }

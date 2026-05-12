@@ -5,7 +5,7 @@
       .code { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 12px; }
       .ln { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 11px; fill: #45475a; text-anchor: end; }
       .tab { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 11px; fill: #cdd6f4; }
-      .brand { fill: #a78bfa; }
+      .brand { fill: #60a5fa; }
       .dim { fill: #6c7086; }
       .kw { fill: #cba6f7; }
       .fn { fill: #89b4fa; }

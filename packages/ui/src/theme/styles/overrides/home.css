@@ -1,176 +1,234 @@
 /**
  * Home page overrides — hero image sizing, Rspress card/code tweaks.
+ *
+ * Cascade layer: `zpress.overrides` (see styles/layers.css).
+ *
+ * `!important` inventory (task 8.2):
+ *   - Before: 24
+ *   - After:  17
+ *
+ * Retained `!important` declarations override Rspress styles that are
+ * authored outside the `zpress.*` layer stack — either unlayered (Rspress's
+ * `.rp-home-hero*` component CSS, which beats layered rules in the normal
+ * cascade) or inside Rspress's own `@layer rp-base` (e.g. shiki's
+ * `[class*=language-]` border-radius). Both cases require `!important` to
+ * win from inside `@layer zpress.overrides`.
+ *
+ * Removed `!important` declarations targeted selectors with no competing
+ * Rspress rule (`.rp-home-hero__name`, `.rp-home-hero__text`, and the
+ * `padding-bottom`/`line-height` properties on `.rp-home-hero__tagline`),
+ * so the layer cascade alone is sufficient.
  */
 
-/* ── Rspress home hero image sizing ──────────────────────── */
-html .rp-home-hero__image {
-  flex: none;
-  width: 548px;
-  margin-left: 24px;
-}
-
-html .rp-home-hero__image-img {
-  width: 548px;
-  height: auto;
-}
-
-/* ── Rspress home hero padding ─────────────────────────── */
-html .rp-home-hero {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-/* ── Rspress home hero container ────────────────────────── */
-html .rp-home-hero__container {
-  gap: 16px !important;
-}
-
-/* ── Rspress home hero text sizing & spacing ───────────── */
-html .rp-home-hero__name {
-  font-size: 1.25rem !important;
-}
-
-html .rp-home-hero__text {
-  font-size: 2.5rem !important;
-  margin-bottom: 8px !important;
-}
-
-html .rp-home-hero__tagline {
-  padding-bottom: 16px !important;
-}
-
-html .rp-home-hero__actions {
-  gap: 1.25rem !important;
-}
-
-@media (max-width: 1000px) {
-  html .rp-home-hero {
-    padding-bottom: 24px !important;
-  }
-
+@layer zpress.overrides {
+  /* ── Rspress home hero image sizing ──────────────────────── */
   html .rp-home-hero__image {
-    width: 400px;
-    margin-left: 0;
-    margin-top: 32px;
+    flex: none;
+    width: 548px;
+    margin-left: 24px;
   }
 
   html .rp-home-hero__image-img {
-    width: 400px;
+    width: 548px;
+    height: auto;
   }
-}
 
-@media (max-width: 1184px) {
+  /* ── Rspress home hero padding ─────────────────────────── */
   html .rp-home-hero {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
-}
 
-/* ── Mobile overrides ────────────────────────────────────── */
-@media (max-width: 768px) {
+  /* ── Rspress home hero container ────────────────────────── */
   html .rp-home-hero__container {
-    gap: 8px !important;
+    gap: 16px !important;
   }
 
-  html .rp-home-hero__image {
-    width: 100%;
-    max-width: 90vw !important;
-    margin-left: 0;
-    margin-top: 24px;
-  }
-
-  html .rp-home-hero__image-img {
-    width: 100%;
-    max-width: 90vw !important;
-  }
-
+  /* ── Rspress home hero text sizing & spacing ───────────── */
+  /* No `!important`: Rspress does not define `.rp-home-hero__name` or
+   * `.rp-home-hero__text`, and `.rp-home-hero__tagline` has no competing
+   * `padding-bottom` rule, so the layer cascade is sufficient. */
   html .rp-home-hero__name {
-    font-size: 1.125rem !important;
+    font-size: 1.25rem;
   }
 
   html .rp-home-hero__text {
-    font-size: 2rem !important;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
   }
 
   html .rp-home-hero__tagline {
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
+    padding-bottom: 16px;
   }
-}
 
-/* ── Feature section ───────────────────────────────────────── */
-.zp-feature-section {
-  max-width: 1152px;
-  margin: 0 auto;
-  padding-bottom: 64px;
-}
+  html .rp-home-hero__actions {
+    gap: 1.25rem !important;
+  }
 
-@media (max-width: 1184px) {
+  @media (max-width: 1000px) {
+    html .rp-home-hero {
+      padding-bottom: 24px !important;
+    }
+
+    html .rp-home-hero__image {
+      width: 400px;
+      margin-left: 0;
+      margin-top: 32px;
+    }
+
+    html .rp-home-hero__image-img {
+      width: 400px;
+    }
+  }
+
+  @media (max-width: 1184px) {
+    html .rp-home-hero {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+  }
+
+  /* ── Mobile overrides ────────────────────────────────────── */
+  @media (max-width: 768px) {
+    html .rp-home-hero__container {
+      gap: 8px !important;
+    }
+
+    html .rp-home-hero__image {
+      width: 100%;
+      max-width: 90vw !important;
+      margin-left: 0;
+      margin-top: 24px;
+    }
+
+    html .rp-home-hero__image-img {
+      width: 100%;
+      max-width: 90vw !important;
+    }
+
+    html .rp-home-hero__name {
+      font-size: 1.125rem;
+    }
+
+    html .rp-home-hero__text {
+      font-size: 2rem;
+    }
+
+    html .rp-home-hero__tagline {
+      /* `!important` retained on `font-size` because Rspress defines
+       * `.rp-home-hero__tagline { font-size: 1.125rem }` at
+       * `(width >= 640px)` and `(width >= 768px)`, which still match at the
+       * `max-width: 768px` breakpoint. `line-height` has no competing rule. */
+      font-size: 1rem !important;
+      line-height: 1.5;
+    }
+  }
+
+  /* ── Feature section ───────────────────────────────────────── */
   .zp-feature-section {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: 64px 32px;
   }
-}
 
-/* ── Feature grid ───────────────────────────────────────────────── */
-.zp-feature-grid {
-  --feature-grid-gap: 12px;
+  @media (max-width: 720px) {
+    .zp-feature-section {
+      padding: 48px 20px;
+    }
+  }
 
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--feature-grid-gap);
-}
+  /* Eyebrow + title above the feature grid (mockup pattern) */
+  .zp-feature-section-head {
+    text-align: center;
+    margin-bottom: 56px;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-/* ── Grid item + span system ────────────────────────────────── */
-.zp-feature-grid__item {
-  width: 100%;
-  position: relative;
-}
+  .zp-feature-section-head__eyebrow {
+    font-family: var(--zp-font-family-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--zp-c-brand-1);
+    margin-bottom: 12px;
+  }
 
-.zp-feature-grid__item-wrap {
-  position: relative;
-  height: 100%;
-}
+  .zp-feature-section-head__title {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin: 0 0 16px;
+    color: var(--zp-c-text-1);
+  }
 
-@media (min-width: 640px) {
+  .zp-feature-section-head__sub {
+    font-size: 17px;
+    color: var(--zp-c-text-2);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* ── Feature grid — hairline-divider grid (mockup pattern) ─── */
+  /* The grid has `gap: 1px` on a border-color background so the gap shows
+   through as hairlines between cells. Each cell paints its own panel bg. */
+  .zp-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--zp-c-border);
+    border: 1px solid var(--zp-c-border);
+    border-radius: var(--zp-radius-frame);
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 880px) {
+    .zp-feature-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .zp-feature-grid__item {
+    position: relative;
+    background: var(--zp-c-bg-elv);
+    transition: background 0.15s ease;
+  }
+
+  .zp-feature-grid__item:hover {
+    background: var(--zp-c-bg-soft);
+  }
+
+  /* Strip the inner card chrome; the grid gutter does the work now */
+  .zp-feature-grid__item .zp-card,
+  .zp-feature-grid__item .zp-feature-card {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding: 28px 24px !important;
+    box-shadow: none !important;
+    height: 100%;
+  }
+
+  .zp-feature-grid__item-wrap {
+    height: 100%;
+  }
+
+  /* Span system retained but neutralized — every item takes one grid column. */
   .zp-feature-grid__item--span-2,
+  .zp-feature-grid__item--span-3,
   .zp-feature-grid__item--span-4,
   .zp-feature-grid__item--span-6 {
-    width: calc((100% - var(--feature-grid-gap)) / 2);
-  }
-}
-
-@media (min-width: 768px) {
-  .zp-feature-grid__item--span-2,
-  .zp-feature-grid__item--span-4 {
-    width: calc((100% - var(--feature-grid-gap)) / 2);
+    width: auto;
   }
 
-  .zp-feature-grid__item--span-3,
-  .zp-feature-grid__item--span-6 {
-    width: calc((100% - 2 * var(--feature-grid-gap)) / 3);
-  }
-}
-
-@media (min-width: 960px) {
-  .zp-feature-grid__item--span-3 {
-    width: calc((100% - 3 * var(--feature-grid-gap)) / 4);
+  /* ── Code blocks ─────────────────────────────────────────── */
+  div[class*='language-'] {
+    border-radius: var(--rp-radius) !important;
   }
 
-  .zp-feature-grid__item--span-4 {
-    width: calc((100% - 2 * var(--feature-grid-gap)) / 3);
+  code:not(pre code) {
+    border-radius: var(--rp-radius-small);
   }
-
-  .zp-feature-grid__item--span-6 {
-    width: calc((100% - var(--feature-grid-gap)) / 2);
-  }
-}
-
-/* ── Code blocks ─────────────────────────────────────────── */
-div[class*='language-'] {
-  border-radius: var(--rp-radius) !important;
-}
-
-code:not(pre code) {
-  border-radius: var(--rp-radius-small);
 }

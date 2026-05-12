@@ -3,45 +3,57 @@
  *
  * Color definitions have moved to theme files (styles/themes/*.css).
  * This file retains only structural overrides: fonts, layout, LLMs UI.
+ *
+ * Cascade layer: `zpress.overrides` (see styles/layers.css).
+ *
+ * `!important` inventory (task 8.2):
+ *   - Before: 0
+ *   - After:  0
+ *
+ * No `!important` declarations are needed here — `html .rp-*` specificity
+ * combined with the `zpress.overrides` layer is sufficient against Rspress's
+ * font and LLMs UI defaults.
  */
 
-html:root {
-  /* Fonts — map Geist into Rspress's font stack */
-  --rp-font-family-base: 'Geist Pixel Square', ui-sans-serif, system-ui, sans-serif;
-  --rp-font-family-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
-}
+@layer zpress.overrides {
+  html:root {
+    /* Fonts — map Geist into Rspress's font stack */
+    --rp-font-family-base: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    --rp-font-family-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+  }
 
-/* ── LLMs UI — hide the view-options trigger button (dropdown arrow) ── */
-html .rp-llms-view-options__trigger {
-  display: none;
-}
+  /* ── LLMs UI — hide the view-options trigger button (dropdown arrow) ── */
+  html .rp-llms-view-options__trigger {
+    display: none;
+  }
 
-html .rp-llms-container {
-  float: right;
-  margin-top: 8px;
-  margin-bottom: 0;
-}
+  html .rp-llms-container {
+    float: right;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
 
-html .rp-doc h1.rp-toc-include {
-  display: inline;
-}
+  html .rp-doc h1.rp-toc-include {
+    display: inline;
+  }
 
-/* ── Buttons — pill shape ─────────────────────────────────── */
-html .rp-button--medium,
-html .rp-button--big {
-  border-radius: 9999px;
-}
+  /* ── Buttons — pill shape ─────────────────────────────────── */
+  html .rp-button--medium,
+  html .rp-button--big {
+    border-radius: 9999px;
+  }
 
-/* ── Single-mode themes — hide the appearance toggle when only one mode is supported ── */
-html[data-zp-modes='dark'] .rp-switch-appearance,
-html[data-zp-modes='light'] .rp-switch-appearance,
-html[data-zp-modes='dark'] .rp-nav-screen-appearance,
-html[data-zp-modes='light'] .rp-nav-screen-appearance {
-  display: none;
-}
+  /* ── Single-mode themes — hide the appearance toggle when only one mode is supported ── */
+  html[data-zp-modes='dark'] .rp-switch-appearance,
+  html[data-zp-modes='light'] .rp-switch-appearance,
+  html[data-zp-modes='dark'] .rp-nav-screen-appearance,
+  html[data-zp-modes='light'] .rp-nav-screen-appearance {
+    display: none;
+  }
 
-/* ── Tables ──────────────────────────────────────────────── */
-html table {
-  border-radius: var(--rp-radius);
-  overflow: hidden;
+  /* ── Tables ──────────────────────────────────────────────── */
+  html table {
+    border-radius: var(--rp-radius);
+    overflow: hidden;
+  }
 }

@@ -1,23 +1,122 @@
 .zp-site-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 24px 32px;
-  border-top: 1px solid var(--rp-c-divider);
-  text-align: center;
+  background: var(--zp-c-bg-elv);
   font-size: 13px;
-  color: var(--rp-c-text-3);
+  color: var(--zp-c-text-2);
 }
 
-.zp-site-footer__socials {
-  margin-bottom: 4px;
+.zp-site-footer__inner {
+  padding: 56px 32px 0;
+}
+
+@media (max-width: 720px) {
+  .zp-site-footer__inner {
+    padding: 40px 20px 0;
+  }
+}
+
+.zp-site-footer__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 880px) {
+  .zp-site-footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+.zp-site-footer__brand {
+  max-width: 320px;
+}
+
+.zp-site-footer__brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-2));
+  display: grid;
+  place-items: center;
+  color: var(--zp-c-brand-fg);
+  font-family: var(--zp-font-family-mono);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 
 .zp-site-footer__message {
-  line-height: 1.5;
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--zp-c-text-2);
+  line-height: 1.55;
+}
+
+.zp-site-footer__socials {
+  margin-top: 8px;
+}
+
+.zp-site-footer__col-title {
+  margin: 0 0 14px;
+  font-family: var(--zp-font-family-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--zp-c-text-3);
+  font-weight: 500;
+}
+
+.zp-site-footer__col-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zp-site-footer__col-list a {
+  color: var(--zp-c-text-2);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.zp-site-footer__col-list a:hover {
+  color: var(--zp-c-text-1);
+}
+
+.zp-site-footer__bottom {
+  margin-top: 48px;
+  border-top: 1px solid var(--zp-c-border);
+}
+
+.zp-site-footer__bottom-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: var(--zp-font-family-mono);
+  font-size: 11px;
+  color: var(--zp-c-text-3);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .zp-site-footer__bottom-inner {
+    padding: 20px;
+  }
 }
 
 .zp-site-footer__copyright {
-  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.zp-site-footer__tagline {
+  white-space: nowrap;
 }

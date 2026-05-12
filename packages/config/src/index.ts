@@ -8,6 +8,7 @@ export type {
   ColorMode,
   ThemeColors,
   ThemeConfig,
+  ZpressThemeInput,
   Frontmatter,
   NavItem,
   CardConfig,
@@ -55,5 +56,6 @@ export {
   resolveDefaultColorMode,
   isBuiltInTheme,
   isBuiltInIconColor,
+  defineTheme,
 } from '@zpress/theme'
 export type { BuiltInThemeName, BuiltInIconColor } from '@zpress/theme'

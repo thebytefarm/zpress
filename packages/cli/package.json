@@ -45,6 +45,7 @@
     "@rspress/core": "catalog:",
     "@zpress/core": "workspace:*",
     "@zpress/templates": "workspace:*",
+    "@zpress/theme": "workspace:*",
     "@zpress/ui": "workspace:*",
     "es-toolkit": "catalog:",
     "get-port": "^7.2.0",

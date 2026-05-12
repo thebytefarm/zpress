@@ -177,6 +177,9 @@ importers:
       '@zpress/templates':
         specifier: workspace:*
         version: link:../templates
+      '@zpress/theme':
+        specifier: workspace:*
+        version: link:../theme
       '@zpress/ui':
         specifier: workspace:*
         version: link:../ui
@@ -459,6 +462,9 @@ importers:
       '@zpress/cli':
         specifier: workspace:*
         version: link:../cli
+      '@zpress/config':
+        specifier: workspace:*
+        version: link:../config
       '@zpress/core':
         specifier: workspace:*
         version: link:../core

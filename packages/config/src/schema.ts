@@ -1,9 +1,12 @@
 /**
  * Zod schemas for zpress configuration validation.
  *
- * Note: Using 'zod/v3' import for compatibility with zod-to-json-schema@3.25.1
- * which requires Zod v3 schema objects even when Zod v4 is installed as peer dependency.
- * All schemas are redefined here using zod/v3 to avoid type incompatibilities.
+ * Theme schemas (`themeColorsSchema`, `themeConfigSchema`) are imported from
+ * `@zpress/theme` — that package owns the canonical theme surface; redefining
+ * them here would create drift. Because `@zpress/theme` uses Zod v4, this file
+ * also uses the Zod v4 entrypoint (`import { z } from 'zod'`). JSON Schema
+ * generation in `packages/config/scripts/generate-schema.ts` uses Zod v4's
+ * native `z.toJSONSchema()` accordingly.
  *
  * Recursive schemas (navItemSchema, entrySchema) are annotated with z.ZodType<T>
  * to enforce compile-time consistency between schemas and their TypeScript types.
@@ -14,7 +17,8 @@
  * lossy (...args: unknown[]) => unknown inference, preserving exact call signatures.
  */
 
-import { z } from 'zod/v3'
+import { colorModeSchema, themeColorsSchema, themeConfigSchema } from '@zpress/theme'
+import { z } from 'zod'
 
 import type {
   CardConfig,
@@ -168,35 +172,6 @@ const featureSchema = z
   })
   .strict()
 
-const themeColorsSchema = z
-  .object({
-    brand: z.string().optional(),
-    brandLight: z.string().optional(),
-    brandDark: z.string().optional(),
-    brandSoft: z.string().optional(),
-    bg: z.string().optional(),
-    bgAlt: z.string().optional(),
-    bgElv: z.string().optional(),
-    bgSoft: z.string().optional(),
-    text1: z.string().optional(),
-    text2: z.string().optional(),
-    text3: z.string().optional(),
-    divider: z.string().optional(),
-    border: z.string().optional(),
-    homeBg: z.string().optional(),
-  })
-  .strict()
-
-const themeConfigSchema = z
-  .object({
-    name: z.string().default('base'),
-    colorMode: z.enum(['dark', 'light', 'toggle']).optional(),
-    switcher: z.boolean().optional(),
-    colors: themeColorsSchema.optional(),
-    darkColors: themeColorsSchema.optional(),
-  })
-  .strict()
-
 const sidebarLinkSchema = z
   .object({
     text: z.string(),
@@ -228,18 +203,52 @@ const homeGridConfigSchema = z
   })
   .strict()
 
-const homeConfigSchema = z
-  .object({
-    features: homeGridConfigSchema.optional(),
-    workspaces: homeGridConfigSchema.optional(),
-  })
-  .strict()
-
 const heroActionSchema = z
   .object({
     theme: z.enum(['brand', 'alt']),
     text: z.string(),
     link: z.string(),
+  })
+  .strict()
+
+const announcementConfigSchema = z
+  .object({
+    id: z.string().optional(),
+    lead: z.string().optional(),
+    message: z.string(),
+    cta: z
+      .object({
+        href: z.string(),
+        label: z.string(),
+      })
+      .strict()
+      .optional(),
+    persistent: z.boolean().optional(),
+  })
+  .strict()
+
+const trustConfigSchema = z
+  .object({
+    lead: z.string().optional(),
+    names: z.array(z.string()).optional(),
+  })
+  .strict()
+
+const ctaConfigSchema = z
+  .object({
+    title: z.string().optional(),
+    subtitle: z.string().optional(),
+    actions: z.array(heroActionSchema).optional(),
+  })
+  .strict()
+
+const homeConfigSchema = z
+  .object({
+    features: homeGridConfigSchema.optional(),
+    workspaces: homeGridConfigSchema.optional(),
+    eyebrow: z.string().optional(),
+    trust: trustConfigSchema.optional(),
+    cta: ctaConfigSchema.optional(),
   })
   .strict()
 
@@ -282,11 +291,27 @@ const footerConfigSchema = z
   })
   .strict()
 
+const themeModeSchema = z.enum(['dark', 'light'])
+
+// `tokens` is `unknown` because `defineTheme` validates the token tree against
+// `tokensSchema` at factory time — duplicating that validation here would
+// produce two diverging error surfaces. Config-time validation only ensures
+// the envelope (`name`, `modes`, `defaultMode`) is structurally correct.
+const zpressThemeInputSchema = z
+  .object({
+    name: z.string(),
+    tokens: z.unknown(),
+    modes: z.array(themeModeSchema).optional(),
+    defaultMode: colorModeSchema.optional(),
+  })
+  .strict()
+
 export const zpressConfigSchema = z
   .object({
     title: z.string().optional(),
     description: z.string().optional(),
     theme: themeConfigSchema.optional(),
+    themes: z.array(zpressThemeInputSchema).optional(),
     icon: iconIdSchema.optional(),
     tagline: z.string().optional(),
     apps: z.array(workspaceItemSchema).optional(),
@@ -299,6 +324,7 @@ export const zpressConfigSchema = z
     nav: z.union([z.literal('auto'), z.array(navItemSchema)]).optional(),
     exclude: z.array(z.string()).optional(),
     home: homeConfigSchema.optional(),
+    announcement: announcementConfigSchema.optional(),
     socialLinks: z.array(socialLinkSchema).optional(),
     footer: footerConfigSchema.optional(),
     openapi: openapiConfigSchema.optional(),
@@ -328,6 +354,10 @@ const _guardFrontmatter: z.ZodType<Frontmatter> = frontmatterSchema
 const _guardCardConfig: z.ZodType<CardConfig> = cardConfigSchema
 // oxlint-disable-next-line no-unused-vars -- compile-time type guard
 const _guardHomeConfig: z.ZodType<HomeConfig> = homeConfigSchema
+
+// Re-export theme schemas so they remain reachable via this module for
+// downstream consumers and JSON Schema generation tooling.
+export { themeColorsSchema, themeConfigSchema }
 
 // ---------------------------------------------------------------------------
 // Private

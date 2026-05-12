@@ -1,3 +1,5 @@
+import { BUILT_IN_THEMES, TOKEN_TO_CSS_VAR } from '@zpress/theme'
+import type { ThemeColors, TokenPath } from '@zpress/theme'
 import { useEffect, useLayoutEffect } from 'react'
 import type React from 'react'
 import { match, P } from 'ts-pattern'
@@ -8,31 +10,86 @@ declare const __ZPRESS_THEME_COLORS__: string
 declare const __ZPRESS_THEME_DARK_COLORS__: string
 
 /**
+ * `ThemeColors` field names whose values are applied to the DOM as
+ * CSS custom-property overrides.
+ */
+type ThemeColorKey = keyof ThemeColors
+
+/**
  * Supported color modes per built-in theme — used to set `data-zp-modes`
  * so the appearance toggle is hidden for single-mode themes.
+ *
+ * Derived from `BUILT_IN_THEMES` (the registry) so adding a theme to the
+ * registry automatically wires up its mode metadata here.
  */
-const THEME_MODES: Readonly<Record<string, string>> = {
-  base: 'dark light',
-  midnight: 'dark',
-  arcade: 'dark',
-}
+const THEME_MODES: Readonly<Record<string, string>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries(BUILT_IN_THEMES).map(([name, theme]) => [name, theme.modes.join(' ')])
+  )
+)
 
-const COLOR_VAR_MAP: Record<string, readonly string[]> = {
-  brand: ['--zp-c-brand-1', '--rp-c-brand'],
+/**
+ * Mapping from each `ThemeColors` field to the canonical `ZpressTokens`
+ * leaf path that backs it. Fields whose only target is a legacy `--rp-*`
+ * var have `null` here.
+ */
+const THEME_COLOR_TOKEN_PATHS: Readonly<Record<ThemeColorKey, TokenPath | null>> = Object.freeze({
+  brand: 'colors.brand.primary',
+  brandLight: null,
+  brandDark: 'colors.brand.hover',
+  brandSoft: 'colors.brand.soft',
+  bg: 'colors.surface.bg',
+  bgAlt: 'colors.surface.bgAlt',
+  bgElv: 'colors.surface.bgElv',
+  bgSoft: 'colors.surface.bgSoft',
+  text1: 'colors.text.text1',
+  text2: 'colors.text.text2',
+  text3: 'colors.text.text3',
+  divider: 'colors.border.divider',
+  border: 'colors.border.border',
+  homeBg: null,
+})
+
+/**
+ * Legacy `--rp-*` CSS variable names still emitted alongside the
+ * canonical `--zp-*` vars so Rspress's built-in styles continue to
+ * pick up theme color overrides without modification.
+ */
+const LEGACY_RP_VARS: Readonly<Record<ThemeColorKey, readonly string[]>> = Object.freeze({
+  brand: ['--rp-c-brand'],
   brandLight: ['--rp-c-brand-light'],
-  brandDark: ['--zp-c-brand-2', '--rp-c-brand-dark'],
-  brandSoft: ['--zp-c-brand-soft', '--rp-c-brand-tint'],
-  bg: ['--zp-c-bg', '--rp-c-bg'],
-  bgAlt: ['--zp-c-bg-alt'],
-  bgElv: ['--zp-c-bg-elv'],
-  bgSoft: ['--zp-c-bg-soft', '--rp-c-bg-soft'],
-  text1: ['--zp-c-text-1', '--rp-c-text-1'],
-  text2: ['--zp-c-text-2', '--rp-c-text-2'],
-  text3: ['--zp-c-text-3', '--rp-c-text-3'],
-  divider: ['--zp-c-divider', '--rp-c-divider'],
-  border: ['--zp-c-border'],
+  brandDark: ['--rp-c-brand-dark'],
+  brandSoft: ['--rp-c-brand-tint'],
+  bg: ['--rp-c-bg'],
+  bgAlt: [],
+  bgElv: [],
+  bgSoft: ['--rp-c-bg-soft'],
+  text1: ['--rp-c-text-1'],
+  text2: ['--rp-c-text-2'],
+  text3: ['--rp-c-text-3'],
+  divider: ['--rp-c-divider'],
+  border: [],
   homeBg: ['--rp-home-background-bg'],
-}
+})
+
+/**
+ * Mapping from each `ThemeColors` field name to the ordered list of CSS
+ * variables it sets on `<html>`. The canonical `--zp-*` var (resolved
+ * from `TOKEN_TO_CSS_VAR`) is emitted first, followed by any legacy
+ * `--rp-*` vars from `LEGACY_RP_VARS`.
+ */
+const COLOR_VAR_MAP: Readonly<Record<ThemeColorKey, readonly string[]>> = Object.freeze(
+  Object.fromEntries(
+    (Object.keys(THEME_COLOR_TOKEN_PATHS) as readonly ThemeColorKey[]).map((key) => {
+      const tokenPath = THEME_COLOR_TOKEN_PATHS[key]
+      const legacy = LEGACY_RP_VARS[key]
+      const zpVar = match(tokenPath)
+        .with(P.nullish, () => [] as readonly string[])
+        .otherwise((path) => [TOKEN_TO_CSS_VAR[path]] as readonly string[])
+      return [key, [...zpVar, ...legacy]] as const
+    })
+  ) as Record<ThemeColorKey, readonly string[]>
+)
 
 /**
  * Collect all CSS variable names from the color map.
@@ -161,7 +218,7 @@ export { ThemeProvider as default }
  */
 function resolveColorPairs(colors: Record<string, string>): readonly (readonly [string, string])[] {
   return Object.entries(colors).flatMap(([key, value]) => {
-    const vars = COLOR_VAR_MAP[key]
+    const vars = (COLOR_VAR_MAP as Record<string, readonly string[] | undefined>)[key]
     if (!Array.isArray(vars)) {
       return []
     }

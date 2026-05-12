@@ -21,14 +21,14 @@ export function BranchTag(): React.ReactElement | null {
 
   return (
     <a
-      className="branch-tag"
+      className="zp-branch-tag"
       href={`https://github.com/joggrdocs/zpress/tree/${branch}`}
       target="_blank"
       rel="noopener noreferrer"
       title={`Branch: ${branch}`}
     >
       <Icon icon="pixelarticons:git-branch" width={14} height={14} />
-      <span className="branch-tag-text">{branch}</span>
+      <span className="zp-branch-tag__text">{branch}</span>
     </a>
   )
 }

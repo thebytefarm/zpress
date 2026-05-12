@@ -1,17 +1,85 @@
-/* ── Transitions (960px–1439px) ──────────────────────────── */
+/**
+ * Rspress sidebar overrides — group headers, item sizing, active stripe,
+ * mobile drawer transitions.
+ *
+ * Cascade layer: `zpress.overrides` (see styles/layers.css).
+ *
+ * `!important` inventory (task 8.2):
+ *   - Before: 0
+ *   - After:  0
+ *
+ * No `!important` declarations are needed here — `html .rp-sidebar-*`
+ * specificity combined with the `zpress.overrides` layer wins against
+ * Rspress's sidebar defaults.
+ */
 
-@media (min-width: 960px) and (max-width: 1439px) {
-  .rspress-sidebar {
-    transition:
-      width 0.3s ease,
-      min-width 0.3s ease;
+@layer zpress.overrides {
+  /* ── Transitions (960px–1439px) ──────────────────────────── */
+
+  @media (min-width: 960px) and (max-width: 1439px) {
+    .rspress-sidebar {
+      transition:
+        width 0.3s ease,
+        min-width 0.3s ease;
+    }
   }
-}
 
-/* TODO: assess adding this override back in a future pass */
-/* ── Mobile drawer at 900px (Rspress default: 768px) ────── */
+  /* ── Group section headers — mono ALL CAPS (mockup pattern) ──── */
+  html .rp-sidebar-section-header {
+    font-family: var(--zp-font-family-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--zp-c-text-3);
+    font-weight: 500;
+  }
 
-/*
+  html .rp-sidebar-section-header__left {
+    color: var(--zp-c-text-3);
+  }
+
+  /* Top-level group anchors (clickable section headers) styled as eyebrow labels */
+  html .rp-sidebar-item.rp-sidebar-group[data-depth='0'] {
+    font-family: var(--zp-font-family-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--zp-c-text-3);
+    font-weight: 500;
+    margin-top: 12px;
+  }
+
+  html .rp-sidebar-item.rp-sidebar-group[data-depth='0']:hover {
+    color: var(--zp-c-text-1);
+  }
+
+  /* Sub-items — 13px regular Geist, denser than Rspress default */
+  html .rp-sidebar-item.rp-sidebar-item--group-item {
+    font-size: 13px;
+  }
+
+  /* ── Active item — accent stripe on the left edge ─────────── */
+  html .rp-sidebar-item--active {
+    color: var(--zp-c-text-1);
+    background: var(--zp-c-bg-soft);
+    position: relative;
+  }
+
+  html .rp-sidebar-item--active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 7px;
+    bottom: 7px;
+    width: 2px;
+    background: var(--zp-c-brand-1);
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* TODO: assess adding this override back in a future pass */
+  /* ── Mobile drawer at 900px (Rspress default: 768px) ────── */
+
+  /*
  * Rspress collapses the sidebar into a slide-out drawer at ≤768px.
  * Extend that behavior up to ≤900px so narrower viewports get the
  * drawer sooner. The existing ≤768px rules still apply below.
@@ -54,3 +122,4 @@
 }
 
 */
+}

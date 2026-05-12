@@ -1,12 +1,18 @@
 /**
  * Shared constants for SVG banner and logo generation.
  *
- * Colors use the Catppuccin Mocha palette to match the existing
- * zpress banner aesthetic.
+ * Surfaces / chrome use the Catppuccin Mocha palette to match the
+ * existing zpress banner aesthetic. The `brand` slot is the active
+ * theme's primary, pulled from `@zpress/theme` so static SVGs stay
+ * in sync with the docs site CSS and the CLI TUI.
  */
+
+import { resolveBrandPalette } from '@zpress/theme'
 
 /**
  * Catppuccin Mocha palette colors used across all generated SVGs.
+ * `brand` resolves to the base theme's primary at module load — the
+ * same color the docs site and CLI render.
  */
 export const COLORS = Object.freeze({
   base: '#1e1e2e',
@@ -18,7 +24,7 @@ export const COLORS = Object.freeze({
   green: '#a6e3a1',
   red: '#f38ba8',
   yellow: '#f9e2af',
-  brand: '#a78bfa',
+  brand: resolveBrandPalette('base').primary,
 })
 
 /**

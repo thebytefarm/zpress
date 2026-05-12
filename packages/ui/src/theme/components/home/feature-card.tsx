@@ -53,6 +53,10 @@ export function FeatureCard({
     ))
     .otherwise(() => null)
 
+  const linkTail = match(href)
+    .with(P.nonNullable, () => <span className="zp-feature-card__link">Learn more →</span>)
+    .otherwise(() => null)
+
   return (
     <div className={`zp-feature-grid__item zp-feature-grid__item--span-${span}`}>
       <div className="zp-feature-grid__item-wrap">
@@ -72,6 +76,7 @@ export function FeatureCard({
           >
             {description}
           </span>
+          {linkTail}
         </Card>
       </div>
     </div>

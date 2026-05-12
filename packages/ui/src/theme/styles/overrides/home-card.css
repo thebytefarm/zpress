@@ -19,7 +19,7 @@
 .zp-card:hover {
   border-color: var(--zp-c-brand-1);
   background: var(--zp-c-bg-elv);
-  box-shadow: 0 2px 12px rgba(167, 139, 250, 0.08);
+  box-shadow: var(--zp-shadow-card-hover);
   text-decoration: none !important;
 }
 
@@ -45,75 +45,75 @@
 
 /* ── Icon color variants ─────────────────────────────────────── */
 .zp-card__icon--purple {
-  background: rgba(167, 139, 250, 0.12);
-  color: #a78bfa;
+  background: var(--zp-c-tint-purple-bg);
+  color: var(--zp-c-tint-purple-fg);
 }
 
 .zp-card__icon--purple svg {
-  color: #a78bfa;
+  color: var(--zp-c-tint-purple-fg);
 }
 
 .zp-card__icon--blue {
-  background: rgba(96, 165, 250, 0.12);
-  color: #60a5fa;
+  background: var(--zp-c-tint-blue-bg);
+  color: var(--zp-c-tint-blue-fg);
 }
 
 .zp-card__icon--blue svg {
-  color: #60a5fa;
+  color: var(--zp-c-tint-blue-fg);
 }
 
 .zp-card__icon--green {
-  background: rgba(52, 211, 153, 0.12);
-  color: #34d399;
+  background: var(--zp-c-tint-green-bg);
+  color: var(--zp-c-tint-green-fg);
 }
 
 .zp-card__icon--green svg {
-  color: #34d399;
+  color: var(--zp-c-tint-green-fg);
 }
 
 .zp-card__icon--amber {
-  background: rgba(251, 191, 36, 0.12);
-  color: #fbbf24;
+  background: var(--zp-c-tint-amber-bg);
+  color: var(--zp-c-tint-amber-fg);
 }
 
 .zp-card__icon--amber svg {
-  color: #fbbf24;
+  color: var(--zp-c-tint-amber-fg);
 }
 
 .zp-card__icon--red {
-  background: rgba(248, 113, 113, 0.12);
-  color: #f87171;
+  background: var(--zp-c-tint-red-bg);
+  color: var(--zp-c-tint-red-fg);
 }
 
 .zp-card__icon--red svg {
-  color: #f87171;
+  color: var(--zp-c-tint-red-fg);
 }
 
 .zp-card__icon--slate {
-  background: rgba(148, 163, 184, 0.12);
-  color: #94a3b8;
+  background: var(--zp-c-tint-slate-bg);
+  color: var(--zp-c-tint-slate-fg);
 }
 
 .zp-card__icon--slate svg {
-  color: #94a3b8;
+  color: var(--zp-c-tint-slate-fg);
 }
 
 .zp-card__icon--cyan {
-  background: rgba(14, 165, 233, 0.12);
-  color: #0ea5e9;
+  background: var(--zp-c-tint-cyan-bg);
+  color: var(--zp-c-tint-cyan-fg);
 }
 
 .zp-card__icon--cyan svg {
-  color: #0ea5e9;
+  color: var(--zp-c-tint-cyan-fg);
 }
 
 .zp-card__icon--pink {
-  background: rgba(244, 114, 182, 0.12);
-  color: #f472b6;
+  background: var(--zp-c-tint-pink-bg);
+  color: var(--zp-c-tint-pink-fg);
 }
 
 .zp-card__icon--pink svg {
-  color: #f472b6;
+  color: var(--zp-c-tint-pink-fg);
 }
 
 /* ── Divider between features and workspaces ─────────────────── */

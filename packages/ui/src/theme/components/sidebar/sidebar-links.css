@@ -51,7 +51,7 @@
 /* ── Brand — solid brand background ──────────────────── */
 
 .zp-sidebar-link--brand {
-  color: #fff;
+  color: var(--zp-c-on-brand);
   background: var(--rp-c-brand-darker);
 }
 
@@ -69,7 +69,7 @@
 
 html.dark .zp-sidebar-link--alt {
   background-color: var(--rp-c-bg-mute);
-  border-color: #484848;
+  border-color: var(--zp-c-sidebar-alt-border-dark);
 }
 
 .zp-sidebar-link--alt:hover {

@@ -1,11 +1,16 @@
 /**
  * Generate JSON Schema from Zod schemas for IDE autocomplete and validation.
+ *
+ * Uses Zod v4's native `z.toJSONSchema()` because `zpressConfigSchema` is now a
+ * Zod v4 schema (it composes `themeConfigSchema` re-exported from `@zpress/theme`,
+ * which is v4). The legacy `zod-to-json-schema` package only handles v3 schemas
+ * via the `zod/v3` import alias.
  */
 
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { zodToJsonSchema } from 'zod-to-json-schema'
+import { z } from 'zod'
 
 import { zpressConfigSchema } from '../src/schema.ts'
 
@@ -14,11 +19,9 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as { versi
 const currentVersion = packageJson.version
 
 try {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const jsonSchema = zodToJsonSchema(zpressConfigSchema as any, {
-    name: 'ZpressConfig',
-    $refStrategy: 'root',
-    target: 'jsonSchema7',
+  const jsonSchema = z.toJSONSchema(zpressConfigSchema, {
+    target: 'draft-7',
+    unrepresentable: 'any',
   })
 
   const schema = {
