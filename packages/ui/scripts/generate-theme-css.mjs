@@ -43,7 +43,10 @@ const HEAD_STYLES_DIR = resolve(ROOT, 'src/head/css/themes')
 
 const GENERATED_BANNER = '/* GENERATED — DO NOT EDIT — run scripts/generate-theme-css.mjs */\n'
 
-const THEME_NAMES = Object.freeze(['base', 'midnight', 'arcade'])
+// Derived from the registry so adding a fourth built-in theme to
+// `BUILT_IN_THEMES` automatically expands generator output — no separate
+// hardcoded list to keep in sync.
+const THEME_NAMES = Object.freeze(Object.keys(BUILT_IN_THEMES))
 
 // ---------------------------------------------------------------------------
 // Pure helpers

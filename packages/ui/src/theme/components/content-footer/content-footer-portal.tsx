@@ -27,14 +27,23 @@ export function ContentFooterPortal(props: ContentFooterPortalProps): React.Reac
   const [host, setHost] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
-    const ensureHost = (): HTMLElement | null => {
+    function ensureHost(): HTMLElement | null {
       const docFooter = globalThis.document.querySelector('.rp-doc-footer')
-      if (docFooter === null) return null
+      if (docFooter === null) {
+        return null
+      }
       const existing = docFooter.querySelector(`[${HOST_ATTR}]`) as HTMLElement | null
-      if (existing !== null) return existing
+      if (existing !== null) {
+        return existing
+      }
       const node = globalThis.document.createElement('div')
       node.setAttribute(HOST_ATTR, '')
-      docFooter.insertBefore(node, docFooter.firstChild)
+      const first = docFooter.firstChild
+      if (first === null) {
+        docFooter.append(node)
+      } else {
+        first.before(node)
+      }
       return node
     }
 
@@ -43,7 +52,9 @@ export function ContentFooterPortal(props: ContentFooterPortalProps): React.Reac
     const observer = new globalThis.MutationObserver(() => {
       const next = ensureHost()
       setHost((prev) => {
-        if (prev !== null && prev.isConnected) return prev
+        if (prev !== null && prev.isConnected) {
+          return prev
+        }
         return next
       })
     })
@@ -52,6 +63,8 @@ export function ContentFooterPortal(props: ContentFooterPortalProps): React.Reac
     return () => observer.disconnect()
   }, [])
 
-  if (host === null) return null
+  if (host === null) {
+    return null
+  }
   return createPortal(<div className="zp-content-footer">{props.children}</div>, host)
 }

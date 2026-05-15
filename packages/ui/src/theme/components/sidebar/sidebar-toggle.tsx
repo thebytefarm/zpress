@@ -79,7 +79,9 @@ export function SidebarToggle(): React.ReactElement {
  * @returns true when the sidebar is collapsed.
  */
 function readCollapsed(): boolean {
-  if (globalThis.window === undefined) return false
+  if (globalThis.window === undefined) {
+    return false
+  }
   try {
     return globalThis.localStorage.getItem(STORAGE_KEY) === '1'
   } catch {
@@ -94,7 +96,9 @@ function readCollapsed(): boolean {
  * @param collapsed - true when the sidebar is collapsed.
  */
 function writeCollapsed(collapsed: boolean): void {
-  if (globalThis.window === undefined) return
+  if (globalThis.window === undefined) {
+    return
+  }
   try {
     if (collapsed) {
       globalThis.localStorage.setItem(STORAGE_KEY, '1')
@@ -113,15 +117,15 @@ function writeCollapsed(collapsed: boolean): void {
  * @param collapsed - true when the sidebar is collapsed.
  */
 function applyState(collapsed: boolean): void {
-  if (globalThis.document === undefined) return
+  if (globalThis.document === undefined) {
+    return
+  }
   const html = globalThis.document.documentElement
   match(collapsed)
     .with(true, () => {
       html.dataset[HTML_ATTR] = 'true'
-      return undefined
     })
     .otherwise(() => {
       delete html.dataset[HTML_ATTR]
-      return undefined
     })
 }

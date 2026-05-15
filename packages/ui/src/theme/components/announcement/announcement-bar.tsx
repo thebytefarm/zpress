@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { match } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
+
 import './announcement-bar.css'
 
 const STORAGE_PREFIX = 'zpress-announcement-dismissed:'
@@ -63,11 +65,17 @@ export function AnnouncementBar(props: AnnouncementBarProps): React.ReactElement
           {children}
           {match(cta)
             .with(undefined, () => null)
-            .otherwise((c) => (
-              <a className="zp-announce__cta" href={c.href}>
-                {c.label} →
-              </a>
-            ))}
+            .otherwise((c) => {
+              const href = safeUrl(c.href)
+              if (href === null) {
+                return null
+              }
+              return (
+                <a className="zp-announce__cta" href={href}>
+                  {c.label} →
+                </a>
+              )
+            })}
         </span>
         {match(persistent === true)
           .with(true, () => null)
@@ -136,6 +144,5 @@ function writeDismissed(id: string | undefined): void {
       } catch {
         // ignore — storage may be unavailable
       }
-      return
     })
 }

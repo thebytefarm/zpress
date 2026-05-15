@@ -1,5 +1,5 @@
 import { useSite } from '@rspress/core/runtime'
-import type { FooterConfig, HomeConfig } from '@zpress/config'
+import type { FooterConfig, HomeConfig, SiteConfig } from '@zpress/config'
 
 export interface ZpressSidebarItem {
   readonly text?: string
@@ -33,14 +33,6 @@ export interface WorkspaceGroupData {
   readonly cards: readonly WorkspaceCardData[]
 }
 
-export interface ZpressAnnouncement {
-  readonly id?: string
-  readonly lead?: string
-  readonly message: string
-  readonly cta?: { readonly href: string; readonly label: string }
-  readonly persistent?: boolean
-}
-
 interface ZpressThemeConfig {
   readonly sidebar: Record<string, readonly ZpressSidebarItem[]>
   readonly sidebarAbove: readonly ZpressSidebarLink[] | undefined
@@ -49,7 +41,7 @@ interface ZpressThemeConfig {
   readonly standaloneScopePaths: readonly string[] | undefined
   readonly home: HomeConfig | undefined
   readonly zpressFooter: FooterConfig | undefined
-  readonly announcement: ZpressAnnouncement | undefined
+  readonly site: SiteConfig | undefined
 }
 
 /**

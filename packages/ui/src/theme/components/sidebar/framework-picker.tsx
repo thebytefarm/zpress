@@ -1,4 +1,5 @@
 import type React from 'react'
+import { match } from 'ts-pattern'
 
 import { SidebarToggle } from './sidebar-toggle'
 
@@ -43,12 +44,22 @@ export function FrameworkPicker(props: FrameworkPickerProps): React.ReactElement
       <div className="zp-fwpicker__head">
         <span className="zp-fwpicker__label">{label}</span>
         <div className="zp-fwpicker__head-right">
-          {version === undefined ? null : <span className="zp-fwpicker__version">{version}</span>}
-          {showCollapseToggle === true ? <SidebarToggle /> : null}
+          {match(version)
+            .with(undefined, () => null)
+            .otherwise((v) => (
+              <span className="zp-fwpicker__version">{v}</span>
+            ))}
+          {match(showCollapseToggle)
+            .with(true, () => <SidebarToggle />)
+            .otherwise(() => null)}
         </div>
       </div>
       <div className="zp-fwpicker__control">
-        {mark === undefined ? null : <span className="zp-fwpicker__mark">{mark}</span>}
+        {match(mark)
+          .with(undefined, () => null)
+          .otherwise((m) => (
+            <span className="zp-fwpicker__mark">{m}</span>
+          ))}
         <span className="zp-fwpicker__name">{current}</span>
         <svg
           className="zp-fwpicker__chev"

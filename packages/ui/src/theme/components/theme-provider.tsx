@@ -1,4 +1,4 @@
-import { BUILT_IN_THEMES, TOKEN_TO_CSS_VAR } from '@zpress/theme'
+import { TOKEN_TO_CSS_VAR } from '@zpress/theme'
 import type { ThemeColors, TokenPath } from '@zpress/theme'
 import { useEffect, useLayoutEffect } from 'react'
 import type React from 'react'
@@ -8,6 +8,12 @@ declare const __ZPRESS_THEME_NAME__: string
 declare const __ZPRESS_COLOR_MODE__: string
 declare const __ZPRESS_THEME_COLORS__: string
 declare const __ZPRESS_THEME_DARK_COLORS__: string
+declare const __ZPRESS_THEME_REGISTRY__: string
+
+interface RegistryEntry {
+  readonly name: string
+  readonly modes: readonly string[]
+}
 
 /**
  * `ThemeColors` field names whose values are applied to the DOM as
@@ -16,17 +22,27 @@ declare const __ZPRESS_THEME_DARK_COLORS__: string
 type ThemeColorKey = keyof ThemeColors
 
 /**
- * Supported color modes per built-in theme — used to set `data-zp-modes`
+ * Parsed theme registry — built-in themes plus any user themes from
+ * `config.themes`. Read from the build-time define so the client bundle
+ * does not pull `@zpress/theme`'s factory + Zod into the runtime path.
+ */
+const REGISTRY_ENTRIES: readonly RegistryEntry[] = parseRegistry(__ZPRESS_THEME_REGISTRY__)
+
+/**
+ * Supported color modes per registered theme — used to set `data-zp-modes`
  * so the appearance toggle is hidden for single-mode themes.
- *
- * Derived from `BUILT_IN_THEMES` (the registry) so adding a theme to the
- * registry automatically wires up its mode metadata here.
  */
 const THEME_MODES: Readonly<Record<string, string>> = Object.freeze(
-  Object.fromEntries(
-    Object.entries(BUILT_IN_THEMES).map(([name, theme]) => [name, theme.modes.join(' ')])
-  )
+  Object.fromEntries(REGISTRY_ENTRIES.map((entry) => [entry.name, entry.modes.join(' ')]))
 )
+
+/**
+ * Set of theme names known at build time. Used to validate a persisted
+ * theme name from `localStorage` before applying it, so renaming or
+ * removing a custom theme cannot strand returning users on a stale
+ * `data-zp-theme`.
+ */
+const REGISTERED_THEME_NAMES: ReadonlySet<string> = new Set(REGISTRY_ENTRIES.map((e) => e.name))
 
 /**
  * Mapping from each `ThemeColors` field to the canonical `ZpressTokens`
@@ -122,7 +138,18 @@ const useIsomorphicLayoutEffect = getIsomorphicEffect()
 export function ThemeProvider(): React.ReactElement | null {
   useIsomorphicLayoutEffect(() => {
     const html = document.documentElement
-    const themeName = safeGetItem('zpress-theme') || __ZPRESS_THEME_NAME__
+    const persisted = safeGetItem('zpress-theme')
+    const themeName = resolveActiveThemeName(persisted)
+    if (persisted !== null && persisted !== themeName) {
+      // Stored value points at a theme that no longer ships — clear it so
+      // subsequent reads return the build-time default until the user
+      // picks a different theme.
+      try {
+        localStorage.removeItem('zpress-theme')
+      } catch {
+        // storage unavailable
+      }
+    }
     const colorMode = __ZPRESS_COLOR_MODE__
     const colors = parseColors(__ZPRESS_THEME_COLORS__)
     const darkColors = parseColors(__ZPRESS_THEME_DARK_COLORS__)
@@ -263,6 +290,72 @@ function safeGetItem(key: string): string | null {
   } catch {
     return null
   }
+}
+
+/**
+ * Resolve the theme name to apply for this render.
+ *
+ * Returns the persisted localStorage value when it points at a registered
+ * theme; falls back to the build-time default otherwise. Stale values are
+ * cleared by the caller.
+ *
+ * @private
+ * @param persisted - Value read from `localStorage['zpress-theme']` (or `null`)
+ * @returns Resolved theme name
+ */
+function resolveActiveThemeName(persisted: string | null): string {
+  if (persisted !== null && REGISTERED_THEME_NAMES.has(persisted)) {
+    return persisted
+  }
+  return __ZPRESS_THEME_NAME__
+}
+
+/**
+ * Parse the build-time theme registry define and return the resolved
+ * `{ name, modes }` entries. Returns an empty array on any malformed
+ * input so the caller can intersect against an empty set without
+ * crashing.
+ *
+ * @private
+ * @param raw - Raw JSON string from `__ZPRESS_THEME_REGISTRY__`
+ * @returns Resolved registry entries
+ */
+function parseRegistry(raw: string): readonly RegistryEntry[] {
+  if (!raw || raw === '""' || raw === 'undefined') {
+    return []
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+    return parsed.flatMap(toRegistryEntry)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Lift a raw registry entry into a typed `RegistryEntry`, returning an
+ * empty array for malformed entries so the caller can `flatMap` cleanly.
+ *
+ * @private
+ * @param entry - Raw entry from the parsed JSON array
+ * @returns Single-element array on success, empty array on shape mismatch
+ */
+function toRegistryEntry(entry: unknown): readonly RegistryEntry[] {
+  if (entry === null || typeof entry !== 'object') {
+    return []
+  }
+  const { name, modes } = entry as { name?: unknown; modes?: unknown }
+  if (typeof name !== 'string') {
+    return []
+  }
+  if (!Array.isArray(modes)) {
+    return [{ name, modes: [] }]
+  }
+  const resolvedModes = modes.filter((m): m is string => typeof m === 'string')
+  return [{ name, modes: resolvedModes }]
 }
 
 /**

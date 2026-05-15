@@ -63,6 +63,8 @@ export default defineConfig({
 })
 ```
 
+The `name` accepts any built-in theme (`base`, `midnight`, `arcade`) or any custom theme registered in the top-level `themes` array. An unknown name writes a build-time warning to stderr and falls back to `base`.
+
 ### Options
 
 | Property     | Type                               | Default           | Description                                  |
@@ -139,6 +141,51 @@ theme: {
 | `homeBg`     | Home page background              |
 
 Color values must be valid CSS hex (`#xxx` or `#xxxxxx`) or `rgba()` values.
+
+## Custom Themes
+
+When the built-in themes plus color overrides aren't enough, register a fully custom theme through `defineTheme`. The theme is validated at config time and emitted as a single `html[data-zp-theme='{name}']` CSS block alongside the built-ins.
+
+```ts
+import { defineConfig, defineTheme } from '@zpress/kit'
+
+const sunset = defineTheme({
+  name: 'sunset',
+  modes: ['dark'],
+  defaultMode: 'dark',
+  tokens: {
+    colors: {
+      brand: {
+        primary: '#ff7a3d',
+        hover: '#ff8c54',
+        active: '#e65f24',
+        fg: '#2a0f06',
+        soft: 'rgba(255, 122, 61, 0.14)',
+        onBrand: '#2a0f06',
+        light: '#ffa56a',
+        lighter: '#ffc89a',
+      },
+      // ... see `ZpressTokens` for the full token tree
+    },
+    // ... spacing, radii, fonts, shadows, motion, etc.
+  },
+})
+
+export default defineConfig({
+  themes: [sunset],
+  theme: { name: 'sunset' },
+  // ...
+})
+```
+
+### Constraints
+
+| Constraint                     | Detail                                                                                                                                                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Theme `name` is a slug         | Must match `/^[a-z0-9][a-z0-9-]*$/`. Used directly in the `html[data-zp-theme='{name}']` selector.                                                                                                                     |
+| Token tree must be complete    | Every leaf in `ZpressTokens` is required. `defineTheme` validates through `tokensSchema` and throws on missing leaves.                                                                                                 |
+| Token values are CSS-safe      | Token strings reject `;`, `{`, `}`, and `</style>` to prevent CSS injection in tenant-supplied themes.                                                                                                                 |
+| Persisted themes are validated | When `switcher: true`, the active theme is persisted in `localStorage`. On the next visit the value is intersected against the registry — stale entries are cleared and the user falls back to the build-time default. |
 
 ## Comparing Approaches
 

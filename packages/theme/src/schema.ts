@@ -62,9 +62,46 @@ import type {
 /**
  * Reusable non-empty string token schema with a clear empty-value message.
  *
+ * Token values flow into the build-time CSS emitter and end up between
+ * `{ ... }` blocks inside a `<style>` tag, so we reject characters that
+ * could break out of a CSS declaration (`;`, `{`, `}`) or close the
+ * surrounding `<style>` element. This makes the emitter safe for
+ * downstream apps that accept tenant- or user-supplied theme tokens.
+ *
  * @private
  */
-const tokenStringSchema = z.string().min(1, { message: 'Token value cannot be empty' })
+const tokenStringSchema = z
+  .string()
+  .min(1, { message: 'Token value cannot be empty' })
+  .refine(isCssSafeValue, {
+    message:
+      'Token value contains characters that would break the emitted CSS (`;`, `{`, `}`, or `</style>`)',
+  })
+
+/**
+ * Theme name pattern — lowercase alphanumeric with hyphens, must start with
+ * an alphanumeric. Interpolated into `html[data-zp-theme='{name}']` selectors
+ * so we constrain it to a slug rather than escape at emission time.
+ *
+ * @private
+ */
+const themeNamePattern = /^[a-z0-9][a-z0-9-]*$/
+
+/**
+ * Zod schema for a theme `name` identifier.
+ *
+ * Names must be a lowercase slug (`/^[a-z0-9][a-z0-9-]*$/`) — they are
+ * interpolated into the `html[data-zp-theme='{name}']` selector emitted
+ * by `themeToCss`, so constraining at the schema boundary avoids the need
+ * for runtime escaping in the emitter.
+ */
+export const themeNameSchema = z
+  .string()
+  .min(1, { message: 'Theme name cannot be empty' })
+  .regex(themeNamePattern, {
+    message:
+      'Theme name must be a lowercase slug (a-z, 0-9, hyphen) starting with an alphanumeric character',
+  })
 
 /**
  * Zod schema for the color mode setting.
@@ -85,6 +122,10 @@ export const colorModeSchema = z.enum(['dark', 'light', 'toggle'])
 export const cssColorSchema = z
   .string()
   .min(1, { message: 'Color value cannot be empty' })
+  .refine(isCssSafeValue, {
+    message:
+      'Color value contains characters that would break the emitted CSS (`;`, `{`, `}`, or `</style>`)',
+  })
   .refine(isValidCssColor, {
     message:
       'Invalid hex color — expected `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA` (case-insensitive)',
@@ -704,4 +745,23 @@ function isValidCssColor(value: string): boolean {
     return true
   }
   return /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value)
+}
+
+/**
+ * Returns `true` when `value` contains no characters that would break the
+ * emitted CSS declaration block or close the surrounding `<style>` element.
+ *
+ * Rejects `;` (terminator), `{` and `}` (block delimiters), and the literal
+ * substring `</style` in any case (script tag exit). Case-insensitivity for
+ * the `</style` check defends against `</STYLE` mixed-case bypasses.
+ *
+ * @private
+ * @param value - Token value about to be interpolated into a CSS declaration
+ * @returns `true` when the value is safe to emit verbatim
+ */
+function isCssSafeValue(value: string): boolean {
+  if (/[;{}]/.test(value)) {
+    return false
+  }
+  return !/<\/style/i.test(value)
 }

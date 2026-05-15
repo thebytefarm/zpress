@@ -45,6 +45,25 @@ Add another section to the `sections` array that auto-discovers pages from a dir
 
 Every `.md` file matching the glob becomes a page under `/guides/`.
 
+## Configure the site chrome
+
+Tell zpress about your repo so visitors get a real "Edit this page" link, a version chip in the topbar, and a topbar CTA:
+
+```ts
+// zpress.config.ts
+export default defineConfig({
+  // ...
+  site: {
+    version: 'v1.0',
+    edit: { repo: 'acme/docs', branch: 'main', directory: 'docs' },
+    report: { repo: 'acme/docs' },
+    topbarCta: { text: 'Get started →', href: '/getting-started' },
+  },
+})
+```
+
+Every field is optional — pieces you don't configure render nothing rather than placeholder content. See the [Configuration reference](/reference/configuration#siteconfig) for the full `site.*` surface (sidebar promo, announcement banner, footer columns, etc.).
+
 ## Start the dev server
 
 ```bash

@@ -1,12 +1,14 @@
 import { useFrontmatter } from '@rspress/core/runtime'
 import { Layout as OriginalLayout } from '@rspress/core/theme-original'
+import type { SiteEditConfig, SiteReportConfig } from '@zpress/config'
 import type React from 'react'
-import { match } from 'ts-pattern'
+import { match, P } from 'ts-pattern'
 
 import { useZpress } from '../../hooks/use-zpress'
 import { AnnouncementBar } from '../announcement/announcement-bar'
 import { ContentFooterPortal } from '../content-footer/content-footer-portal'
 import { Feedback } from '../content-footer/feedback'
+import type { MetaAction } from '../content-footer/meta-actions'
 import { MetaActions } from '../content-footer/meta-actions'
 import { SiteFooter } from '../footer/site-footer'
 import { SidebarLinks } from '../sidebar/sidebar-links'
@@ -24,20 +26,34 @@ declare const __ZPRESS_VSCODE__: boolean
 /**
  * Custom Layout override for zpress.
  *
- * Wires the approved mockup chrome:
- * - AnnouncementBar via the `top` slot (above the topbar)
+ * Wires the chrome described by `config.site`:
+ * - AnnouncementBar via the `top` slot (when `site.announcement` is set)
  * - SidebarToggle + VersionChip + BranchTag (+ VscodeTag) on the topbar left
- * - ThemeSwitcher + Get-started CTA on the topbar right
+ * - ThemeSwitcher + topbar CTA on the topbar right (when `site.topbarCta` is set)
  * - SidebarLinks (above/below) from config
- * - SidebarPromo at the bottom of the sidebar
+ * - SidebarPromo at the bottom of the sidebar (when `site.sidebarPromo` is set)
  * - SiteFooter via the `bottom` slot (docs only — home renders it inside PageRail)
+ * - MetaActions edit/report links (when `site.edit` / `site.report` are set)
  *
  * @returns React element with the custom layout
  */
 export function Layout(): React.ReactElement {
-  const { sidebarAbove, sidebarBelow, announcement } = useZpress()
+  const { sidebarAbove, sidebarBelow, site } = useZpress()
+  const {
+    announcement,
+    version,
+    topbarCta,
+    sidebarPromo: sidebarPromoConfig,
+    edit,
+    report,
+  } = site ?? {}
   const { frontmatter } = useFrontmatter()
-  const isHome = (frontmatter as Record<string, unknown>).pageType === 'home'
+  const fmRecord = frontmatter as Record<string, unknown>
+  const isHome = fmRecord.pageType === 'home'
+  const filepathValue = fmRecord.__filepath
+  const pagePath = match(filepathValue)
+    .with(P.string, (v) => v)
+    .otherwise(() => '')
 
   const announcementSlot = match(announcement)
     .with(undefined, () => null)
@@ -53,11 +69,15 @@ export function Layout(): React.ReactElement {
     .with(true, () => null)
     .otherwise(() => <SidebarToggle />)
 
+  const versionChip = match(version)
+    .with(undefined, () => null)
+    .otherwise((v) => <VersionChip version={v} />)
+
   const navSlot = match(__ZPRESS_VSCODE__)
     .with(true, () => (
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {sidebarToggle}
-        <VersionChip version="v0.5" />
+        {versionChip}
         <BranchTag />
         <VscodeTag />
       </div>
@@ -65,16 +85,24 @@ export function Layout(): React.ReactElement {
     .otherwise(() => (
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {sidebarToggle}
-        <VersionChip version="v0.5" />
+        {versionChip}
         <BranchTag />
       </div>
+    ))
+
+  const ctaButtons = match(topbarCta)
+    .with(undefined, () => null)
+    .otherwise((cta) => (
+      <>
+        <TopbarCTA text={cta.text} href={cta.href} />
+        <MobileNavCTA text={cta.text} href={cta.href} />
+      </>
     ))
 
   const afterNavSlot = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <ThemeSwitcher />
-      <TopbarCTA text="Get started →" href="/getting-started/quick-start" />
-      <MobileNavCTA text="Get started →" href="/getting-started/quick-start" />
+      {ctaButtons}
     </div>
   )
 
@@ -85,17 +113,18 @@ export function Layout(): React.ReactElement {
     .with(true, () => <SidebarLinks items={aboveItems} position="above" />)
     .otherwise(() => null)
 
+  const sidebarPromo = match(sidebarPromoConfig)
+    .with(undefined, () => null)
+    .otherwise((p) => (
+      <SidebarPromo title={p.title} body={p.body} ctaText={p.cta.text} ctaHref={p.cta.href} />
+    ))
+
   const afterSidebar = (
     <>
       {match(belowItems.length > 0)
         .with(true, () => <SidebarLinks items={belowItems} position="below" />)
         .otherwise(() => null)}
-      <SidebarPromo
-        title="Ship docs that stay in sync"
-        body="Pull docs from your codebase and keep them green automatically."
-        ctaText="Try Joggr →"
-        ctaHref="https://joggr.io"
-      />
+      {sidebarPromo}
     </>
   )
 
@@ -109,23 +138,16 @@ export function Layout(): React.ReactElement {
   // built-in `.rp-doc-footer` so it lives inside the doc rail at the reading
   // width. Rspress renders its own `.rp-prev-next-page` pager below — we
   // style it via CSS rather than duplicating it here.
+  const metaActions = collectMetaActions({
+    edit,
+    report,
+    pagePath,
+  })
+
   const afterDocSlot = (
     <ContentFooterPortal>
       <Feedback />
-      <MetaActions
-        actions={[
-          {
-            label: 'Edit this page on GitHub',
-            href: '#',
-            icon: <EditIcon />,
-          },
-          {
-            label: 'Report an issue',
-            href: '#',
-            icon: <AlertIcon />,
-          },
-        ]}
-      />
+      <MetaActions actions={metaActions} />
     </ContentFooterPortal>
   )
 
@@ -145,6 +167,77 @@ export function Layout(): React.ReactElement {
 // ---------------------------------------------------------------------------
 // Private
 // ---------------------------------------------------------------------------
+
+/**
+ * Build the list of `MetaAction`s to render under each doc page, derived
+ * from `site.edit` and `site.report`. Returns an empty array when neither
+ * is configured — `MetaActions` then renders nothing.
+ *
+ * @private
+ * @param params - Site edit/report config plus current page path
+ * @returns Ordered list of meta actions (edit first, report second)
+ */
+function collectMetaActions(params: {
+  readonly edit: SiteEditConfig | undefined
+  readonly report: SiteReportConfig | undefined
+  readonly pagePath: string
+}): readonly MetaAction[] {
+  const { edit, report, pagePath } = params
+  const editAction = match(edit)
+    .with(undefined, () => null)
+    .otherwise(
+      (e): MetaAction => ({
+        label: e.label ?? 'Edit this page on GitHub',
+        href: buildEditUrl(e, pagePath),
+        icon: <EditIcon />,
+      })
+    )
+  const reportAction = match(report)
+    .with(undefined, () => null)
+    .otherwise(
+      (r): MetaAction => ({
+        label: r.label ?? 'Report an issue',
+        href: buildReportUrl(r),
+        icon: <AlertIcon />,
+      })
+    )
+  return [editAction, reportAction].filter((a): a is MetaAction => a !== null)
+}
+
+/**
+ * Compose the "edit this page" URL from `SiteEditConfig` and the current
+ * page path.
+ *
+ * @private
+ * @param edit - Resolved edit config
+ * @param pagePath - Relative path of the current page (may be empty)
+ * @returns Fully qualified GitHub edit URL
+ */
+function buildEditUrl(edit: SiteEditConfig, pagePath: string): string {
+  if (edit.repo.startsWith('http')) {
+    return edit.repo
+  }
+  const branch = edit.branch ?? 'main'
+  const directory = match(edit.directory)
+    .with(undefined, () => '')
+    .otherwise((d) => `${d.replaceAll(/^\/+|\/+$/g, '')}/`)
+  const path = pagePath.replace(/^\/+/, '')
+  return `https://github.com/${edit.repo}/edit/${branch}/${directory}${path}`
+}
+
+/**
+ * Compose the "report an issue" URL from `SiteReportConfig`.
+ *
+ * @private
+ * @param report - Resolved report config
+ * @returns Fully qualified GitHub issues URL
+ */
+function buildReportUrl(report: SiteReportConfig): string {
+  if (report.repo.startsWith('http')) {
+    return report.repo
+  }
+  return `https://github.com/${report.repo}/issues/new`
+}
 
 /**
  * Pencil icon for the Edit-on-GitHub action.

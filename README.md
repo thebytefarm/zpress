@@ -10,10 +10,10 @@
 
 ## Features
 
-- **Your docs, your structure** — Conforms to your repo, not the other way around.
-- **Great defaults** — Sidebars, nav, landing pages, and icons from one config.
-- **Beautiful themes out of the box** — Dark mode, generated banners, and polished defaults.
-- **Monorepo-first** — Built for internal docs with first-class workspace support.
+- **Your docs, your structure** — conforms to your repo, not the other way around.
+- **One config, full chrome** — sidebars, nav, footer, edit links, version chip, announcement, and theme from one file.
+- **Beautiful themes out of the box** — three built-in themes with full dark-mode support, plus first-class custom themes.
+- **Monorepo-first** — built for internal docs with workspace cards, OpenAPI integration, and Liquid template support.
 
 ## Install
 
@@ -34,21 +34,25 @@ export default defineConfig({
   description: 'Internal developer docs',
   sections: [
     {
-      text: 'Getting Started',
-      link: '/getting-started',
-      from: 'docs/getting-started.md',
-      icon: 'pixelarticons:speed-fast',
+      title: 'Getting Started',
+      path: '/getting-started',
+      include: 'docs/getting-started/*.md',
     },
     {
-      text: 'Guides',
-      prefix: '/guides',
+      title: 'Guides',
+      path: '/guides',
+      include: 'docs/guides/*.md',
       icon: 'pixelarticons:book-open',
-      from: 'docs/guides/*.md',
-      textFrom: 'heading',
       sort: 'alpha',
     },
   ],
-  nav: 'auto',
+  theme: { name: 'midnight' },
+  site: {
+    version: 'v1.0',
+    edit: { repo: 'acme/docs', branch: 'main', directory: 'docs' },
+    report: { repo: 'acme/docs' },
+    topbarCta: { text: 'Get started →', href: '/getting-started' },
+  },
 })
 ```
 

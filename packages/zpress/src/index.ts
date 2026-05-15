@@ -1,9 +1,3 @@
-/**
- * Public API for `@zpress/kit` — re-exports all user-facing functions,
- * values, and types from `@zpress/core`, `@zpress/config`, and `@zpress/ui`.
- *
- * @module
- */
 export {
   defineConfig,
   loadConfig,
@@ -46,4 +40,15 @@ export type {
   SidebarItem,
   Manifest,
   ManifestEntry,
+  HomeConfig,
+  HomeTrustConfig,
+  HomeCtaConfig,
+  AnnouncementConfig,
+  SiteConfig,
+  SiteEditConfig,
+  SiteReportConfig,
+  SiteSidebarPromoConfig,
+  SiteCtaConfig,
+  SiteFooterColumn,
+  SiteFooterConfig,
 } from '@zpress/core'

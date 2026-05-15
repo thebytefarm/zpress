@@ -436,6 +436,41 @@ export interface HomeGridConfig {
 }
 
 /**
+ * Trust strip on the home hero — short lead followed by a list of names.
+ *
+ * Schema: `trustConfigSchema` in schema.ts validates this shape.
+ *
+ * @example
+ * ```ts
+ * trust: { lead: 'Trusted by teams at', names: ['Acme', 'Globex', 'Initech'] }
+ * ```
+ */
+export interface HomeTrustConfig {
+  readonly lead?: string
+  readonly names?: readonly string[]
+}
+
+/**
+ * Final CTA band on the home page — title, optional subtitle, and up to two actions.
+ *
+ * Schema: `ctaConfigSchema` in schema.ts validates this shape.
+ *
+ * @example
+ * ```ts
+ * cta: {
+ *   title: 'Ready to ship?',
+ *   subtitle: 'Install zpress and write your first page in five minutes.',
+ *   actions: [{ theme: 'brand', text: 'Quick start', link: '/getting-started' }],
+ * }
+ * ```
+ */
+export interface HomeCtaConfig {
+  readonly title?: string
+  readonly subtitle?: string
+  readonly actions?: readonly HeroAction[]
+}
+
+/**
  * Home page layout customization.
  *
  * Schema: `homeConfigSchema` in schema.ts validates this shape.
@@ -443,14 +478,29 @@ export interface HomeGridConfig {
  * @example
  * ```ts
  * home: {
+ *   eyebrow: 'v1.0',
  *   features: { columns: 3, truncate: { description: 2 } },
  *   workspaces: { columns: 2, truncate: { title: 1, description: 2 } },
+ *   trust: { lead: 'Used by', names: ['Acme', 'Globex'] },
+ *   cta: { title: 'Ready to ship?', actions: [...] },
  * }
  * ```
  */
 export interface HomeConfig {
   readonly features?: HomeGridConfig
   readonly workspaces?: HomeGridConfig
+  /**
+   * Eyebrow text shown above the hero title (e.g. version chip).
+   */
+  readonly eyebrow?: string
+  /**
+   * Trust strip rendered between the hero and the features grid.
+   */
+  readonly trust?: HomeTrustConfig
+  /**
+   * Final CTA band rendered just above the footer.
+   */
+  readonly cta?: HomeCtaConfig
 }
 
 /**
@@ -518,6 +568,210 @@ export interface FooterConfig {
 }
 
 /**
+ * Announcement banner rendered above the topbar.
+ *
+ * Schema: `announcementConfigSchema` in schema.ts validates this shape.
+ *
+ * @example
+ * ```ts
+ * site: {
+ *   announcement: {
+ *     id: 'v1-launch',
+ *     lead: 'NEW',
+ *     message: 'zpress 1.0 is out.',
+ *     cta: { href: '/changelog', label: 'See changes' },
+ *   },
+ * }
+ * ```
+ */
+export interface AnnouncementConfig {
+  /**
+   * Stable id — when present, dismissal persists in localStorage.
+   */
+  readonly id?: string
+  /**
+   * Highlighted lead phrase rendered before the message (e.g. "NEW").
+   */
+  readonly lead?: string
+  /**
+   * Body text of the announcement.
+   */
+  readonly message: string
+  /**
+   * Optional call-to-action link appended after the message.
+   */
+  readonly cta?: {
+    readonly href: string
+    readonly label: string
+  }
+  /**
+   * When `true`, hides the dismiss button.
+   */
+  readonly persistent?: boolean
+}
+
+/**
+ * Edit-this-page link configuration. Renders an "Edit on GitHub"-style
+ * action under every doc page when set.
+ */
+export interface SiteEditConfig {
+  /**
+   * Destination repository (e.g. `'acme/docs'`) or full URL template.
+   * The string `{path}` is substituted with the current page's relative path.
+   */
+  readonly repo: string
+  /**
+   * Branch to link against. Defaults to `'main'`.
+   */
+  readonly branch?: string
+  /**
+   * Subdirectory inside the repo containing the docs. Defaults to repo root.
+   */
+  readonly directory?: string
+  /**
+   * Override the visible label. Defaults to `'Edit this page on GitHub'`.
+   */
+  readonly label?: string
+}
+
+/**
+ * Report-an-issue link configuration. Renders an action under every doc
+ * page when set.
+ */
+export interface SiteReportConfig {
+  /**
+   * Destination repository (e.g. `'acme/docs'`) or full URL.
+   */
+  readonly repo: string
+  /**
+   * Override the visible label. Defaults to `'Report an issue'`.
+   */
+  readonly label?: string
+}
+
+/**
+ * Sidebar promo card rendered at the bottom of the docs sidebar.
+ */
+export interface SiteSidebarPromoConfig {
+  readonly title: string
+  readonly body: string
+  readonly cta: {
+    readonly text: string
+    readonly href: string
+  }
+}
+
+/**
+ * Call-to-action button rendered on the topbar (and in the mobile nav).
+ */
+export interface SiteCtaConfig {
+  readonly text: string
+  readonly href: string
+}
+
+/**
+ * One column of footer links in the site footer grid.
+ */
+export interface SiteFooterColumn {
+  readonly heading: string
+  readonly links: readonly {
+    readonly text: string
+    readonly href: string
+  }[]
+}
+
+/**
+ * Extended footer configuration for the column-based site footer.
+ * The simple `message` / `copyright` / `socials` fields live on the
+ * top-level `footer` config (`FooterConfig`).
+ */
+export interface SiteFooterConfig {
+  /**
+   * Link columns rendered in the footer grid. When omitted, the footer
+   * renders only the brand block and bottom strip.
+   */
+  readonly columns?: readonly SiteFooterColumn[]
+  /**
+   * Small tagline rendered on the right side of the bottom strip.
+   */
+  readonly tagline?: string
+  /**
+   * Brand mark character rendered in the footer's brand block.
+   * Defaults to `'Z'`.
+   */
+  readonly brandMark?: string
+}
+
+/**
+ * Site-level configuration for the chrome that wraps every page —
+ * version chip, edit/report links, sidebar promo, topbar CTA,
+ * announcement bar, and extended footer columns.
+ *
+ * Every field is optional; pieces with no config render nothing so a
+ * minimal `defineConfig({ sections: [...] })` produces a clean site
+ * with no leftover framework branding.
+ *
+ * @example
+ * ```ts
+ * site: {
+ *   version: 'v1.0',
+ *   edit:   { repo: 'acme/docs', branch: 'main' },
+ *   report: { repo: 'acme/docs' },
+ *   sidebarPromo: {
+ *     title: 'Try Acme Cloud',
+ *     body:  'Hosted Acme in two clicks.',
+ *     cta:   { text: 'Start free', href: 'https://acme.io' },
+ *   },
+ *   topbarCta: { text: 'Get started →', href: '/getting-started' },
+ *   announcement: {
+ *     id: 'v1',
+ *     lead: 'NEW',
+ *     message: 'Acme Docs 1.0 is here.',
+ *     cta: { href: '/changelog', label: 'What changed' },
+ *   },
+ *   footer: {
+ *     columns: [
+ *       { heading: 'Product', links: [...] },
+ *       { heading: 'Community', links: [...] },
+ *     ],
+ *     tagline: 'Built with zpress',
+ *   },
+ * }
+ * ```
+ */
+export interface SiteConfig {
+  /**
+   * Version label rendered next to the brand in the topbar (e.g. `'v1.0'`).
+   * When omitted, no version chip is rendered.
+   */
+  readonly version?: string
+  /**
+   * Edit-this-page link rendered under every doc page. Omit to hide.
+   */
+  readonly edit?: SiteEditConfig
+  /**
+   * Report-an-issue link rendered under every doc page. Omit to hide.
+   */
+  readonly report?: SiteReportConfig
+  /**
+   * Promo card rendered at the bottom of the docs sidebar. Omit to hide.
+   */
+  readonly sidebarPromo?: SiteSidebarPromoConfig
+  /**
+   * Topbar call-to-action button (also mirrored in the mobile nav).
+   */
+  readonly topbarCta?: SiteCtaConfig
+  /**
+   * Announcement banner rendered above the topbar.
+   */
+  readonly announcement?: AnnouncementConfig
+  /**
+   * Extended footer config — link columns and tagline.
+   */
+  readonly footer?: SiteFooterConfig
+}
+
+/**
  * zpress configuration.
  *
  * Schema: `zpressConfigSchema` in schema.ts validates this shape.
@@ -580,4 +834,11 @@ export interface ZpressConfig {
   readonly home?: HomeConfig
   readonly socialLinks?: readonly SocialLink[]
   readonly footer?: FooterConfig
+  /**
+   * Site-level chrome configuration — version chip, edit/report links,
+   * sidebar promo, topbar CTA, announcement, and extended footer.
+   *
+   * Every field is optional; pieces with no config render nothing.
+   */
+  readonly site?: SiteConfig
 }

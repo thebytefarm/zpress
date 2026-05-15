@@ -1,7 +1,3 @@
-/**
- * Error and warning types for config loading and validation.
- */
-
 import type { ZodError } from 'zod'
 
 import type { Result } from './types.ts'

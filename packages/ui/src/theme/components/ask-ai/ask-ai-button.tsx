@@ -37,7 +37,6 @@ export function AskAIButton(props: AskAIButtonProps): React.ReactElement {
       .with(undefined, () => {})
       .otherwise((fn) => {
         fn()
-        return
       })
   }, [onClick])
 

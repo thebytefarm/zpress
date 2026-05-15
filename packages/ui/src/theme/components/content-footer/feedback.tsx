@@ -34,7 +34,6 @@ export function Feedback(props: FeedbackProps): React.ReactElement {
         .with(undefined, () => {})
         .otherwise((fn) => {
           fn(answer)
-          return
         })
     },
     [onSubmit]

@@ -182,7 +182,9 @@ html[data-zp-theme='midnight'] {
   --zp-shadow-card-hover: 0 2px 12px var(--zp-c-tint-purple-glow);
   --zp-shadow-menu: 0 8px 24px rgba(0, 0, 0, 0.12);
   --zp-shadow-tooltip: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --zp-shadow-hero-demo: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 80px var(--zp-c-brand-soft);
+  --zp-shadow-hero-demo:
+    0 0 0 1px rgba(0, 0, 0, 0.5), 0 24px 48px -12px rgba(0, 0, 0, 0.6),
+    0 0 80px var(--zp-c-brand-soft);
   --zp-shadow-ask-ai: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(0, 0, 0, 0.5);
   --zp-duration-fast: 0.15s;
   --zp-duration-base: 0.2s;
@@ -242,7 +244,12 @@ html[data-zp-theme='midnight'] {
   --zp-bp-content: 1184px;
   --zp-blur-base: 8px;
   --zp-gradient-brand: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-3));
-  --zp-gradient-hero-title: linear-gradient(120deg, var(--zp-c-brand-1) 0%, var(--zp-c-gradient-hero-cyan) 50%, var(--zp-c-gradient-hero-purple) 100%);
+  --zp-gradient-hero-title: linear-gradient(
+    120deg,
+    var(--zp-c-brand-1) 0%,
+    var(--zp-c-gradient-hero-cyan) 50%,
+    var(--zp-c-gradient-hero-purple) 100%
+  );
   --rp-c-bg: #0f0f0f;
   --rp-c-bg-soft: #1a1a1a;
   --rp-c-bg-mute: #161616;

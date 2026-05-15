@@ -319,11 +319,42 @@ export default defineConfig({
   // TEST: remove before merge — registers `sunset` as a 4th custom theme
   // so the theme switcher displays 4 entries (base, midnight, arcade, sunset).
   themes: [sunsetTheme],
-  announcement: {
-    id: 'zpress-1.0',
-    lead: 'zpress 1.0',
-    message: 'is shipping soon · early-access program now open',
-    cta: { href: '/getting-started/quick-start', label: 'Get on the list' },
+  site: {
+    version: 'v1.0',
+    topbarCta: { text: 'Get started →', href: '/getting-started/quick-start' },
+    edit: { repo: 'joggrdocs/zpress', branch: 'main', directory: 'docs' },
+    report: { repo: 'joggrdocs/zpress' },
+    sidebarPromo: {
+      title: 'Ship docs that stay in sync',
+      body: 'Pull docs from your codebase and keep them green automatically.',
+      cta: { text: 'Try Joggr →', href: 'https://joggr.io' },
+    },
+    announcement: {
+      id: 'zpress-1.0',
+      lead: 'zpress 1.0',
+      message: 'is shipping soon · early-access program now open',
+      cta: { href: '/getting-started/quick-start', label: 'Get on the list' },
+    },
+    footer: {
+      tagline: 'built on Rspress · powered by Joggr',
+      columns: [
+        {
+          heading: 'Docs',
+          links: [
+            { text: 'Quickstart', href: '/getting-started/quick-start' },
+            { text: 'Guides', href: '/guides' },
+            { text: 'Reference', href: '/reference/configuration' },
+          ],
+        },
+        {
+          heading: 'Community',
+          links: [
+            { text: 'GitHub', href: 'https://github.com/joggrdocs/zpress' },
+            { text: 'npm', href: 'https://www.npmjs.com/package/@zpress/kit' },
+          ],
+        },
+      ],
+    },
   },
   home: {
     features: { truncate: { description: 2 } },

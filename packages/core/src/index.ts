@@ -14,6 +14,17 @@ export type {
   HeroAction,
   SidebarConfig,
   SidebarLink,
+  HomeConfig,
+  HomeTrustConfig,
+  HomeCtaConfig,
+  AnnouncementConfig,
+  SiteConfig,
+  SiteEditConfig,
+  SiteReportConfig,
+  SiteSidebarPromoConfig,
+  SiteCtaConfig,
+  SiteFooterColumn,
+  SiteFooterConfig,
 } from './types.ts'
 
 export type { IconConfig, IconColor, ResolvedIcon } from './icon.ts'

@@ -1,10 +1,3 @@
-/**
- * Re-export all types from @zpress/config for backwards compatibility.
- *
- * This allows existing imports in the core package to continue working
- * while the canonical types are now defined in @zpress/config.
- */
-
 export type {
   ZpressConfig,
   ThemeName,
@@ -28,6 +21,17 @@ export type {
   ResolvedSection,
   Feature,
   OpenAPIConfig,
+  HomeConfig,
+  HomeTrustConfig,
+  HomeCtaConfig,
+  AnnouncementConfig,
+  SiteConfig,
+  SiteEditConfig,
+  SiteReportConfig,
+  SiteSidebarPromoConfig,
+  SiteCtaConfig,
+  SiteFooterColumn,
+  SiteFooterConfig,
   Result,
 } from '@zpress/config'
 

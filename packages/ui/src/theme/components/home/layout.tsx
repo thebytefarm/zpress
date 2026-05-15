@@ -18,8 +18,6 @@ interface HomeLayoutProps {
   readonly afterHero?: React.ReactNode
   readonly beforeFeatures?: React.ReactNode
   readonly afterFeatures?: React.ReactNode
-  readonly beforeHeroActions?: React.ReactNode
-  readonly afterHeroActions?: React.ReactNode
 }
 
 interface FrontmatterHero {
@@ -119,8 +117,9 @@ export function HomeLayout(props: HomeLayoutProps): React.ReactElement {
 }
 
 /**
- * ConfigPreview — hardcoded code preview shown inside the Split section.
- * Will be replaced with a config-driven block in a follow-up pass.
+ * ConfigPreview — minimal `defineConfig` code preview shown inside the
+ * Split section. Imports come exclusively from `@zpress/kit` so the
+ * sample resolves against the published package set.
  *
  * @returns React element.
  */
@@ -129,33 +128,22 @@ function ConfigPreview(): React.ReactElement {
     <pre>
       <span className="tok-kw">import</span> {'{ defineConfig }'}{' '}
       <span className="tok-kw">from</span> <span className="tok-str">'@zpress/kit'</span>
-      {'\n'}
-      <span className="tok-kw">import</span> openapi <span className="tok-kw">from</span>{' '}
-      <span className="tok-str">'@zpress/openapi'</span>
       {'\n\n'}
       <span className="tok-kw">export default</span> <span className="tok-fn">defineConfig</span>
       {'({\n'}
       {'  title: '}
       <span className="tok-str">'Acme Docs'</span>
       {',\n'}
-      {'  source: '}
-      <span className="tok-str">'./docs'</span>
-      {',\n'}
-      {'  theme: '}
-      <span className="tok-str">'@zpress/theme-dark'</span>
-      {',\n\n'}
-      {'  plugins: [\n'}
-      {'    '}
-      <span className="tok-fn">openapi</span>
-      {'({\n'}
-      {'      spec: '}
-      <span className="tok-str">'./openapi.yaml'</span>
-      {',\n'}
-      {'      mount: '}
-      <span className="tok-str">'/api'</span>
-      {',\n'}
-      {'    }),\n'}
+      {'  sections: [\n'}
+      {'    { title: '}
+      <span className="tok-str">'Guides'</span>
+      {', include: '}
+      <span className="tok-str">'docs/guides/*.md'</span>
+      {' },\n'}
       {'  ],\n'}
+      {'  theme: { name: '}
+      <span className="tok-str">'midnight'</span>
+      {' },\n'}
       {'})'}
     </pre>
   )

@@ -21,13 +21,23 @@ import { colorModeSchema, themeColorsSchema, themeConfigSchema } from '@zpress/t
 import { z } from 'zod'
 
 import type {
+  AnnouncementConfig,
   CardConfig,
   Frontmatter,
   HomeConfig,
+  HomeCtaConfig,
+  HomeTrustConfig,
   IconId,
   NavItem,
   ResolvedPage,
   Section,
+  SiteConfig,
+  SiteCtaConfig,
+  SiteEditConfig,
+  SiteFooterColumn,
+  SiteFooterConfig,
+  SiteReportConfig,
+  SiteSidebarPromoConfig,
 } from './types.ts'
 
 // z.function() infers to (...args: unknown[]) => unknown, which loses
@@ -252,6 +262,76 @@ const homeConfigSchema = z
   })
   .strict()
 
+const siteEditConfigSchema = z
+  .object({
+    repo: z.string(),
+    branch: z.string().optional(),
+    directory: z.string().optional(),
+    label: z.string().optional(),
+  })
+  .strict()
+
+const siteReportConfigSchema = z
+  .object({
+    repo: z.string(),
+    label: z.string().optional(),
+  })
+  .strict()
+
+const siteSidebarPromoConfigSchema = z
+  .object({
+    title: z.string(),
+    body: z.string(),
+    cta: z
+      .object({
+        text: z.string(),
+        href: z.string(),
+      })
+      .strict(),
+  })
+  .strict()
+
+const siteCtaConfigSchema = z
+  .object({
+    text: z.string(),
+    href: z.string(),
+  })
+  .strict()
+
+const siteFooterColumnSchema = z
+  .object({
+    heading: z.string(),
+    links: z.array(
+      z
+        .object({
+          text: z.string(),
+          href: z.string(),
+        })
+        .strict()
+    ),
+  })
+  .strict()
+
+const siteFooterConfigSchema = z
+  .object({
+    columns: z.array(siteFooterColumnSchema).optional(),
+    tagline: z.string().optional(),
+    brandMark: z.string().optional(),
+  })
+  .strict()
+
+const siteConfigSchema = z
+  .object({
+    version: z.string().optional(),
+    edit: siteEditConfigSchema.optional(),
+    report: siteReportConfigSchema.optional(),
+    sidebarPromo: siteSidebarPromoConfigSchema.optional(),
+    topbarCta: siteCtaConfigSchema.optional(),
+    announcement: announcementConfigSchema.optional(),
+    footer: siteFooterConfigSchema.optional(),
+  })
+  .strict()
+
 const socialLinkSchema = z
   .object({
     icon: z.union([
@@ -324,10 +404,10 @@ export const zpressConfigSchema = z
     nav: z.union([z.literal('auto'), z.array(navItemSchema)]).optional(),
     exclude: z.array(z.string()).optional(),
     home: homeConfigSchema.optional(),
-    announcement: announcementConfigSchema.optional(),
     socialLinks: z.array(socialLinkSchema).optional(),
     footer: footerConfigSchema.optional(),
     openapi: openapiConfigSchema.optional(),
+    site: siteConfigSchema.optional(),
   })
   .strict()
 
@@ -354,6 +434,26 @@ const _guardFrontmatter: z.ZodType<Frontmatter> = frontmatterSchema
 const _guardCardConfig: z.ZodType<CardConfig> = cardConfigSchema
 // oxlint-disable-next-line no-unused-vars -- compile-time type guard
 const _guardHomeConfig: z.ZodType<HomeConfig> = homeConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardHomeTrustConfig: z.ZodType<HomeTrustConfig> = trustConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardHomeCtaConfig: z.ZodType<HomeCtaConfig> = ctaConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardAnnouncementConfig: z.ZodType<AnnouncementConfig> = announcementConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteEditConfig: z.ZodType<SiteEditConfig> = siteEditConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteReportConfig: z.ZodType<SiteReportConfig> = siteReportConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteSidebarPromoConfig: z.ZodType<SiteSidebarPromoConfig> = siteSidebarPromoConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteCtaConfig: z.ZodType<SiteCtaConfig> = siteCtaConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteFooterColumn: z.ZodType<SiteFooterColumn> = siteFooterColumnSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteFooterConfig: z.ZodType<SiteFooterConfig> = siteFooterConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteConfig: z.ZodType<SiteConfig> = siteConfigSchema
 
 // Re-export theme schemas so they remain reachable via this module for
 // downstream consumers and JSON Schema generation tooling.

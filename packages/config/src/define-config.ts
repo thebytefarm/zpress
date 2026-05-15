@@ -1,7 +1,3 @@
-/**
- * Type-safe config helper for user config files.
- */
-
 import type { ZpressConfig } from './types.ts'
 
 /**

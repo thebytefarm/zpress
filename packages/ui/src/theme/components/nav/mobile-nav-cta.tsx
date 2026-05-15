@@ -33,21 +33,25 @@ export function MobileNavCTA(props: MobileNavCTAProps): React.ReactElement | nul
   const [host, setHost] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
-    const ensureHost = (): HTMLElement | null => {
+    function ensureHost(): HTMLElement | null {
       const container = globalThis.document.querySelector(
         '.rp-nav-screen__container'
       ) as HTMLElement | null
-      if (container === null) return null
+      if (container === null) {
+        return null
+      }
       const existing = container.querySelector(`[${HOST_ATTR}]`) as HTMLElement | null
-      if (existing !== null) return existing
+      if (existing !== null) {
+        return existing
+      }
       const node = globalThis.document.createElement('div')
       node.setAttribute(HOST_ATTR, '')
       node.className = 'zp-mobile-nav-cta'
       const socials = container.querySelector('.rp-social-links')
-      if (socials !== null) {
-        container.insertBefore(node, socials)
+      if (socials === null) {
+        container.append(node)
       } else {
-        container.appendChild(node)
+        socials.before(node)
       }
       return node
     }
@@ -57,7 +61,9 @@ export function MobileNavCTA(props: MobileNavCTAProps): React.ReactElement | nul
     const observer = new globalThis.MutationObserver(() => {
       const next = ensureHost()
       setHost((prev) => {
-        if (prev !== null && prev.isConnected) return prev
+        if (prev !== null && prev.isConnected) {
+          return prev
+        }
         return next
       })
     })
@@ -66,6 +72,8 @@ export function MobileNavCTA(props: MobileNavCTAProps): React.ReactElement | nul
     return () => observer.disconnect()
   }, [])
 
-  if (host === null) return null
+  if (host === null) {
+    return null
+  }
   return createPortal(<TopbarCTA text={props.text} href={props.href} />, host)
 }

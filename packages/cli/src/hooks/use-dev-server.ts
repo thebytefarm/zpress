@@ -198,11 +198,12 @@ export function useDevServer(props: UseDevServerProps): UseDevServerResult {
       set.phase('ready')
     }
 
-    init().catch((uncaught: unknown) => {
+    // oxlint-disable-next-line promise/prefer-await-to-callbacks unicorn/catch-error-name -- useEffect cannot be async; outer scope already binds `error`
+    init().catch((cause: unknown) => {
       if (disposed.current) {
         return
       }
-      const normalized = toError(uncaught)
+      const normalized = toError(cause)
       const result = reportCrash({
         error: normalized,
         source: 'middleware',

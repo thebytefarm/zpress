@@ -1,6 +1,8 @@
 import type React from 'react'
 import { match } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
+
 import './hero.css'
 
 export interface HeroAction {
@@ -95,13 +97,17 @@ export function Hero(props: HeroProps): React.ReactElement {
  * @param index - Array index for key generation.
  * @returns Anchor element.
  */
-function renderAction(action: HeroAction, index: number): React.ReactElement {
+function renderAction(action: HeroAction, index: number): React.ReactElement | null {
+  const href = safeUrl(action.link)
+  if (href === null) {
+    return null
+  }
   const className = match(action.theme ?? 'brand')
     .with('brand', () => 'zp-hero__btn zp-hero__btn--primary')
     .otherwise(() => 'zp-hero__btn')
 
   return (
-    <a key={`${action.link}:${index}`} href={action.link} className={className}>
+    <a key={`${href}:${index}`} href={href} className={className}>
       {action.text}
     </a>
   )

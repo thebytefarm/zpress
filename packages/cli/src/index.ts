@@ -31,10 +31,12 @@ declare const __KIDD_VERSION__: string
 // Process-level safety net — catches async blowups outside the middleware chain
 // ---------------------------------------------------------------------------
 
+// oxlint-disable-next-line jest/require-hook -- CLI entry point, not a test file
 process.on('uncaughtException', (error) => {
   handleProcessCrash({ error, source: 'uncaughtException' })
 })
 
+// oxlint-disable-next-line jest/require-hook -- CLI entry point, not a test file
 process.on('unhandledRejection', (reason) => {
   handleProcessCrash({ error: reason, source: 'unhandledRejection' })
 })

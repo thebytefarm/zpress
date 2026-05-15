@@ -37,42 +37,15 @@ export {
 export type { ThemeMode, ZpressTheme, ZpressThemeInput } from './theme-registry.ts'
 export { BUILT_IN_THEMES, defineTheme, themeToCss } from './theme-registry.ts'
 
-export type {
-  TokenPath,
-  ZpressBadgeColor,
-  ZpressBadgeColors,
-  ZpressBlurs,
-  ZpressBorderColors,
-  ZpressBrandColors,
-  ZpressBreakpoints,
-  ZpressColors,
-  ZpressFonts,
-  ZpressFontFamilies,
-  ZpressFontSizes,
-  ZpressFontWeights,
-  ZpressGradientColors,
-  ZpressGradients,
-  ZpressLetterSpacings,
-  ZpressLineHeights,
-  ZpressMotion,
-  ZpressMotionDurations,
-  ZpressMotionEasings,
-  ZpressOpacities,
-  ZpressRadii,
-  ZpressScrollbarColors,
-  ZpressSemanticColors,
-  ZpressShadows,
-  ZpressSizes,
-  ZpressSpacing,
-  ZpressSurfaceColors,
-  ZpressSyntaxColors,
-  ZpressTerminalColors,
-  ZpressTextColors,
-  ZpressTintBrightColor,
-  ZpressTintColor,
-  ZpressTintColors,
-  ZpressTokens,
-  ZpressWindowColors,
-  ZpressZIndex,
-} from './tokens.ts'
+// Public token surface — kept narrow. `ZpressTokens` is the only shape
+// downstream code should depend on; fine-grained sub-shapes are internal
+// and may change without notice.
+export type { ZpressTokens } from './tokens.ts'
+
+// Re-exported for `@zpress/ui` (internal monorepo consumer). Not part of
+// the stable public contract — prefer `defineTheme` and the token tree
+// in user code.
+// @internal
+export type { TokenPath } from './tokens.ts'
+// @internal
 export { TOKEN_TO_CSS_VAR } from './tokens.ts'

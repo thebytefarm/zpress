@@ -38,6 +38,8 @@ export function VersionChip(props: VersionChipProps): React.ReactElement | null 
     </span>
   )
 
-  if (target === null) return null
+  if (target === null) {
+    return null
+  }
   return createPortal(chip, target)
 }

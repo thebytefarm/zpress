@@ -1,38 +1,6 @@
-/**
- * |===========================================================================|
- *   theme-registry.ts — Pure theme factory + built-in registry + CSS emitter
- *
- *   This module owns three things:
- *
- *     1. `defineTheme(input)`         — validate any (built-in or custom) theme
- *                                       input through `tokensSchema` and return
- *                                       a deeply frozen `ZpressTheme`.
- *     2. `BUILT_IN_THEMES`            — the three first-party themes (`base`,
- *                                       `midnight`, `arcade`) built from the
- *                                       palette currently encoded across
- *                                       `packages/ui/src/theme/styles/themes/*.css`
- *                                       and `brand-colors.ts`.
- *     3. `themeToCss(theme)`          — deterministic, dependency-free CSS
- *                                       emitter that renders every token from
- *                                       `TOKEN_TO_CSS_VAR` into a single
- *                                       `html[data-zp-theme='{name}']` block.
- *
- *   No side effects, no mutation, no classes. The factory uses
- *   `tokensSchema.parse` (the schema's documented usage) — on invalid input
- *   the Zod parser produces a structured `ZodError` at the boundary, which is
- *   the contract for `defineTheme` consumers.
- *
- *   Cross-theme baseline values (tints, terminal, badges, scrollbar, syntax,
- *   gradients, fonts, spacing, radii, shadows, motion, …) are harvested from
- *   `.snapshots/baseline/token-audit.txt` and
- *   `packages/ui/src/theme/styles/overrides/tokens.css` — the registry is the
- *   single source of truth from this point forward.
- * |===========================================================================|
- */
-
 import type { z } from 'zod'
 
-import { tokensSchema } from './schema.ts'
+import { themeNameSchema, tokensSchema } from './schema.ts'
 import type { TokenPath, ZpressTokens } from './tokens.ts'
 import { TOKEN_TO_CSS_VAR } from './tokens.ts'
 import type { BuiltInThemeName, ColorMode } from './types.ts'
@@ -113,6 +81,27 @@ const BRAND_PALETTES: Readonly<Record<BuiltInThemeName, RawBrandPalette>> = Obje
  */
 const TOKEN_PATHS: readonly (keyof typeof TOKEN_TO_CSS_VAR)[] = Object.freeze(
   Object.keys(TOKEN_TO_CSS_VAR) as (keyof typeof TOKEN_TO_CSS_VAR)[]
+)
+
+/**
+ * Precomputed `[path, cssVar, segments]` triples for every leaf token path.
+ *
+ * `renderDeclaration` runs once per token per theme per build — splitting the
+ * dotted path on every call is wasted allocation. Splitting once at module
+ * load lets the hot path read three already-resolved values per declaration.
+ */
+const TOKEN_RENDER_PLAN: readonly {
+  readonly path: keyof typeof TOKEN_TO_CSS_VAR
+  readonly cssVar: string
+  readonly segments: readonly string[]
+}[] = Object.freeze(
+  TOKEN_PATHS.map((path) =>
+    Object.freeze({
+      path,
+      cssVar: TOKEN_TO_CSS_VAR[path],
+      segments: Object.freeze((path as string).split('.')),
+    })
+  )
 )
 
 /**
@@ -615,9 +604,10 @@ export interface ZpressThemeInput {
  */
 export function defineTheme(input: ZpressThemeInput): ZpressTheme {
   const { name, tokens, modes, defaultMode } = input
+  const validatedName: string = themeNameSchema.parse(name)
   const validated: ZpressTokens = tokensSchema.parse(tokens) as ZpressTokens
   return freezeTheme({
-    name,
+    name: validatedName,
     tokens: validated,
     modes: modes ?? DEFAULT_MODES,
     defaultMode: defaultMode ?? DEFAULT_MODE,
@@ -694,19 +684,18 @@ export const BUILT_IN_THEMES: Readonly<Record<BuiltInThemeName, ZpressTheme>> = 
 type ParsedTokens = z.infer<typeof tokensSchema>
 
 /**
- * Resolve a dotted token path against a `ZpressTokens` tree.
+ * Resolve a precomputed segment array against a `ZpressTokens` tree.
  *
- * Walks the path with `.reduce`, never mutates intermediate state, and
+ * Walks the segments with `.reduce`, never mutates intermediate state, and
  * trusts the `TokenPath` literal union — if a path resolves to `undefined`,
  * the registry itself is malformed, not the input.
  *
  * @private
- * @param path - Dotted leaf path (e.g. `'colors.brand.primary'`)
+ * @param segments - Pre-split token path (e.g. `['colors', 'brand', 'primary']`)
  * @param tokens - Token tree to walk
- * @returns The leaf value (string or number) at `path`
+ * @returns The leaf value (string or number) at the resolved path
  */
-function resolveTokenValue(path: string, tokens: ZpressTokens): string | number {
-  const segments = path.split('.')
+function resolveBySegments(segments: readonly string[], tokens: ZpressTokens): string | number {
   const value = segments.reduce<unknown>(
     (node, segment) => (node as Record<string, unknown>)[segment],
     tokens
@@ -715,17 +704,19 @@ function resolveTokenValue(path: string, tokens: ZpressTokens): string | number 
 }
 
 /**
- * Render a single `  --zp-*: value;` line for one token path.
+ * Render a single `  --zp-*: value;` line for one precomputed token entry.
  *
  * @private
- * @param path - Token path in the `TOKEN_TO_CSS_VAR` registry
+ * @param entry - Precomputed render plan entry (cssVar + segments)
  * @param tokens - Token tree containing the value
  * @returns CSS declaration line (no trailing newline)
  */
-function renderDeclaration(path: keyof typeof TOKEN_TO_CSS_VAR, tokens: ZpressTokens): string {
-  const cssVar = TOKEN_TO_CSS_VAR[path]
-  const value = resolveTokenValue(path, tokens)
-  return `  ${cssVar}: ${value};`
+function renderDeclaration(
+  entry: { readonly cssVar: string; readonly segments: readonly string[] },
+  tokens: ZpressTokens
+): string {
+  const value = resolveBySegments(entry.segments, tokens)
+  return `  ${entry.cssVar}: ${value};`
 }
 
 /**
@@ -738,7 +729,7 @@ function renderDeclaration(path: keyof typeof TOKEN_TO_CSS_VAR, tokens: ZpressTo
  */
 function renderRpDeclaration(cssVar: string, tokens: ZpressTokens): string {
   const path = LEGACY_RP_VAR_MAP[cssVar] as TokenPath
-  const value = resolveTokenValue(path, tokens)
+  const value = resolveBySegments((path as string).split('.'), tokens)
   return `  ${cssVar}: ${value};`
 }
 
@@ -751,7 +742,7 @@ function renderRpDeclaration(cssVar: string, tokens: ZpressTokens): string {
  * @returns Multi-line CSS body (no surrounding braces)
  */
 function renderDeclarationBody(tokens: ZpressTokens): string {
-  const zpLines = TOKEN_PATHS.map((path) => renderDeclaration(path, tokens))
+  const zpLines = TOKEN_RENDER_PLAN.map((entry) => renderDeclaration(entry, tokens))
   const rpLines = LEGACY_RP_VAR_NAMES.map((name) => renderRpDeclaration(name, tokens))
   return [...zpLines, ...rpLines].join('\n')
 }

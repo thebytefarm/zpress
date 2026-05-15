@@ -1,6 +1,7 @@
 import type React from 'react'
 import { match } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
 import type { HeroAction } from './hero'
 
 import './cta.css'
@@ -62,13 +63,17 @@ export function CTA(props: CTAProps): React.ReactElement {
  * @param index - Array index for key generation.
  * @returns Anchor element.
  */
-function renderAction(action: HeroAction, index: number): React.ReactElement {
+function renderAction(action: HeroAction, index: number): React.ReactElement | null {
+  const href = safeUrl(action.link)
+  if (href === null) {
+    return null
+  }
   const className = match(action.theme ?? 'brand')
     .with('brand', () => 'zp-cta__btn zp-cta__btn--primary')
     .otherwise(() => 'zp-cta__btn')
 
   return (
-    <a key={`${action.link}:${index}`} href={action.link} className={className}>
+    <a key={`${href}:${index}`} href={href} className={className}>
       {action.text}
     </a>
   )

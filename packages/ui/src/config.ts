@@ -215,8 +215,7 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
         sidebarBelow: resolveSidebarLinks({ config, position: 'below' }),
         home: resolveHomeConfig(config),
         zpressFooter: config.footer,
-        announcement: (config as unknown as { announcement?: unknown }).announcement,
-        zpressVersion: config.title,
+        site: config.site,
       } as Record<string, unknown>),
     },
   }
@@ -273,11 +272,39 @@ function detectGitBranch(): string {
 /**
  * Resolve the theme name from config, defaulting to 'base'.
  *
+ * Validates the resolved name against the merged registry (built-in themes
+ * plus any user themes declared in `config.themes`). An unknown name —
+ * caused by a typo or by removing a custom theme without updating
+ * `theme.name` — writes a warning to stderr and falls back to `'base'`
+ * so the build still produces working CSS.
+ *
  * @private
  * @param config - Zpress config object
+ * @param override - Optional CLI override (e.g. `--theme=midnight`)
  * @returns Resolved theme name
  */
 function resolveThemeName(config: ZpressConfig, override?: ThemeName): ThemeName {
+  const registeredNames = collectRegisteredThemeNames(config)
+  const requested = resolveRequestedThemeName(config, override)
+  if (registeredNames.has(requested)) {
+    return requested
+  }
+  process.stderr.write(
+    `[zpress] Unknown theme '${requested}' — not a built-in and not declared in config.themes. Falling back to 'base'.\n`
+  )
+  return 'base'
+}
+
+/**
+ * Pick the theme name the consumer asked for, in precedence order:
+ * CLI override > `config.theme.name` > `'base'`.
+ *
+ * @private
+ * @param config - Zpress config object
+ * @param override - Optional CLI override
+ * @returns Requested theme name (not yet validated against the registry)
+ */
+function resolveRequestedThemeName(config: ZpressConfig, override?: ThemeName): ThemeName {
   if (override) {
     return override
   }
@@ -285,6 +312,21 @@ function resolveThemeName(config: ZpressConfig, override?: ThemeName): ThemeName
     return config.theme.name
   }
   return 'base'
+}
+
+/**
+ * Build the set of theme names known to this build — built-in themes plus
+ * any user themes declared in `config.themes` (each validated through
+ * `defineTheme` to surface bad input before this point).
+ *
+ * @private
+ * @param config - Zpress config object
+ * @returns Set of registered theme names
+ */
+function collectRegisteredThemeNames(config: ZpressConfig): ReadonlySet<string> {
+  const builtIn = Object.keys(BUILT_IN_THEMES)
+  const user = (config.themes ?? []).map((t) => t.name)
+  return new Set<string>([...builtIn, ...user])
 }
 
 /**

@@ -1,7 +1,3 @@
-/**
- * Config validation using Zod.
- */
-
 import { configErrorFromZod } from './errors.ts'
 import type { ConfigResult } from './errors.ts'
 import { zpressConfigSchema } from './schema.ts'
