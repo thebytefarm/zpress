@@ -47,7 +47,7 @@
     "gray-matter": "^4.0.3",
     "jiti": "^2.6.1",
     "js-yaml": "^4.1.1",
-    "liquidjs": "^10.25.6",
+    "liquidjs": "^10.25.7",
     "ts-pattern": "catalog:"
   },
   "devDependencies": {

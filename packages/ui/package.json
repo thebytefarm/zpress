@@ -62,7 +62,7 @@
     "@zpress/core": "workspace:*",
     "@zpress/theme": "workspace:*",
     "katex": "^0.16.45",
-    "mermaid": "^10.9.5",
+    "mermaid": "^10.9.6",
     "openapi-sampler": "^1.7.2",
     "react-aria-components": "^1.17.0",
     "ts-morph": "^27.0.2",
