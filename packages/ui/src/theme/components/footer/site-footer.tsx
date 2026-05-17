@@ -3,8 +3,12 @@ import type React from 'react'
 import { match } from 'ts-pattern'
 
 import { useZpress } from '../../hooks/use-zpress'
+import { safeUrl } from '../../lib/safe-url.ts'
+import { ThemeSwitcher } from '../nav/theme-switcher'
 
 import './site-footer.css'
+
+declare const __ZPRESS_THEME_SWITCHER__: boolean
 
 /**
  * Site-wide footer rendered at the bottom of every page.
@@ -27,8 +31,12 @@ export function SiteFooter(): React.ReactElement | null {
 
   const hasRspressContent = message !== undefined || copyright !== undefined || socials === true
   const hasSiteContent = columns !== undefined || tagline !== undefined
+  // The footer also hosts the theme switcher when it's enabled — so a
+  // config with `theme.switcher: true` but no other footer content
+  // still needs the footer shell rendered.
+  const hasSwitcher = __ZPRESS_THEME_SWITCHER__
 
-  if (!hasRspressContent && !hasSiteContent) {
+  if (!hasRspressContent && !hasSiteContent && !hasSwitcher) {
     return null
   }
 
@@ -58,11 +66,17 @@ export function SiteFooter(): React.ReactElement | null {
             <div key={col.heading} className="zp-site-footer__col">
               <h4 className="zp-site-footer__col-title">{col.heading}</h4>
               <ul className="zp-site-footer__col-list">
-                {col.links.map((link) => (
-                  <li key={link.text}>
-                    <a href={link.href}>{link.text}</a>
-                  </li>
-                ))}
+                {col.links.flatMap((link) => {
+                  const href = safeUrl(link.href)
+                  if (href === null) {
+                    return []
+                  }
+                  return [
+                    <li key={link.text}>
+                      <a href={href}>{link.text}</a>
+                    </li>,
+                  ]
+                })}
               </ul>
             </div>
           ))}
@@ -75,11 +89,14 @@ export function SiteFooter(): React.ReactElement | null {
             .otherwise((cr) => (
               <span className="zp-site-footer__copyright">{cr}</span>
             ))}
-          {match(tagline)
-            .with(undefined, () => null)
-            .otherwise((tag) => (
-              <span className="zp-site-footer__tagline">{tag}</span>
-            ))}
+          <div className="zp-site-footer__bottom-end">
+            {match(tagline)
+              .with(undefined, () => null)
+              .otherwise((tag) => (
+                <span className="zp-site-footer__tagline">{tag}</span>
+              ))}
+            <ThemeSwitcher />
+          </div>
         </div>
       </div>
     </footer>

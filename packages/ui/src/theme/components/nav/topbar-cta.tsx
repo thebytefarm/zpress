@@ -1,5 +1,7 @@
 import type React from 'react'
 
+import { safeUrl } from '../../lib/safe-url.ts'
+
 import './topbar-cta.css'
 
 export interface TopbarCTAProps {
@@ -17,12 +19,19 @@ export interface TopbarCTAProps {
  * TopbarCTA — mint primary pill rendered at the right end of the topbar
  * to drive the headline conversion (e.g. "Get started →").
  *
+ * Renders `null` when `href` fails `safeUrl()` validation — config-driven
+ * hrefs must not become script-execution sinks.
+ *
  * @param props - Button configuration.
- * @returns React element.
+ * @returns React element, or `null` when the href fails URL validation.
  */
-export function TopbarCTA(props: TopbarCTAProps): React.ReactElement {
+export function TopbarCTA(props: TopbarCTAProps): React.ReactElement | null {
+  const href = safeUrl(props.href)
+  if (href === null) {
+    return null
+  }
   return (
-    <a className="zp-topbar-cta" href={props.href}>
+    <a className="zp-topbar-cta" href={href}>
       {props.text}
     </a>
   )

@@ -16,7 +16,6 @@ import { SidebarPromo } from '../sidebar/sidebar-promo'
 import { SidebarToggle } from '../sidebar/sidebar-toggle'
 import { BranchTag } from './branch-tag'
 import { MobileNavCTA } from './mobile-nav-cta'
-import { ThemeSwitcher } from './theme-switcher'
 import { TopbarCTA } from './topbar-cta'
 import { VersionChip } from './version-chip'
 import { VscodeTag } from './vscode-tag'
@@ -29,7 +28,7 @@ declare const __ZPRESS_VSCODE__: boolean
  * Wires the chrome described by `config.site`:
  * - AnnouncementBar via the `top` slot (when `site.announcement` is set)
  * - SidebarToggle + VersionChip + BranchTag (+ VscodeTag) on the topbar left
- * - ThemeSwitcher + topbar CTA on the topbar right (when `site.topbarCta` is set)
+ * - Topbar CTA on the topbar right (when `site.topbarCta` is set)
  * - SidebarLinks (above/below) from config
  * - SidebarPromo at the bottom of the sidebar (when `site.sidebarPromo` is set)
  * - SiteFooter via the `bottom` slot (docs only — home renders it inside PageRail)
@@ -100,10 +99,7 @@ export function Layout(): React.ReactElement {
     ))
 
   const afterNavSlot = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <ThemeSwitcher />
-      {ctaButtons}
-    </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{ctaButtons}</div>
   )
 
   const aboveItems = sidebarAbove ?? []

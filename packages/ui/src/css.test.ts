@@ -10,8 +10,8 @@ const { getThemeCss } = await import('./css.ts')
 const LOADER_CSS = '/* mock css/loader-backdrop.css *//* mock css/loader-dots.css */'
 
 describe('getThemeCss()', () => {
-  it('should return a string for built-in theme base', () => {
-    expect(getThemeCss('base')).toStrictEqual(expect.any(String))
+  it('should return a string for built-in theme default', () => {
+    expect(getThemeCss('default')).toStrictEqual(expect.any(String))
   })
 
   it('should return a string for built-in theme midnight', () => {
@@ -27,10 +27,10 @@ describe('getThemeCss()', () => {
   })
 
   it('should contain theme-specific CSS for built-in themes', () => {
-    expect(getThemeCss('base')).toContain('/* mock css/themes/base.css */')
+    expect(getThemeCss('default')).toContain('/* mock css/themes/default.css */')
   })
 
   it('should contain loader CSS for built-in themes', () => {
-    expect(getThemeCss('base')).toContain(LOADER_CSS)
+    expect(getThemeCss('default')).toContain(LOADER_CSS)
   })
 })

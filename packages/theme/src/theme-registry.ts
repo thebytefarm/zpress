@@ -3,21 +3,18 @@ import type { z } from 'zod'
 import { themeNameSchema, tokensSchema } from './schema.ts'
 import type { TokenPath, ZpressTokens } from './tokens.ts'
 import { TOKEN_TO_CSS_VAR } from './tokens.ts'
-import type { BuiltInThemeName, ColorMode } from './types.ts'
+import type { BuiltInThemeName, ThemeVariant } from './types.ts'
 
 // ---------------------------------------------------------------------------
 // Module-level constants — referenced by the public exports below
 // ---------------------------------------------------------------------------
 
 /**
- * Default modes applied when `defineTheme` callers omit the `modes` field.
+ * Variant preference order used when `defineTheme` callers omit
+ * `defaultVariant`. We pick `'dark'` first because the framework treats
+ * dark as its baseline aesthetic.
  */
-const DEFAULT_MODES: readonly ('dark' | 'light')[] = ['dark', 'light'] as const
-
-/**
- * Default `colorMode` applied when `defineTheme` callers omit the field.
- */
-const DEFAULT_MODE: ColorMode = 'toggle'
+const DEFAULT_VARIANT_ORDER: readonly ThemeVariant[] = ['dark', 'light'] as const
 
 /**
  * Shape of the raw brand-palette entries below. Mirrors the public
@@ -45,7 +42,7 @@ interface RawBrandPalette {
  * brand surface so `LEGACY_RP_VAR_MAP` can pick them up by token path.
  */
 const BRAND_PALETTES: Readonly<Record<BuiltInThemeName, RawBrandPalette>> = Object.freeze({
-  base: {
+  default: {
     primary: '#7c3aed',
     hover: '#6d28d9',
     active: '#5b21b6',
@@ -515,8 +512,10 @@ const SHARED_BLURS = {
  */
 const SHARED_GRADIENTS = {
   brand: 'linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-3))',
-  heroTitle:
-    'linear-gradient(120deg, var(--zp-c-brand-1) 0%, var(--zp-c-gradient-hero-cyan) 50%, var(--zp-c-gradient-hero-purple) 100%)',
+  // Hero title — kept in-hue. The previous multi-stop brand → cyan → purple
+  // gradient read as a generic AI landing-page accent; restraining to the
+  // brand family makes the hero feel like a real product, not a template.
+  heroTitle: 'linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-light))',
 } as const
 
 // ---------------------------------------------------------------------------
@@ -524,149 +523,178 @@ const SHARED_GRADIENTS = {
 // ---------------------------------------------------------------------------
 
 /**
- * The supported color modes a theme renders correctly under.
+ * The supported variants a theme can render in.
  *
- * `'dark' | 'light'` only — `'toggle'` is a *control* value (lives on
- * `defaultMode`), not an actual rendered mode.
+ * A theme declares one token tree per variant it supports. The sun/moon
+ * toggle in the topbar swaps between variants of the active theme; if a
+ * theme registers only one variant, the toggle is hidden for that theme.
  */
-export type ThemeMode = 'dark' | 'light'
+export type ThemeMode = ThemeVariant
+
+/**
+ * Variant-keyed token map. A theme that supports both modes declares both
+ * keys; a dark-only theme declares only `dark`.
+ */
+export interface ThemeVariantTokens {
+  readonly dark?: ZpressTokens
+  readonly light?: ZpressTokens
+}
 
 /**
  * Fully resolved theme definition produced by `defineTheme`.
  *
- * A `ZpressTheme` is the runtime contract between the registry and the
- * rest of the system (CSS emitter, theme switcher, brand-color helpers).
- * The shape is intentionally flat so it serialises trivially to JSON for
- * documentation tooling and snapshot tests.
+ * A `ZpressTheme` represents one brand identity with one or more variant
+ * token trees. The CSS emitter renders a separate
+ * `html[data-zp-theme='{name}'][data-zp-variant='{variant}']` block per
+ * variant present in `variants`.
  */
 export interface ZpressTheme {
   /**
-   * Identifier — matches `html[data-zp-theme='{name}']`.
+   * Identifier — used in the `html[data-zp-theme='{name}']` selector.
+   * Must be a lowercase slug (validated by `themeNameSchema`).
    */
   readonly name: string
   /**
-   * Validated, frozen token tree.
+   * Validated, frozen token trees keyed by variant. `variants.dark` and
+   * `variants.light` are both optional, but at least one must be present.
    */
-  readonly tokens: ZpressTokens
+  readonly variants: ThemeVariantTokens
   /**
-   * Modes this theme renders correctly under.
+   * Variant to render when no localStorage preference is set. Must point
+   * at a variant present in `variants`.
    */
-  readonly modes: readonly ThemeMode[]
-  /**
-   * Default `colorMode` for this theme (`'dark' | 'light' | 'toggle'`).
-   */
-  readonly defaultMode: ColorMode
+  readonly defaultVariant: ThemeVariant
 }
 
 /**
- * Input shape accepted by `defineTheme`. The `tokens` field is `unknown`
- * because validation is the factory's responsibility — callers may pass
- * raw JSON or a partially-typed object and let Zod produce a clear error.
+ * Input shape accepted by `defineTheme`. Variant token trees are typed
+ * `unknown` because validation is the factory's responsibility — callers
+ * may pass raw JSON or a partially-typed object and let Zod produce a
+ * clear error.
  */
+export interface ZpressThemeInputVariants {
+  readonly dark?: unknown
+  readonly light?: unknown
+}
+
 export interface ZpressThemeInput {
   /**
    * Identifier — must match `html[data-zp-theme='{name}']`.
    */
   readonly name: string
   /**
-   * Token tree, validated against `tokensSchema` at factory time.
+   * Variant token trees. At least one of `variants.dark` /
+   * `variants.light` must be present; both are validated against
+   * `tokensSchema` at factory time.
    */
-  readonly tokens: unknown
+  readonly variants: ZpressThemeInputVariants
   /**
-   * Modes the theme renders correctly under. Defaults to `['dark', 'light']`.
+   * Variant to render initially. Falls back to `'dark'` when both
+   * variants are declared, otherwise to the only declared variant.
    */
-  readonly modes?: readonly ThemeMode[]
-  /**
-   * Default color-mode behaviour. Defaults to `'toggle'`.
-   */
-  readonly defaultMode?: ColorMode
+  readonly defaultVariant?: ThemeVariant
 }
 
 /**
- * Validate a raw theme definition through `tokensSchema` and return a
- * deeply frozen `ZpressTheme`.
+ * Validate a theme definition through `tokensSchema` and return a deeply
+ * frozen `ZpressTheme`.
  *
- * Validation failure surfaces as a `ZodError` from `tokensSchema.parse` —
- * that's the documented usage of the schema and the only contract callers
- * need to handle. Successful calls return a frozen object tree; mutating
- * any nested property is a hard failure in strict mode.
+ * Validation failures surface as `ZodError`s from `tokensSchema.parse` and
+ * `themeNameSchema.parse` — that's the documented contract callers need
+ * to handle. Successful calls return a frozen object tree.
  *
- * @param input - Theme definition (name + token tree + optional modes/defaultMode)
+ * @param input - Theme definition (name + variant token trees)
  * @returns A frozen, fully-typed `ZpressTheme`
  *
  * @example
  * const myTheme = defineTheme({
- *   name: 'custom',
- *   tokens: tokens,
- *   modes: ['dark'],
- *   defaultMode: 'dark',
+ *   name: 'sunset',
+ *   variants: {
+ *     dark: { ...allTokens },
+ *   },
  * })
  */
 export function defineTheme(input: ZpressThemeInput): ZpressTheme {
-  const { name, tokens, modes, defaultMode } = input
-  const validatedName: string = themeNameSchema.parse(name)
-  const validated: ZpressTokens = tokensSchema.parse(tokens) as ZpressTokens
+  const validatedName: string = themeNameSchema.parse(input.name)
+  // Surface a clear Zod error for callers who omit `variants` entirely —
+  // without this guard, accessing `input.variants.dark` would throw a raw
+  // `TypeError`, which is worse for debugging than the structured
+  // `ZodError` we promise as the public contract.
+  if (input.variants === undefined || input.variants === null) {
+    return tokensSchema.parse({}) as never
+  }
+  const variants: Record<ThemeVariant, ZpressTokens | undefined> = {
+    dark: validateVariant(input.variants.dark),
+    light: validateVariant(input.variants.light),
+  }
+  const presentVariants: readonly ThemeVariant[] = DEFAULT_VARIANT_ORDER.filter(
+    (v) => variants[v] !== undefined
+  )
+  if (presentVariants.length === 0) {
+    // Surface a clear Zod error consistent with the rest of `defineTheme`
+    // when neither variant is declared.
+    return tokensSchema.parse({}) as never
+  }
+  const defaultVariant: ThemeVariant = resolveDefaultVariant(input.defaultVariant, presentVariants)
   return freezeTheme({
     name: validatedName,
-    tokens: validated,
-    modes: modes ?? DEFAULT_MODES,
-    defaultMode: defaultMode ?? DEFAULT_MODE,
+    variants: filterPresentVariants(variants),
+    defaultVariant,
   })
 }
 
 /**
- * Render a `ZpressTheme` to a single, byte-deterministic CSS block.
+ * Render a `ZpressTheme` to a deterministic CSS source covering every
+ * variant the theme declares.
  *
- * Iteration order is fixed by the declaration order of `TOKEN_TO_CSS_VAR`
- * (followed by the declaration order of `LEGACY_RP_VAR_MAP` for the Rspress
- * compat suffix) so re-running this function on the same input always
- * produces the exact same string — required for snapshot tests and
- * reproducible builds.
+ * For each variant V in `theme.variants` the emitter writes one
+ * `html[data-zp-theme='{name}'][data-zp-variant='{V}']` block. Iteration
+ * order is fixed by `TOKEN_TO_CSS_VAR` (then `LEGACY_RP_VAR_MAP`) so the
+ * output is byte-deterministic given the same input.
  *
- * The default theme (`'base'`) receives an additional `:root { ... }` block
- * with identical contents so the browser can apply its tokens before JS
- * hydration sets `[data-zp-theme]` on the `<html>` element (FOUC fallback).
+ * The default theme additionally emits a `:root { ... }` FOUC block that
+ * mirrors its default variant — the browser applies it before JS hydrates
+ * the `data-zp-*` attributes on `<html>`.
  *
  * @param theme - Theme to render
- * @returns CSS source containing one or two declaration blocks
- *
- * @example
- * const css = themeToCss(BUILT_IN_THEMES.base)
- * // => ":root {\n  --zp-c-brand-1: #7c3aed;\n  ...\n}\n\nhtml[data-zp-theme='base'] {\n  ...\n}\n"
+ * @returns CSS source containing one block per variant
  */
 export function themeToCss(theme: ZpressTheme): string {
-  return renderThemeCss(theme, 'base')
+  return renderThemeCss(theme, 'default')
 }
 
 /**
  * The three first-party themes shipped with zpress.
  *
- * Each entry is the result of `defineTheme` over a hand-curated token tree
- * lifted from `packages/ui/src/theme/styles/themes/{base,midnight,arcade}.css`
- * (theme-specific surfaces / text / borders / brand) plus
- * `packages/ui/src/theme/styles/overrides/tokens.css` (structural tokens that
- * are identical across themes) and the component-level audit in
- * `.snapshots/baseline/token-audit.txt` (tints, terminal, badges, syntax,
- * gradient, scrollbar).
+ *  - `default` is the brand-purple theme and ships both `dark` and
+ *    `light` variants. The sun/moon toggle swaps between them.
+ *  - `midnight` is an opinionated near-black blue theme — dark only.
+ *  - `arcade` is a neon green retro theme — dark only.
+ *
+ * Built-in token trees are lifted from
+ * `packages/ui/src/theme/styles/themes/*.css` plus
+ * `packages/ui/src/theme/styles/overrides/tokens.css`. The registry is
+ * the single source of truth from this point forward — generated CSS is
+ * produced by `packages/ui/scripts/generate-theme-css.mjs`.
  */
 export const BUILT_IN_THEMES: Readonly<Record<BuiltInThemeName, ZpressTheme>> = Object.freeze({
-  base: defineTheme({
-    name: 'base',
-    tokens: buildBaseTokens(),
-    modes: ['dark', 'light'],
-    defaultMode: 'toggle',
+  default: defineTheme({
+    name: 'default',
+    variants: {
+      dark: buildDefaultDarkTokens(),
+      light: buildDefaultLightTokens(),
+    },
+    defaultVariant: 'dark',
   }),
   midnight: defineTheme({
     name: 'midnight',
-    tokens: buildMidnightTokens(),
-    modes: ['dark'],
-    defaultMode: 'dark',
+    variants: { dark: buildMidnightTokens() },
+    defaultVariant: 'dark',
   }),
   arcade: defineTheme({
     name: 'arcade',
-    tokens: buildArcadeTokens(),
-    modes: ['dark'],
-    defaultMode: 'dark',
+    variants: { dark: buildArcadeTokens() },
+    defaultVariant: 'dark',
   }),
 })
 
@@ -748,42 +776,127 @@ function renderDeclarationBody(tokens: ZpressTokens): string {
 }
 
 /**
- * Render the complete CSS for a theme. When `theme.name` matches
- * `defaultThemeName`, an additional `:root { ... }` FOUC fallback block is
- * emitted before the `html[data-zp-theme='{name}']` block with identical
- * contents.
+ * Render the complete CSS for a theme. Emits one
+ * `html[data-zp-theme='{name}'][data-zp-variant='{V}']` block per
+ * variant present on the theme. When `theme.name` matches
+ * `defaultThemeName`, an additional `:root { ... }` FOUC fallback block
+ * is emitted for the theme's default variant.
  *
  * @private
  * @param theme - Theme to render
  * @param defaultThemeName - Name of the theme that should also emit `:root`
- * @returns CSS source containing one or two declaration blocks
+ * @returns CSS source containing one block per variant (plus optional FOUC root)
  */
 function renderThemeCss(theme: ZpressTheme, defaultThemeName: string): string {
-  const body = renderDeclarationBody(theme.tokens)
-  const dataAttrBlock = `html[data-zp-theme='${theme.name}'] {\n${body}\n}\n`
+  const variantBlocks = DEFAULT_VARIANT_ORDER.flatMap((variant) =>
+    renderVariantBlock(theme, variant)
+  )
   if (theme.name !== defaultThemeName) {
-    return dataAttrBlock
+    return variantBlocks.join('\n')
   }
-  const rootBlock = `:root {\n${body}\n}\n`
-  return `${rootBlock}\n${dataAttrBlock}`
+  const defaultTokens = theme.variants[theme.defaultVariant]
+  if (defaultTokens === undefined) {
+    return variantBlocks.join('\n')
+  }
+  const rootBlock = `:root {\n${renderDeclarationBody(defaultTokens)}\n}\n`
+  return `${rootBlock}\n${variantBlocks.join('\n')}`
 }
 
 /**
- * Freeze the outer `ZpressTheme` shell plus the entire nested token tree.
+ * Render the per-variant CSS block for one variant of one theme. Returns
+ * an empty array when the theme does not declare the given variant so the
+ * caller can `flatMap` without filtering.
  *
- * Returns the same reference rather than a clone — inputs come from literal
- * object expressions that are not aliased anywhere else.
+ * @private
+ * @param theme - Theme being rendered
+ * @param variant - Variant to render (`'dark'` or `'light'`)
+ * @returns Single-element array on hit, empty array on miss
+ */
+function renderVariantBlock(theme: ZpressTheme, variant: ThemeVariant): readonly string[] {
+  const tokens = theme.variants[variant]
+  if (tokens === undefined) {
+    return []
+  }
+  const body = renderDeclarationBody(tokens)
+  return [`html[data-zp-theme='${theme.name}'][data-zp-variant='${variant}'] {\n${body}\n}\n`]
+}
+
+/**
+ * Validate one variant's token tree, returning `undefined` when the
+ * caller omitted that variant.
+ *
+ * @private
+ * @param raw - Raw token tree from `defineTheme` input
+ * @returns Validated frozen tokens, or `undefined` when no input was given
+ */
+function validateVariant(raw: unknown): ZpressTokens | undefined {
+  if (raw === undefined) {
+    return undefined
+  }
+  return tokensSchema.parse(raw) as ZpressTokens
+}
+
+/**
+ * Choose the default variant for a theme, falling back to the first
+ * declared variant in `DEFAULT_VARIANT_ORDER` when the caller omitted
+ * `defaultVariant`. Throws when the requested variant is not present.
+ *
+ * @private
+ * @param requested - Caller-provided default variant (may be `undefined`)
+ * @param present - Variants the theme actually declares
+ * @returns Resolved default variant
+ */
+function resolveDefaultVariant(
+  requested: ThemeVariant | undefined,
+  present: readonly ThemeVariant[]
+): ThemeVariant {
+  if (requested !== undefined) {
+    if (!present.includes(requested)) {
+      // Surface a structured error consistent with other Zod errors raised
+      // by `defineTheme`. Path mirrors the input field for clarity.
+      return tokensSchema.parse({
+        __zpressInvalidDefaultVariant: { requested, present },
+      }) as never
+    }
+    return requested
+  }
+  return present[0] as ThemeVariant
+}
+
+/**
+ * Drop `undefined` keys from the variant map so consumers can `Object.keys`
+ * the result to enumerate present variants.
+ *
+ * @private
+ * @param variants - Raw variant map possibly containing `undefined` values
+ * @returns Frozen variant map containing only declared variants
+ */
+function filterPresentVariants(
+  variants: Record<ThemeVariant, ZpressTokens | undefined>
+): ThemeVariantTokens {
+  const entries = (Object.entries(variants) as readonly [ThemeVariant, ZpressTokens | undefined][])
+    .filter(([, t]) => t !== undefined)
+    .map(([k, t]) => [k, t as ZpressTokens] as const)
+  return Object.freeze(Object.fromEntries(entries)) as ThemeVariantTokens
+}
+
+/**
+ * Freeze the outer `ZpressTheme` shell plus each variant's nested token
+ * tree. Returns the same references rather than cloning — inputs come
+ * from literal object expressions that are not aliased anywhere else.
  *
  * @private
  * @param theme - Theme to freeze
  * @returns Same theme, deeply frozen
  */
 function freezeTheme(theme: ZpressTheme): ZpressTheme {
+  const frozenVariants = Object.fromEntries(
+    Object.entries(theme.variants).map(([k, tokens]) => [k, deepFreeze(tokens as ZpressTokens)])
+  ) as ThemeVariantTokens
   return Object.freeze({
     name: theme.name,
-    tokens: deepFreeze(theme.tokens),
-    modes: Object.freeze([...theme.modes]),
-    defaultMode: theme.defaultMode,
+    variants: Object.freeze(frozenVariants),
+    defaultVariant: theme.defaultVariant,
   })
 }
 
@@ -829,16 +942,15 @@ function freezeChildThenReturnParent<T>(parent: T, child: unknown): T {
 }
 
 /**
- * Build the `base` theme token tree from the CSS at
- * `packages/ui/src/theme/styles/themes/base.css` (light variant). Brand
- * colors come from `brand-colors.ts` to keep the CLI/SVG generators in sync
- * with the docs site.
+ * Build the `light` variant of the `default` theme — bright surfaces with
+ * the brand-purple palette. Lifted from the previous
+ * `packages/ui/src/theme/styles/themes/base.css` (light values).
  *
  * @private
  * @returns Untyped token object suitable for `tokensSchema.parse`
  */
-function buildBaseTokens(): ParsedTokens {
-  const brand = BRAND_PALETTES.base
+function buildDefaultLightTokens(): ParsedTokens {
+  const brand = BRAND_PALETTES.default
   return {
     colors: {
       brand: {
@@ -886,6 +998,91 @@ function buildBaseTokens(): ParsedTokens {
           bg: '#6d28d9',
           hoverBg: '#7c3aed',
           activeBg: '#5b21b6',
+          text: '#ffffff',
+        },
+      },
+    },
+    spacing: { ...SHARED_SPACING },
+    radii: { ...SHARED_RADII },
+    fonts: {
+      family: { ...SHARED_FONTS.family },
+      weight: { ...SHARED_FONTS.weight },
+      size: { ...SHARED_FONTS.size },
+    },
+    shadows: { ...SHARED_SHADOWS },
+    motion: {
+      duration: { ...SHARED_MOTION.duration },
+      easing: { ...SHARED_MOTION.easing },
+    },
+    zIndex: { ...SHARED_Z_INDEX },
+    lineHeights: { ...SHARED_LINE_HEIGHTS },
+    letterSpacings: { ...SHARED_LETTER_SPACINGS },
+    opacities: { ...SHARED_OPACITIES },
+    sizes: { ...SHARED_SIZES },
+    breakpoints: { ...SHARED_BREAKPOINTS },
+    blurs: { ...SHARED_BLURS },
+    gradients: { ...SHARED_GRADIENTS },
+  }
+}
+
+/**
+ * Build the `dark` variant of the `default` theme — same brand-purple
+ * palette as the light variant, paired with dark surfaces and inverted
+ * text. This is the variant zpress renders by default (the framework
+ * treats dark as its baseline aesthetic).
+ *
+ * @private
+ * @returns Untyped token object suitable for `tokensSchema.parse`
+ */
+function buildDefaultDarkTokens(): ParsedTokens {
+  const brand = BRAND_PALETTES.default
+  return {
+    colors: {
+      brand: {
+        primary: brand.primary,
+        hover: brand.hover,
+        active: brand.active,
+        fg: brand.fg,
+        soft: brand.soft,
+        onBrand: '#ffffff',
+        light: brand.light,
+        lighter: brand.lighter,
+      },
+      semantic: { ...SHARED_SEMANTIC_COLORS },
+      surface: {
+        bg: '#0a0a0a',
+        bgAlt: '#0f0f0f',
+        bgElv: '#161616',
+        bgSoft: '#1c1c1c',
+        bgIcon: '#2a2a2a',
+        homeBg: '#0a0a0a',
+        overlayFaint: 'rgba(255, 255, 255, 0.06)',
+        gutter: '#0f0f0f',
+        codeBlockBg: '#141414',
+      },
+      text: {
+        text1: '#f5f5f5',
+        text2: 'rgba(245, 245, 245, 0.72)',
+        text3: 'rgba(245, 245, 245, 0.48)',
+      },
+      border: {
+        border: '#2a2a2a',
+        divider: '#1e1e1e',
+        sidebarAltBorderDark: '#484848',
+      },
+      tint: { ...SHARED_TINT_COLORS },
+      terminal: { ...SHARED_TERMINAL_COLORS },
+      window: { ...SHARED_WINDOW_COLORS },
+      badge: { ...SHARED_BADGE_COLORS },
+      scrollbar: { ...SHARED_SCROLLBAR_COLORS },
+      syntax: { ...SHARED_SYNTAX_COLORS },
+      gradient: { ...SHARED_GRADIENT_COLORS },
+      oas: { ...SHARED_OAS_COLORS_BASE },
+      button: {
+        brand: {
+          bg: '#7c3aed',
+          hoverBg: '#8b5cf6',
+          activeBg: '#6d28d9',
           text: '#ffffff',
         },
       },

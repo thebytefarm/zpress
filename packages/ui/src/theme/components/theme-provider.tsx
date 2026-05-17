@@ -1,18 +1,19 @@
 import { TOKEN_TO_CSS_VAR } from '@zpress/theme'
-import type { ThemeColors, TokenPath } from '@zpress/theme'
+import type { ThemeColors, ThemeVariant, TokenPath } from '@zpress/theme'
 import { useEffect, useLayoutEffect } from 'react'
 import type React from 'react'
 import { match, P } from 'ts-pattern'
 
 declare const __ZPRESS_THEME_NAME__: string
-declare const __ZPRESS_COLOR_MODE__: string
+declare const __ZPRESS_DEFAULT_VARIANT__: string
 declare const __ZPRESS_THEME_COLORS__: string
 declare const __ZPRESS_THEME_DARK_COLORS__: string
 declare const __ZPRESS_THEME_REGISTRY__: string
 
 interface RegistryEntry {
   readonly name: string
-  readonly modes: readonly string[]
+  readonly variants: readonly ThemeVariant[]
+  readonly defaultVariant: ThemeVariant
 }
 
 /**
@@ -29,18 +30,25 @@ type ThemeColorKey = keyof ThemeColors
 const REGISTRY_ENTRIES: readonly RegistryEntry[] = parseRegistry(__ZPRESS_THEME_REGISTRY__)
 
 /**
- * Supported color modes per registered theme — used to set `data-zp-modes`
- * so the appearance toggle is hidden for single-mode themes.
+ * Variants supported by each registered theme, keyed by theme name. Used
+ * to set `data-zp-variants` on `<html>` so CSS can hide the appearance
+ * toggle for themes that only declare one variant.
  */
-const THEME_MODES: Readonly<Record<string, string>> = Object.freeze(
-  Object.fromEntries(REGISTRY_ENTRIES.map((entry) => [entry.name, entry.modes.join(' ')]))
+const THEME_VARIANTS: Readonly<Record<string, string>> = Object.freeze(
+  Object.fromEntries(REGISTRY_ENTRIES.map((entry) => [entry.name, entry.variants.join(' ')]))
+)
+
+/**
+ * Default variant for each theme — used when no `zpress-variant` is
+ * persisted in `localStorage` or when the persisted value is stale.
+ */
+const THEME_DEFAULT_VARIANTS: Readonly<Record<string, ThemeVariant>> = Object.freeze(
+  Object.fromEntries(REGISTRY_ENTRIES.map((entry) => [entry.name, entry.defaultVariant]))
 )
 
 /**
  * Set of theme names known at build time. Used to validate a persisted
- * theme name from `localStorage` before applying it, so renaming or
- * removing a custom theme cannot strand returning users on a stale
- * `data-zp-theme`.
+ * theme name from `localStorage` before applying it.
  */
 const REGISTERED_THEME_NAMES: ReadonlySet<string> = new Set(REGISTRY_ENTRIES.map((e) => e.name))
 
@@ -126,11 +134,16 @@ const LOADER_FADE_MS = 200
 const useIsomorphicLayoutEffect = getIsomorphicEffect()
 
 /**
- * ThemeProvider — global UI component that configures the active theme.
+ * ThemeProvider — global UI component that configures the active theme
+ * and variant.
  *
- * Sets `data-zp-theme` attribute, forces color mode, and applies
- * inline CSS custom property overrides from build-time defines.
- * Sets `data-zp-ready` on <html> to dismiss the loading overlay
+ * Sets `data-zp-theme`, `data-zp-variant`, and `data-zp-variants` on
+ * `<html>` so theme CSS resolves correctly. Mirrors variant changes to
+ * Rspress's `.rp-dark` class so Rspress's built-in components stay in
+ * sync with our variant state, and observes Rspress's class to persist
+ * variant changes triggered by Rspress's own dark-mode toggle.
+ *
+ * Sets `data-zp-ready` on `<html>` to dismiss the loading overlay
  * injected by critical CSS.
  *
  * @returns Null element (side-effect only component)
@@ -138,19 +151,23 @@ const useIsomorphicLayoutEffect = getIsomorphicEffect()
 export function ThemeProvider(): React.ReactElement | null {
   useIsomorphicLayoutEffect(() => {
     const html = document.documentElement
-    const persisted = safeGetItem('zpress-theme')
-    const themeName = resolveActiveThemeName(persisted)
-    if (persisted !== null && persisted !== themeName) {
-      // Stored value points at a theme that no longer ships — clear it so
-      // subsequent reads return the build-time default until the user
-      // picks a different theme.
-      try {
-        localStorage.removeItem('zpress-theme')
-      } catch {
-        // storage unavailable
-      }
+    const persistedTheme = safeGetItem('zpress-theme')
+    const themeName = resolveActiveThemeName(persistedTheme)
+    if (persistedTheme !== null && persistedTheme !== themeName) {
+      safeRemoveItem('zpress-theme')
     }
-    const colorMode = __ZPRESS_COLOR_MODE__
+
+    const persistedVariant = safeGetVariant('zpress-variant')
+    const buildTimeDefault = parseVariant(__ZPRESS_DEFAULT_VARIANT__)
+    const variant = resolveActiveVariant({
+      persisted: persistedVariant,
+      buildTimeDefault,
+      themeName,
+    })
+    if (persistedVariant !== null && persistedVariant !== variant) {
+      safeRemoveItem('zpress-variant')
+    }
+
     const colors = parseColors(__ZPRESS_THEME_COLORS__)
     const darkColors = parseColors(__ZPRESS_THEME_DARK_COLORS__)
     const hasColors = Object.keys(colors).length > 0
@@ -159,72 +176,81 @@ export function ThemeProvider(): React.ReactElement | null {
     // 1. Set theme attribute
     html.dataset.zpTheme = themeName
 
-    // 2. Set supported modes — hides the appearance toggle for single-mode themes
-    const modes = THEME_MODES[themeName]
-    if (modes) {
-      html.dataset.zpModes = modes
+    // 2. Set supported variants — CSS hides the appearance toggle for
+    //    themes that only declare one variant.
+    const variants = THEME_VARIANTS[themeName]
+    if (variants) {
+      html.dataset.zpVariants = variants
     } else {
-      html.dataset.zpModes = 'dark light'
+      html.dataset.zpVariants = 'dark'
     }
 
-    // 3. Force color mode if not toggle
-    if (colorMode === 'dark') {
-      html.classList.add('rp-dark', 'dark')
-      html.dataset.dark = 'true'
-      try {
-        localStorage.setItem('rspress-theme-appearance', 'dark')
-      } catch {
-        // storage unavailable
-      }
-    } else if (colorMode === 'light') {
-      html.classList.remove('rp-dark', 'dark')
-      html.dataset.dark = 'false'
-      try {
-        localStorage.setItem('rspress-theme-appearance', 'light')
-      } catch {
-        // storage unavailable
-      }
-    }
+    // 3. Apply the resolved variant — both as `data-zp-variant` (our
+    //    canonical attribute used by emitted theme CSS) and by mirroring
+    //    to Rspress's `.rp-dark` class so its components stay aligned.
+    applyVariant(html, variant)
 
-    // 4. Apply base color overrides
+    // 4. Apply light-mode color overrides immediately.
     if (hasColors) {
       applyColorOverrides(html, colors)
     }
 
-    // 5. Observe dark mode changes for dark-specific overrides
-    if (hasDarkColors) {
-      const isDark = html.classList.contains('rp-dark')
-      if (isDark) {
-        applyColorOverrides(html, darkColors)
-      }
-
-      const observer = new MutationObserver((mutations) => {
-        const classChanged = mutations.some((m) => m.attributeName === 'class')
-        if (classChanged) {
-          const nowDark = html.classList.contains('rp-dark')
-          clearColorOverrides(html)
-          if (hasColors) {
-            applyColorOverrides(html, colors)
-          }
-          if (nowDark && hasDarkColors) {
-            applyColorOverrides(html, darkColors)
-          }
-        }
-      })
-
-      observer.observe(html, { attributes: true, attributeFilter: ['class'] })
-
-      // 6. Dismiss loading overlay
-      const cancelLoader = dismissLoader(html)
-
-      return () => {
-        observer.disconnect()
-        cancelLoader()
-      }
+    // 5. Apply dark-mode color overrides when starting in dark.
+    if (variant === 'dark' && hasDarkColors) {
+      applyColorOverrides(html, darkColors)
     }
 
-    // 6. Dismiss loading overlay (no dark-color observer needed)
-    return dismissLoader(html)
+    // 6. Observe `.rp-dark` class changes so Rspress's built-in dark
+    //    toggle stays the single source of truth for variant flips. The
+    //    new variant must be present in the active theme's supported
+    //    set; if it isn't (e.g. a devtools tinkerer flips `.rp-dark` off
+    //    on `midnight`, which is dark-only), snap the class back rather
+    //    than persisting an unsupported variant.
+    const supportedSet = new Set((THEME_VARIANTS[themeName] ?? 'dark').split(' '))
+    const observer = new MutationObserver((mutations) => {
+      const classChanged = mutations.some((m) => m.attributeName === 'class')
+      if (!classChanged) {
+        return
+      }
+      const nowDark = html.classList.contains('rp-dark')
+      const nextVariant: ThemeVariant = match(nowDark)
+        .with(true, () => 'dark' as ThemeVariant)
+        .otherwise(() => 'light' as ThemeVariant)
+      if (html.dataset.zpVariant === nextVariant) {
+        return
+      }
+      if (!supportedSet.has(nextVariant)) {
+        // Unsupported variant for the active theme — snap Rspress's
+        // class state back to match the current `data-zp-variant` and
+        // do NOT persist the illegal flip.
+        if (html.dataset.zpVariant === 'dark') {
+          html.classList.add('rp-dark', 'dark')
+          html.dataset.dark = 'true'
+        } else {
+          html.classList.remove('rp-dark', 'dark')
+          html.dataset.dark = 'false'
+        }
+        return
+      }
+      html.dataset.zpVariant = nextVariant
+      persistVariant(nextVariant)
+      clearColorOverrides(html)
+      if (hasColors) {
+        applyColorOverrides(html, colors)
+      }
+      if (nextVariant === 'dark' && hasDarkColors) {
+        applyColorOverrides(html, darkColors)
+      }
+    })
+    observer.observe(html, { attributes: true, attributeFilter: ['class'] })
+
+    // 7. Dismiss loading overlay
+    const cancelLoader = dismissLoader(html)
+
+    return () => {
+      observer.disconnect()
+      cancelLoader()
+    }
   }, [])
 
   return null
@@ -235,6 +261,98 @@ export { ThemeProvider as default }
 // ---------------------------------------------------------------------------
 // Private
 // ---------------------------------------------------------------------------
+
+/**
+ * Resolve the theme name to apply for this render.
+ *
+ * Returns the persisted localStorage value when it points at a registered
+ * theme; falls back to the build-time default otherwise.
+ *
+ * @private
+ * @param persisted - Value read from `localStorage['zpress-theme']` (or `null`)
+ * @returns Resolved theme name
+ */
+function resolveActiveThemeName(persisted: string | null): string {
+  if (persisted !== null && REGISTERED_THEME_NAMES.has(persisted)) {
+    return persisted
+  }
+  return __ZPRESS_THEME_NAME__
+}
+
+/**
+ * Resolve the variant to apply for this render. Honours persisted state
+ * when it's still valid for the active theme; otherwise uses the theme's
+ * own default variant; otherwise the build-time default; otherwise dark.
+ *
+ * @private
+ * @param params - Persisted variant, build-time default, active theme name
+ * @returns Resolved variant for this render
+ */
+function resolveActiveVariant(params: {
+  readonly persisted: ThemeVariant | null
+  readonly buildTimeDefault: ThemeVariant | null
+  readonly themeName: string
+}): ThemeVariant {
+  const supported = THEME_VARIANTS[params.themeName]
+  const supportedVariants = match(supported)
+    .with(P.nullish, () => ['dark'])
+    .otherwise((s) => s.split(' '))
+  const supportedSet = new Set(supportedVariants)
+  if (params.persisted !== null && supportedSet.has(params.persisted)) {
+    return params.persisted
+  }
+  const themeDefault = THEME_DEFAULT_VARIANTS[params.themeName]
+  if (themeDefault !== undefined && supportedSet.has(themeDefault)) {
+    return themeDefault
+  }
+  if (params.buildTimeDefault !== null && supportedSet.has(params.buildTimeDefault)) {
+    return params.buildTimeDefault
+  }
+  if (supportedSet.has('dark')) {
+    return 'dark'
+  }
+  return 'light'
+}
+
+/**
+ * Apply the resolved variant to `<html>` — sets `data-zp-variant`,
+ * toggles Rspress's `.rp-dark` / `.dark` classes, and mirrors the value
+ * into Rspress's `localStorage['rspress-theme-appearance']` key so a
+ * server-rendered first paint matches.
+ *
+ * @private
+ * @param html - HTML document element
+ * @param variant - Variant to apply
+ */
+function applyVariant(html: HTMLElement, variant: ThemeVariant): void {
+  html.dataset.zpVariant = variant
+  if (variant === 'dark') {
+    html.classList.add('rp-dark', 'dark')
+    html.dataset.dark = 'true'
+  } else {
+    html.classList.remove('rp-dark', 'dark')
+    html.dataset.dark = 'false'
+  }
+  try {
+    localStorage.setItem('rspress-theme-appearance', variant)
+  } catch {
+    // storage unavailable
+  }
+}
+
+/**
+ * Persist the user's variant preference so it survives reloads.
+ *
+ * @private
+ * @param variant - Variant to remember
+ */
+function persistVariant(variant: ThemeVariant): void {
+  try {
+    localStorage.setItem('zpress-variant', variant)
+  } catch {
+    // storage unavailable
+  }
+}
 
 /**
  * Build a flat list of [cssVar, value] pairs from a color overrides object.
@@ -293,28 +411,51 @@ function safeGetItem(key: string): string | null {
 }
 
 /**
- * Resolve the theme name to apply for this render.
- *
- * Returns the persisted localStorage value when it points at a registered
- * theme; falls back to the build-time default otherwise. Stale values are
- * cleared by the caller.
+ * Safe localStorage delete — silently ignores storage exceptions.
  *
  * @private
- * @param persisted - Value read from `localStorage['zpress-theme']` (or `null`)
- * @returns Resolved theme name
+ * @param key - localStorage key to remove
  */
-function resolveActiveThemeName(persisted: string | null): string {
-  if (persisted !== null && REGISTERED_THEME_NAMES.has(persisted)) {
-    return persisted
+function safeRemoveItem(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // storage unavailable
   }
-  return __ZPRESS_THEME_NAME__
+}
+
+/**
+ * Read a localStorage entry and parse it as a `ThemeVariant`. Returns
+ * `null` when the entry is missing, unparseable, or not a known variant.
+ *
+ * @private
+ * @param key - localStorage key to read
+ * @returns Parsed variant or `null`
+ */
+function safeGetVariant(key: string): ThemeVariant | null {
+  return parseVariant(safeGetItem(key))
+}
+
+/**
+ * Coerce a raw string into a `ThemeVariant`, or return `null` when the
+ * value is not a known variant.
+ *
+ * @private
+ * @param raw - Candidate variant value (may be `null` or arbitrary string)
+ * @returns Validated variant or `null`
+ */
+function parseVariant(raw: string | null): ThemeVariant | null {
+  if (raw === 'dark' || raw === 'light') {
+    return raw
+  }
+  return null
 }
 
 /**
  * Parse the build-time theme registry define and return the resolved
- * `{ name, modes }` entries. Returns an empty array on any malformed
- * input so the caller can intersect against an empty set without
- * crashing.
+ * `{ name, variants, defaultVariant }` entries. Returns an empty array
+ * on any malformed input so the caller can intersect against an empty
+ * set without crashing.
  *
  * @private
  * @param raw - Raw JSON string from `__ZPRESS_THEME_REGISTRY__`
@@ -347,15 +488,54 @@ function toRegistryEntry(entry: unknown): readonly RegistryEntry[] {
   if (entry === null || typeof entry !== 'object') {
     return []
   }
-  const { name, modes } = entry as { name?: unknown; modes?: unknown }
+  const { name, variants, defaultVariant } = entry as {
+    name?: unknown
+    variants?: unknown
+    defaultVariant?: unknown
+  }
   if (typeof name !== 'string') {
     return []
   }
-  if (!Array.isArray(modes)) {
-    return [{ name, modes: [] }]
+  const resolvedVariants = parseVariantList(variants)
+  if (resolvedVariants.length === 0) {
+    return [{ name, variants: ['dark'], defaultVariant: 'dark' }]
   }
-  const resolvedModes = modes.filter((m): m is string => typeof m === 'string')
-  return [{ name, modes: resolvedModes }]
+  const defaultVariantString = match(defaultVariant)
+    .with(P.string, (s) => s)
+    .otherwise(() => null)
+  const resolvedDefault = parseVariant(defaultVariantString)
+  const fallbackDefault = resolvedVariants[0] as ThemeVariant
+  return [
+    {
+      name,
+      variants: resolvedVariants,
+      defaultVariant: resolvedDefault ?? fallbackDefault,
+    },
+  ]
+}
+
+/**
+ * Coerce an unknown value into a `readonly ThemeVariant[]`, dropping any
+ * entries that don't parse cleanly.
+ *
+ * @private
+ * @param raw - Candidate variant list from the registry JSON
+ * @returns Filtered list of known variants
+ */
+function parseVariantList(raw: unknown): readonly ThemeVariant[] {
+  if (!Array.isArray(raw)) {
+    return []
+  }
+  return raw.flatMap((v) => {
+    const candidate = match(v)
+      .with(P.string, (s) => s)
+      .otherwise(() => null)
+    const parsed = parseVariant(candidate)
+    if (parsed === null) {
+      return []
+    }
+    return [parsed]
+  })
 }
 
 /**

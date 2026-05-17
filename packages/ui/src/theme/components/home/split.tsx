@@ -1,6 +1,8 @@
 import type React from 'react'
 import { match } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
+
 import './split.css'
 
 export interface SplitAction {
@@ -85,11 +87,17 @@ export function HomeSplit(props: SplitProps): React.ReactElement {
             ))}
           {match(action)
             .with(undefined, () => null)
-            .otherwise((a) => (
-              <a className={btnClass(a.theme)} href={a.link}>
-                {a.text}
-              </a>
-            ))}
+            .otherwise((a) => {
+              const href = safeUrl(a.link)
+              if (href === null) {
+                return null
+              }
+              return (
+                <a className={btnClass(a.theme)} href={href}>
+                  {a.text}
+                </a>
+              )
+            })}
         </div>
         <div className="zp-split__visual">{visual}</div>
       </div>

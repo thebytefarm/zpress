@@ -2,6 +2,7 @@ import { Link } from '@rspress/core/runtime'
 import type React from 'react'
 import { match, P } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
 import { Icon } from '../shared/icon'
 
 import './sidebar-links.css'
@@ -79,7 +80,7 @@ function isExternal(link: string): boolean {
  * @param props - Props with sidebar link item
  * @returns Sidebar link element
  */
-function SidebarLinkEntry({ item }: { readonly item: SidebarLinkItem }): React.ReactElement {
+function SidebarLinkEntry({ item }: { readonly item: SidebarLinkItem }): React.ReactElement | null {
   const isCircle = item.shape === 'circle'
   const content = (
     <>
@@ -101,10 +102,14 @@ function SidebarLinkEntry({ item }: { readonly item: SidebarLinkItem }): React.R
     .otherwise(() => undefined)
   /* oxlint-enable unicorn/no-useless-undefined */
 
-  return match(isExternal(item.link))
+  const safeLink = safeUrl(item.link)
+  if (safeLink === null) {
+    return null
+  }
+  return match(isExternal(safeLink))
     .with(true, () => (
       <a
-        href={item.link}
+        href={safeLink}
         className={cls}
         target="_blank"
         rel="noopener noreferrer"
@@ -114,7 +119,7 @@ function SidebarLinkEntry({ item }: { readonly item: SidebarLinkItem }): React.R
       </a>
     ))
     .otherwise(() => (
-      <Link to={item.link} className={cls} aria-label={ariaLabel}>
+      <Link to={safeLink} className={cls} aria-label={ariaLabel}>
         {content}
       </Link>
     ))

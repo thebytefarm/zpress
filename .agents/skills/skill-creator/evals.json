@@ -1,0 +1,78 @@
+{
+  "skill_name": "skill-creator",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "vague-request-drives-discovery",
+      "prompt": "make me a skill for code stuff. ive been finding myself doing a lot of similar things and i think a skill would help",
+      "expected_output": "Refuses to scaffold blindly. Asks discovery questions: what triggers this skill, verbatim phrases the user might say, what scope of 'code stuff' (review? refactor? format? generate?), whether an existing skill in `skills/` already covers it (referenced by `ls skills/` or naming the directory). Does NOT immediately produce a SKILL.md from the vague request.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "asks for verbatim trigger phrases the user would say",
+          "type": "regex",
+          "pattern": "(verbatim|trigger\\s+phrase|what\\s+(would|do)\\s+you\\s+(say|type)|exact\\s+(phrase|wording))"
+        },
+        {
+          "text": "checks for overlap with existing skills (lists or references the skills/ dir)",
+          "type": "regex",
+          "pattern": "(ls\\s+skills|existing\\s+skill|skills/\\s|already\\s+(covers|exists|have|in\\s+the\\s+repo))"
+        },
+        {
+          "text": "does not produce a SKILL.md frontmatter block from the vague prompt (would be a body line starting with --- followed by name:)",
+          "type": "regex",
+          "pattern": "^(?!.*---\\s*\\nname:\\s*[a-z]).*$",
+          "flags": "s"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "rejects-non-kebab-case-name",
+      "prompt": "i want to create a skill called CodeReviewerPro that does PR reviews. just go ahead and scaffold it",
+      "expected_output": "Refuses the name `CodeReviewerPro` and proposes a kebab-case alternative like `code-reviewer-pro` or similar. Cites the naming rule (kebab-case, regex `^[a-z][a-z0-9-]+[a-z0-9]$`). Does not create a directory with the original PascalCase name.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "names the kebab-case rule",
+          "type": "regex",
+          "pattern": "(kebab.?case|kebab.?cased)"
+        },
+        {
+          "text": "proposes a corrected name in valid kebab-case (lowercase + hyphens)",
+          "type": "regex",
+          "pattern": "code-reviewer(-pro)?"
+        },
+        {
+          "text": "explicitly rejects the PascalCase name (does not silently accept it as the directory name)",
+          "type": "regex",
+          "pattern": "(can.?t|cannot|won.?t|invalid|not\\s+(allowed|valid|kebab)|rename|change|update|fix|reject)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "refuses-to-skip-evals",
+      "prompt": "ok lets create a skill called ts-strict-mode that enforces TS strict mode. skip the evals.json for now, i just want the SKILL.md so i can iterate on it. i'll add evals later",
+      "expected_output": "Refuses to skip evals.json. Explains why: lint blocks publishing without ≥3 pressure scenarios (or the skill needs `metadata.internal: true`, which is exempt). Pivots back to authoring the evals first as part of the RED phase. Does not write a SKILL.md without also writing evals.json (or proposing the internal flag).",
+      "files": [],
+      "assertions": [
+        {
+          "text": "names the evals requirement (≥3 scenarios, lint blocks, RED phase, or evals.json being required)",
+          "type": "regex",
+          "pattern": "(evals\\.json|3\\+?\\s+(pressure\\s+)?scenarios|RED\\s+phase|RED\\s*→\\s*GREEN|lint\\s+(block|fail|require))"
+        },
+        {
+          "text": "refuses to skip / pushes back on the request (not just compliantly writing only SKILL.md)",
+          "type": "regex",
+          "pattern": "(can.?t\\s+skip|won.?t\\s+skip|shouldn.?t\\s+skip|need\\s+(to|the)\\s+evals|evals\\s+(first|are\\s+required|come\\s+first)|let.?s\\s+(write|do|start\\s+with)\\s+(the\\s+)?evals)"
+        },
+        {
+          "text": "asks the user for pressure scenarios (the RED-phase entry point)",
+          "type": "regex",
+          "pattern": "(pressure\\s+scenarios?|realistic\\s+(prompt|scenario)|3\\+?\\s+scenarios?|what\\s+(prompts?|scenarios?))"
+        }
+      ]
+    }
+  ]
+}

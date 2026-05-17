@@ -43,11 +43,12 @@
     border-radius: 9999px;
   }
 
-  /* ── Single-mode themes — hide the appearance toggle when only one mode is supported ── */
-  html[data-zp-modes='dark'] .rp-switch-appearance,
-  html[data-zp-modes='light'] .rp-switch-appearance,
-  html[data-zp-modes='dark'] .rp-nav-screen-appearance,
-  html[data-zp-modes='light'] .rp-nav-screen-appearance {
+  /* ── Single-variant themes — hide the appearance toggle when the
+   active theme only ships one variant. ─────────────────────── */
+  html[data-zp-variants='dark'] .rp-switch-appearance,
+  html[data-zp-variants='light'] .rp-switch-appearance,
+  html[data-zp-variants='dark'] .rp-nav-screen-appearance,
+  html[data-zp-variants='light'] .rp-nav-screen-appearance {
     display: none;
   }
 

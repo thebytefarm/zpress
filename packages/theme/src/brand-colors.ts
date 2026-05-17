@@ -41,17 +41,23 @@ export interface BrandPalette {
 /**
  * Brand palettes for each built-in theme.
  *
- * Derived from `BUILT_IN_THEMES.<name>.tokens.colors.brand` — every built-in
- * theme has the same five-field brand surface, so we project that surface
- * into the `BrandPalette` shape. Kept under the historical name so existing
- * consumers (`@zpress/core/banner`, CLI banner, asset scripts) continue to
- * compile unchanged.
+ * Pulled from each theme's default variant — brand colors stay constant
+ * across variants for built-in themes, so picking `defaultVariant` is
+ * unambiguous. Kept under the historical name so existing consumers
+ * (`@zpress/core/banner`, CLI banner, asset scripts) continue to compile
+ * unchanged.
  */
 export const BRAND_COLORS: Readonly<Record<BuiltInThemeName, BrandPalette>> = Object.freeze(
   Object.fromEntries(
     (Object.keys(BUILT_IN_THEMES) as BuiltInThemeName[]).map(
       (name): readonly [BuiltInThemeName, BrandPalette] => {
-        const { primary, hover, active, fg, soft } = BUILT_IN_THEMES[name].tokens.colors.brand
+        const theme = BUILT_IN_THEMES[name]
+        const defaultTokens = theme.variants[theme.defaultVariant]
+        if (defaultTokens === undefined) {
+          // Unreachable — `defineTheme` guarantees `defaultVariant` is present.
+          return [name, Object.freeze({ primary: '', hover: '', active: '', fg: '', soft: '' })]
+        }
+        const { primary, hover, active, fg, soft } = defaultTokens.colors.brand
         return [name, Object.freeze({ primary, hover, active, fg, soft })]
       }
     )
@@ -66,7 +72,7 @@ export const BRAND_COLORS: Readonly<Record<BuiltInThemeName, BrandPalette>> = Ob
  * `BUILT_IN_THEMES`.
  */
 export const BRAND_GRADIENT: Readonly<Record<BuiltInThemeName, readonly string[]>> = Object.freeze({
-  base: ['#93c5fd', '#60a5fa', '#2563eb'],
+  default: ['#a78bfa', '#8b5cf6', '#5b21b6'],
   midnight: ['#3b82f6', '#1d4ed8', '#1e3a8a'],
   arcade: ['#86efac', '#00ff88', '#00994f'],
 })

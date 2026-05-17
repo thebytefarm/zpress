@@ -1,7 +1,7 @@
 .zp-page-rail {
   max-width: var(--zp-landing-max-width);
   margin: 0 var(--zp-frame-gutter);
-  background: var(--zp-c-bg-elv);
+  background: transparent;
   border-left: 1px solid var(--zp-c-border);
   border-right: 1px solid var(--zp-c-border);
 }

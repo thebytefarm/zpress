@@ -15,15 +15,14 @@
       "type": "object",
       "properties": {
         "name": {
-          "default": "base",
+          "default": "default",
           "type": "string"
         },
-        "colorMode": {
+        "variant": {
           "type": "string",
           "enum": [
             "dark",
-            "light",
-            "toggle"
+            "light"
           ]
         },
         "switcher": {
@@ -165,31 +164,28 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
           },
-          "tokens": {},
-          "modes": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "dark",
-                "light"
-              ]
-            }
+          "variants": {
+            "type": "object",
+            "properties": {
+              "dark": {},
+              "light": {}
+            },
+            "additionalProperties": false
           },
-          "defaultMode": {
+          "defaultVariant": {
             "type": "string",
             "enum": [
               "dark",
-              "light",
-              "toggle"
+              "light"
             ]
           }
         },
         "required": [
           "name",
-          "tokens"
+          "variants"
         ],
         "additionalProperties": false
       }

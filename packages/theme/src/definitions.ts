@@ -1,14 +1,5 @@
-/**
- * Built-in theme definitions and utilities.
- *
- * Every value here is derived from `BUILT_IN_THEMES` in `theme-registry.ts` —
- * the registry is the single source of truth for what themes exist, which
- * color modes they render correctly under, and which mode they default to.
- * Adding a new built-in theme is a one-file change in `theme-registry.ts`.
- */
-
 import { BUILT_IN_THEMES } from './theme-registry.ts'
-import type { BuiltInIconColor, BuiltInThemeName, ColorMode } from './types.ts'
+import type { BuiltInIconColor, BuiltInThemeName, ThemeVariant } from './types.ts'
 
 /**
  * All built-in theme names — used for validation and iteration.
@@ -22,9 +13,16 @@ export const THEME_NAMES: readonly BuiltInThemeName[] = Object.freeze(
 )
 
 /**
- * All valid color modes — used for validation.
+ * All valid theme variants — used for validation.
  */
-export const COLOR_MODES: readonly ColorMode[] = ['dark', 'light', 'toggle'] as const
+export const THEME_VARIANTS: readonly ThemeVariant[] = ['dark', 'light'] as const
+
+/**
+ * Alias retained for migration ergonomics — equivalent to `THEME_VARIANTS`.
+ *
+ * @deprecated Use {@link THEME_VARIANTS}.
+ */
+export const COLOR_MODES: readonly ThemeVariant[] = THEME_VARIANTS
 
 /**
  * All built-in icon colors — used for validation and iteration.
@@ -41,31 +39,51 @@ export const ICON_COLORS: readonly BuiltInIconColor[] = [
 ] as const
 
 /**
- * Resolve the default color mode for a given built-in theme.
+ * Resolve the default variant for a given built-in theme.
  *
- * Reads `defaultMode` straight off the registry entry — no hard-coded match
- * arms, so changing a theme's default in `theme-registry.ts` is the only
- * edit required.
+ * Reads `defaultVariant` straight off the registry entry — no hard-coded
+ * match arms, so changing a theme's default in `theme-registry.ts` is the
+ * only edit required.
  *
  * @param theme - Built-in theme identifier
- * @returns The theme's natural color mode
+ * @returns The theme's default variant (`'dark'` or `'light'`)
  */
-export function resolveDefaultColorMode(theme: BuiltInThemeName): ColorMode {
-  return BUILT_IN_THEMES[theme].defaultMode
+export function resolveDefaultVariant(theme: BuiltInThemeName): ThemeVariant {
+  return BUILT_IN_THEMES[theme].defaultVariant
 }
 
 /**
- * Resolve the supported color modes for a given built-in theme.
+ * Alias retained for migration ergonomics — equivalent to
+ * `resolveDefaultVariant`.
  *
- * Reads `modes` straight off the registry entry — no hard-coded match arms,
- * so changing a theme's supported modes in `theme-registry.ts` is the only
- * edit required.
+ * @deprecated Use {@link resolveDefaultVariant}.
+ */
+export function resolveDefaultColorMode(theme: BuiltInThemeName): ThemeVariant {
+  return resolveDefaultVariant(theme)
+}
+
+/**
+ * Resolve the supported variants for a given built-in theme.
+ *
+ * Reads `variants` straight off the registry entry — no hard-coded match
+ * arms, so changing a theme's supported variants in `theme-registry.ts`
+ * is the only edit required.
  *
  * @param theme - Built-in theme identifier
- * @returns The color modes the theme supports
+ * @returns The variants the theme supports (in `dark` → `light` order)
  */
-export function resolveThemeModes(theme: BuiltInThemeName): readonly ('dark' | 'light')[] {
-  return BUILT_IN_THEMES[theme].modes
+export function resolveThemeVariants(theme: BuiltInThemeName): readonly ThemeVariant[] {
+  return THEME_VARIANTS.filter((v) => BUILT_IN_THEMES[theme].variants[v] !== undefined)
+}
+
+/**
+ * Alias retained for migration ergonomics — equivalent to
+ * `resolveThemeVariants`.
+ *
+ * @deprecated Use {@link resolveThemeVariants}.
+ */
+export function resolveThemeModes(theme: BuiltInThemeName): readonly ThemeVariant[] {
+  return resolveThemeVariants(theme)
 }
 
 /**

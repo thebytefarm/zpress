@@ -1,6 +1,8 @@
 import React from 'react'
 import { match } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
+
 import './meta-actions.css'
 
 export interface MetaAction {
@@ -25,11 +27,18 @@ export interface MetaActionsProps {
  * @returns React element, or null when no actions are provided.
  */
 export function MetaActions(props: MetaActionsProps): React.ReactElement | null {
-  return match(props.actions.length === 0)
+  const safeActions = props.actions.flatMap((action) => {
+    const href = safeUrl(action.href)
+    if (href === null) {
+      return []
+    }
+    return [{ ...action, href }]
+  })
+  return match(safeActions.length === 0)
     .with(true, () => null)
     .otherwise(() => (
       <div className="zp-meta-actions">
-        {props.actions.map((action) => (
+        {safeActions.map((action) => (
           <a
             key={`${action.label}:${action.href}`}
             className="zp-meta-actions__item"

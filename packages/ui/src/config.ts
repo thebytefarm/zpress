@@ -16,14 +16,15 @@ import {
   BUILT_IN_THEMES,
   defineTheme,
   isBuiltInTheme,
-  resolveDefaultColorMode,
-  resolveThemeModes,
+  resolveDefaultVariant,
+  resolveThemeVariants,
   themeToCss,
 } from '@zpress/theme'
-import type { ZpressTheme } from '@zpress/theme'
+import type { ThemeVariant, ZpressTheme } from '@zpress/theme'
 import fileTree from 'rspress-plugin-file-tree'
 import katex from 'rspress-plugin-katex'
 import supersub from 'rspress-plugin-supersub'
+import { match } from 'ts-pattern'
 
 import { getThemeCss } from './css.ts'
 import { readJs } from './head/read.ts'
@@ -37,30 +38,29 @@ interface CreateRspressConfigOptions {
   readonly logLevel?: 'info' | 'warn' | 'error' | 'silent'
   readonly vscode?: boolean
   readonly themeOverride?: ThemeName
-  readonly colorModeOverride?: string
+  readonly variantOverride?: ThemeVariant
 }
 
 interface HeadScriptOptions {
-  readonly colorMode: string
+  readonly variant: ThemeVariant
   readonly themeName: string
   readonly vscode: boolean
+  readonly registry: readonly ThemeRegistryEntry[]
 }
 
 /**
- * Serialized theme registry entry consumed by the theme switcher.
- * Carries the minimum metadata needed to render and apply a theme
- * without re-importing `@zpress/theme` at runtime.
+ * Serialized theme registry entry consumed by the theme switcher and
+ * theme provider. Carries the minimum metadata needed to render and apply
+ * a theme without re-importing `@zpress/theme` at runtime.
  */
 interface ThemeRegistryEntry {
   readonly name: string
   readonly label: string
   readonly swatch: string
-  readonly modes: readonly ('dark' | 'light')[]
-  readonly defaultColorMode: 'dark' | 'light' | 'toggle'
+  readonly variants: readonly ThemeVariant[]
+  readonly defaultVariant: ThemeVariant
 }
 
-const COLOR_MODE_DARK_JS = readJs('js/color-mode-dark.js')
-const COLOR_MODE_LIGHT_JS = readJs('js/color-mode-light.js')
 const VSCODE_SET_JS = `document.documentElement.dataset.zpressEnv='vscode'`
 const VSCODE_NAV_JS = readJs('js/vscode-nav.js')
 const LOADER_DOTS_JS = readJs('js/loader-dots.js')
@@ -96,12 +96,17 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
   const gitBranch = detectGitBranch()
 
   const themeName = resolveThemeName(config, options.themeOverride)
-  const colorMode = resolveColorMode({ config, themeName, override: options.colorModeOverride })
+  const userThemes = resolveUserThemes(config)
+  const variant = resolveActiveVariant({
+    config,
+    themeName,
+    override: options.variantOverride,
+    userThemes,
+  })
   const themeSwitcher = resolveThemeSwitcher(config)
   const themeColors = resolveThemeColors(config)
   const themeDarkColors = resolveThemeDarkColors(config)
 
-  const userThemes = resolveUserThemes(config)
   const userThemesCss = userThemes.map(themeToCss).join('')
   const themeCss = getThemeCss(themeName) + userThemesCss
   const themeRegistry: readonly ThemeRegistryEntry[] = [
@@ -109,7 +114,12 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
     ...userThemes.map(buildRegistryEntry),
   ]
   const isVscode = vscode === true
-  const headScriptBody = buildHeadScriptBody({ colorMode, themeName, vscode: isVscode })
+  const headScriptBody = buildHeadScriptBody({
+    variant,
+    themeName,
+    vscode: isVscode,
+    registry: themeRegistry,
+  })
 
   // Force a single React instance across all compiled theme components.
   // Without this alias, Rspress's rspack may resolve react from the
@@ -188,7 +198,7 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
         define: {
           __ZPRESS_GIT_BRANCH__: JSON.stringify(gitBranch),
           __ZPRESS_THEME_NAME__: JSON.stringify(themeName),
-          __ZPRESS_COLOR_MODE__: JSON.stringify(colorMode),
+          __ZPRESS_DEFAULT_VARIANT__: JSON.stringify(variant),
           __ZPRESS_THEME_COLORS__: JSON.stringify(JSON.stringify(themeColors)),
           __ZPRESS_THEME_DARK_COLORS__: JSON.stringify(JSON.stringify(themeDarkColors)),
           __ZPRESS_THEME_SWITCHER__: JSON.stringify(themeSwitcher),
@@ -204,7 +214,11 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
     },
 
     themeConfig: {
-      darkMode: colorMode === 'toggle',
+      // Rspress's sun/moon toggle is shown when the active theme exposes
+      // more than one variant — when there's only one, the toggle is
+      // visually irrelevant. CSS in the theme provider hides it on
+      // single-variant themes via `[data-zp-variants]`.
+      darkMode: true,
       search: true,
       // Custom zpress data injected alongside standard Rspress themeConfig.
       // Accessed at runtime via useSite().site.themeConfig cast to unknown.
@@ -270,12 +284,12 @@ function detectGitBranch(): string {
 }
 
 /**
- * Resolve the theme name from config, defaulting to 'base'.
+ * Resolve the theme name from config, defaulting to `'default'`.
  *
  * Validates the resolved name against the merged registry (built-in themes
  * plus any user themes declared in `config.themes`). An unknown name —
  * caused by a typo or by removing a custom theme without updating
- * `theme.name` — writes a warning to stderr and falls back to `'base'`
+ * `theme.name` — writes a warning to stderr and falls back to `'default'`
  * so the build still produces working CSS.
  *
  * @private
@@ -290,14 +304,14 @@ function resolveThemeName(config: ZpressConfig, override?: ThemeName): ThemeName
     return requested
   }
   process.stderr.write(
-    `[zpress] Unknown theme '${requested}' — not a built-in and not declared in config.themes. Falling back to 'base'.\n`
+    `[zpress] Unknown theme '${requested}' — not a built-in and not declared in config.themes. Falling back to 'default'.\n`
   )
-  return 'base'
+  return 'default'
 }
 
 /**
  * Pick the theme name the consumer asked for, in precedence order:
- * CLI override > `config.theme.name` > `'base'`.
+ * CLI override > `config.theme.name` > `'default'`.
  *
  * @private
  * @param config - Zpress config object
@@ -311,7 +325,7 @@ function resolveRequestedThemeName(config: ZpressConfig, override?: ThemeName): 
   if (config.theme && config.theme.name) {
     return config.theme.name
   }
-  return 'base'
+  return 'default'
 }
 
 /**
@@ -330,49 +344,71 @@ function collectRegisteredThemeNames(config: ZpressConfig): ReadonlySet<string> 
 }
 
 /**
- * Resolve the color mode from config, defaulting to the theme's natural mode.
- * For custom themes, defaults to 'toggle'.
+ * Resolve the initial variant to render for the active theme.
+ *
+ * Precedence: CLI override > `config.theme.variant` > theme's own
+ * `defaultVariant`. When the requested variant is not declared by the
+ * active theme, falls back to the theme's `defaultVariant` (and writes
+ * a warning to stderr).
  *
  * @private
- * @param params - Config and theme name
- * @returns Color mode string ('dark', 'light', or 'toggle')
+ * @param params - Config, resolved theme name, optional CLI override, resolved user themes
+ * @returns Variant to apply on first render
  */
-function resolveColorMode(params: {
+function resolveActiveVariant(params: {
   readonly config: ZpressConfig
   readonly themeName: ThemeName
-  readonly override?: string
-}): string {
-  const requested =
-    params.override ?? (params.config.theme && params.config.theme.colorMode) ?? null
-
-  if (isBuiltInTheme(params.themeName)) {
-    const supported = resolveThemeModes(params.themeName as BuiltInThemeName)
-    if (requested && isColorModeSupported(requested, supported)) {
-      return requested
-    }
-    return resolveDefaultColorMode(params.themeName as BuiltInThemeName)
-  }
-
-  if (requested) {
+  readonly override?: ThemeVariant
+  readonly userThemes: readonly ZpressTheme[]
+}): ThemeVariant {
+  const supported = resolveSupportedVariants(params.themeName, params.userThemes)
+  const themeBlock = params.config.theme
+  const fromConfig = match(themeBlock)
+    .with(undefined, () => undefined)
+    .otherwise((block) => block.variant)
+  const requested = params.override ?? fromConfig
+  if (requested !== undefined && supported.includes(requested)) {
     return requested
   }
-  return 'toggle'
+  if (requested !== undefined) {
+    process.stderr.write(
+      `[zpress] Theme '${params.themeName}' does not declare variant '${requested}'. Falling back to its default variant.\n`
+    )
+  }
+  if (isBuiltInTheme(params.themeName)) {
+    return resolveDefaultVariant(params.themeName as BuiltInThemeName)
+  }
+  const userTheme = params.userThemes.find((t) => t.name === params.themeName)
+  if (userTheme) {
+    return userTheme.defaultVariant
+  }
+  return 'dark'
 }
 
 /**
- * Check if a requested color mode is compatible with the theme's supported modes.
- * `toggle` is only valid when both `dark` and `light` are supported.
+ * Variants declared by the active theme (built-in or user). Used to
+ * validate `theme.variant` overrides and to fall back to a sensible
+ * default when the request is unsupported.
  *
  * @private
- * @param mode - Requested color mode
- * @param supported - Modes the theme supports
- * @returns True if the mode is valid for the theme
+ * @param themeName - Resolved theme name
+ * @param userThemes - Validated user themes from `config.themes`
+ * @returns Variants the theme supports
  */
-function isColorModeSupported(mode: string, supported: readonly ('dark' | 'light')[]): boolean {
-  if (mode === 'toggle') {
-    return supported.includes('dark') && supported.includes('light')
+function resolveSupportedVariants(
+  themeName: ThemeName,
+  userThemes: readonly ZpressTheme[]
+): readonly ThemeVariant[] {
+  if (isBuiltInTheme(themeName)) {
+    return resolveThemeVariants(themeName as BuiltInThemeName)
   }
-  return supported.includes(mode as 'dark' | 'light')
+  const userTheme = userThemes.find((t) => t.name === themeName)
+  if (userTheme) {
+    return (Object.keys(userTheme.variants) as ThemeVariant[]).filter(
+      (v) => userTheme.variants[v] !== undefined
+    )
+  }
+  return ['dark']
 }
 
 /**
@@ -390,7 +426,8 @@ function resolveThemeSwitcher(config: ZpressConfig): boolean {
 }
 
 /**
- * Resolve theme color overrides, defaulting to empty object.
+ * Resolve theme color overrides applied to the `light` variant,
+ * defaulting to empty object.
  *
  * @private
  * @param config - Zpress config object
@@ -404,11 +441,12 @@ function resolveThemeColors(config: ZpressConfig): ThemeColors {
 }
 
 /**
- * Resolve dark mode color overrides, defaulting to empty object.
+ * Resolve theme color overrides applied to the `dark` variant,
+ * defaulting to empty object.
  *
  * @private
  * @param config - Zpress config object
- * @returns Dark mode color overrides
+ * @returns Dark variant color overrides
  */
 function resolveThemeDarkColors(config: ZpressConfig): ThemeColors {
   if (config.theme && config.theme.darkColors) {
@@ -422,9 +460,9 @@ function resolveThemeDarkColors(config: ZpressConfig): ThemeColors {
  * producing fully-typed `ZpressTheme` instances ready for CSS emission and
  * registry serialisation.
  *
- * Each input flows through `defineTheme`, which runs the token tree through
- * `tokensSchema` — surfaced validation errors are intentional config-time
- * failures (same contract as `defineTheme` documented in `@zpress/theme`).
+ * Each input flows through `defineTheme`, which runs each variant's token
+ * tree through `tokensSchema` — surfaced validation errors are intentional
+ * config-time failures (same contract as `defineTheme` in `@zpress/theme`).
  *
  * @private
  * @param config - Zpress config object
@@ -483,70 +521,102 @@ function resolveHomeConfig(config: ZpressConfig): HomeConfig {
 }
 
 /**
- * Generate the color mode fragment of the inline head script.
- * Reads from pre-minified JS asset files.
- *
- * @private
- * @param colorMode - Color mode string ('dark', 'light', or 'toggle')
- * @returns Inline JS string for forcing color mode
- */
-function buildColorModeJs(colorMode: string): string {
-  if (colorMode === 'dark') {
-    return COLOR_MODE_DARK_JS
-  }
-  if (colorMode === 'light') {
-    return COLOR_MODE_LIGHT_JS
-  }
-  // 'toggle' mode — no forced color mode; Rspress controls the toggle natively
-  return ''
-}
-
-/**
  * Build the raw JS body for the inline head script (no wrapping tags).
  *
- * Handles concerns synchronously, before React hydration:
- * 1. Force color mode — sets localStorage and toggles rp-dark class
- * 2. Set data-zp-theme — enables theme-scoped CSS immediately
- * 3. (vscode only) Set data-zpress-env="vscode" so static vscode.css applies
+ * Resolves the active theme and variant **once** in a single IIFE so
+ * `data-zp-theme`, `data-zp-variant`, `.rp-dark`, and Rspress's
+ * `localStorage['rspress-theme-appearance']` are all consistent before
+ * React hydrates. The script intersects persisted values from
+ * `localStorage` against the embedded registry — stale or unsupported
+ * values fall through to the build-time defaults rather than poisoning
+ * first paint.
  *
  * @private
- * @param options - Color mode, theme name, and vscode flag
+ * @param options - Variant, theme name, vscode flag, and registry
  * @returns Concatenated inline JS string
  */
 function buildHeadScriptBody(options: HeadScriptOptions): string {
-  const colorModeJs = buildColorModeJs(options.colorMode)
-  const themeAttrJs = `document.documentElement.dataset.zpTheme=function(){try{var t=localStorage.getItem('zpress-theme');if(t)return t}catch(_){}return ${JSON.stringify(options.themeName)}}();`
+  // Minimal registry for the head script — only `name → variants[]` plus
+  // each theme's default variant. Anything else is dead weight in the
+  // critical-path script.
+  const minimalRegistry = options.registry.map((entry) => ({
+    name: entry.name,
+    variants: [...entry.variants],
+    defaultVariant: entry.defaultVariant,
+  }))
+
+  const resolveJs = `(function(){
+    var R = ${JSON.stringify(minimalRegistry)};
+    var buildTheme = ${JSON.stringify(options.themeName)};
+    var buildVariant = ${JSON.stringify(options.variant)};
+    function readLS(k){try{return localStorage.getItem(k)}catch(_){return null}}
+    var name = (function(){
+      var s = readLS('zpress-theme');
+      for (var i = 0; i < R.length; i++) { if (R[i].name === s) { return s; } }
+      return buildTheme;
+    })();
+    var entry = R.find(function(e){return e.name===name});
+    var supported = entry ? entry.variants : ['dark'];
+    var themeDefault = entry ? entry.defaultVariant : buildVariant;
+    var variant = (function(){
+      var s = readLS('zpress-variant');
+      if ((s === 'dark' || s === 'light') && supported.indexOf(s) !== -1) { return s; }
+      if (supported.indexOf(themeDefault) !== -1) { return themeDefault; }
+      if (supported.indexOf(buildVariant) !== -1) { return buildVariant; }
+      return supported[0] || 'dark';
+    })();
+    var d = document.documentElement;
+    d.dataset.zpTheme = name;
+    d.dataset.zpVariant = variant;
+    d.dataset.zpVariants = supported.join(' ');
+    if (variant === 'dark') {
+      d.classList.add('rp-dark', 'dark');
+      d.dataset.dark = 'true';
+    } else {
+      d.classList.remove('rp-dark', 'dark');
+      d.dataset.dark = 'false';
+    }
+    try { localStorage.setItem('rspress-theme-appearance', variant); } catch (_) {}
+  })()`
+
   const vscodeJs: string = (() => {
     if (options.vscode) {
       return [VSCODE_SET_JS, VSCODE_NAV_JS].join(';')
     }
     return ''
   })()
-  return [colorModeJs, themeAttrJs, vscodeJs, LOADER_DOTS_JS].filter(Boolean).join(';')
+  return [resolveJs, vscodeJs, LOADER_DOTS_JS].filter(Boolean).join(';')
 }
 
 /**
  * Map a `ZpressTheme` to its serialized registry entry. The swatch is the
- * theme's `colors.brand.primary` — the single hex value the theme switcher
- * paints into each option's swatch dot.
+ * default variant's `colors.brand.primary` — the single hex value the
+ * theme switcher paints into each option's swatch dot.
  *
  * @private
- * @param theme - Built-in theme definition
- * @returns Registry entry consumed by the theme switcher
+ * @param theme - Built-in or user theme definition
+ * @returns Registry entry consumed by the theme switcher and provider
  */
 function buildRegistryEntry(theme: ZpressTheme): ThemeRegistryEntry {
+  const defaultTokens = theme.variants[theme.defaultVariant]
+  const swatch = match(defaultTokens)
+    .with(undefined, () => '')
+    .otherwise((tokens) => tokens.colors.brand.primary)
+  const variants = (Object.keys(theme.variants) as ThemeVariant[]).filter(
+    (v) => theme.variants[v] !== undefined
+  )
   return {
     name: theme.name,
     label: toLabel(theme.name),
-    swatch: theme.tokens.colors.brand.primary,
-    modes: theme.modes,
-    defaultColorMode: theme.defaultMode,
+    swatch,
+    variants,
+    defaultVariant: theme.defaultVariant,
   }
 }
 
 /**
  * Capitalize the first character of a theme name for display in the switcher.
- * Built-in theme names are single lowercase tokens (`base`, `midnight`,
+ * Built-in theme names are single lowercase tokens (`default`, `midnight`,
  * `arcade`) so a simple capitalization is sufficient — no spaces or casing
  * tricks needed.
  *

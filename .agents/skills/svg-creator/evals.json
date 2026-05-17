@@ -1,0 +1,94 @@
+{
+  "skill_name": "svg-creator",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "create-github-banner",
+      "prompt": "make me a github readme banner for my project 'TaskForge' — 1280x256, dark theme with a purple gradient, title and a one-line subtitle. ill embed it as <img> in the readme so it needs to render right and not have weird whitespace around it",
+      "expected_output": "Writes an SVG with viewBox='0 0 1280 256', width=1280, height=256, a linearGradient using hardcoded hex colors (no CSS vars), background fills edge-to-edge, title + subtitle text. Then verifies the result by either starting the preview server or using chrome-devtools MCP to screenshot — does not just write the file and stop.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "viewBox starts at 0 0 with the requested 1280×256 dimensions",
+          "type": "regex",
+          "pattern": "viewBox=\"0\\s+0\\s+1280\\s+256\""
+        },
+        {
+          "text": "outer SVG width and height match the banner dimensions",
+          "type": "regex",
+          "pattern": "<svg[^>]*\\bwidth=\"1280\"[^>]*\\bheight=\"256\"|<svg[^>]*\\bheight=\"256\"[^>]*\\bwidth=\"1280\""
+        },
+        {
+          "text": "uses a linearGradient with hardcoded hex stops (not CSS variables)",
+          "type": "regex",
+          "pattern": "<linearGradient[\\s\\S]*?stop-color=\"#[0-9a-fA-F]{3,8}\"[\\s\\S]*?</linearGradient>"
+        },
+        {
+          "text": "verifies the output visually rather than writing-and-stopping (preview server, chrome-devtools MCP screenshot, or opens localhost)",
+          "type": "regex",
+          "pattern": "(preview-server|take_screenshot|navigate_page|chrome-devtools|localhost:\\d{4,5}|open\\s+http://localhost)"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "fix-offset-viewbox",
+      "prompt": "this banner has whitespace around it that i cant get rid of when i embed it on github. ive tried object-fit:contain and negative margins but the padding is baked in. fix the file.\n\ncurrent svg:\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"120 40 660 420\" width=\"660\" height=\"420\">\n  <rect x=\"120\" y=\"40\" width=\"660\" height=\"420\" fill=\"#7268F0\"/>\n  <text x=\"450\" y=\"240\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"40\" fill=\"#FFFFFF\">Hello</text>\n</svg>",
+      "expected_output": "Identifies that the viewBox is offset (starts at 120 40 instead of 0 0), shifts every child element back to origin (rect to x=0 y=0, text x to 330 y to 200 — subtracting the 120/40 offset), and rewrites the viewBox to '0 0 660 420'. Explains briefly why offsets bake padding into the asset.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "rewrites viewBox to start at 0 0 with the same 660×420 extent",
+          "type": "regex",
+          "pattern": "viewBox=\"0\\s+0\\s+660\\s+420\""
+        },
+        {
+          "text": "shifts the background rect back to the origin (x=0 y=0)",
+          "type": "regex",
+          "pattern": "<rect[^>]*\\bx=\"0\"[^>]*\\by=\"0\"|<rect[^>]*\\by=\"0\"[^>]*\\bx=\"0\""
+        },
+        {
+          "text": "shifts the text element by subtracting the 120/40 offset (x≈330, y≈200) — not still at 450/240",
+          "type": "regex",
+          "pattern": "<text[^>]*\\bx=\"330\"[^>]*\\by=\"200\"|<text[^>]*\\by=\"200\"[^>]*\\bx=\"330\""
+        },
+        {
+          "text": "explains the rule (mentions origin / offset / 0 0 — not just rewrites silently)",
+          "type": "regex",
+          "pattern": "(offset|origin|baked|bake|starts? (at|with) 0[\\s,]+0|viewBox.*must.*0[\\s,]+0)",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "preview-then-convert",
+      "prompt": "i have icon.svg in this folder and i need a png version for a slide deck. before i convert it i want to actually look at the svg in a browser to make sure it renders right — what's the workflow?",
+      "expected_output": "Tells the user (or runs) the preview server to serve icon.svg locally, optionally drives chrome-devtools MCP to navigate + screenshot for the agent's own verification, then runs the sharp-based converter (or `node scripts/convert.mjs`) to produce icon.png. Does not jump straight to conversion without previewing.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "uses or references the skill's preview server (preview-server.mjs / serve / localhost)",
+          "type": "regex",
+          "pattern": "(preview-server\\.mjs|preview-server|node scripts/preview|serve\\s+icon|localhost:\\d{4,5})"
+        },
+        {
+          "text": "uses or references the skill's converter (convert.mjs or sharp's SVG → PNG path)",
+          "type": "regex",
+          "pattern": "(convert\\.mjs|node scripts/convert|sharp\\([^)]*icon|\\.toFormat\\(\\s*['\"]png|\\.png\\(\\))"
+        },
+        {
+          "text": "produces the requested icon.png as the output",
+          "type": "contains",
+          "substring": "icon.png"
+        },
+        {
+          "text": "actually previews before converting — doesn't just convert blind",
+          "type": "regex",
+          "pattern": "(first\\s+(open|preview|view|verify)|preview\\s+(it\\s+)?(first|before)|verify.*(then|before)\\s+convert|step\\s+1[^\\n]*preview)",
+          "flags": "i"
+        }
+      ]
+    }
+  ]
+}

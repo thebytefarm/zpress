@@ -1,21 +1,9 @@
 .zp-cta {
-  position: relative;
   padding: 96px 0;
   text-align: center;
-  overflow: hidden;
-}
-
-.zp-cta::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 50% 50%, var(--zp-c-brand-soft), transparent 70%);
-  pointer-events: none;
 }
 
 .zp-cta__inner {
-  position: relative;
-  z-index: 1;
   max-width: 800px;
   margin: 0 auto;
   padding: 0 32px;

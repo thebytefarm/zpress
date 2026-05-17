@@ -1,0 +1,123 @@
+{
+  "skill_name": "skill-reviewer",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "review-real-skill-find-weakness",
+      "prompt": "hey can you give skills/ts-best-practices a once-over? been a minute since i touched it and i wanna make sure it still holds up against our repo conventions — frontmatter rules, description quality, trigger phrases, eval quality, that kind of thing. just lmk what you'd actually change, not a summary",
+      "expected_output": "A grounded review that (a) classifies the skill type (discipline / technique / pattern / reference) since this dictates which pressure-scenario shape applies, (b) reads the deep references in skill-creator/references — especially pressure-scenarios.md, evals-json.md, tdd-for-skills.md — not just lint-checklist.md, (c) audits assertion shapes in evals.json for brittleness (negative regex per-line, double-assert, LLM-as-judge sneaking in, regex matching the prompt itself echoed back), and (d) emits findings in a severity-tiered format (error / warn / info) with concrete edits and file:line pointers. Should reference the lint output but not stop there.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "classifies the skill as discipline / technique / pattern / reference",
+          "type": "regex",
+          "pattern": "\\b([Dd]iscipline|[Tt]echnique|[Pp]attern|[Rr]eference)\\s+(skill|category|type)\\b"
+        },
+        {
+          "text": "cites pressure-scenarios.md, evals-json.md, or tdd-for-skills.md (deep references — not just lint-checklist)",
+          "type": "regex",
+          "pattern": "(pressure-scenarios\\.md|evals-json\\.md|tdd-for-skills\\.md)"
+        },
+        {
+          "text": "audits the evals.json assertion shapes for brittleness using structural terms (not casual prose)",
+          "type": "regex",
+          "pattern": "([Bb]rittle|[Nn]egative regex|per[-\\s]line|double[-\\s]assert|literal\\s+(word|match)|[Ff]alse[\\s-]positive|prompt[\\s-]?echo|matches?\\s+the\\s+prompt|tempered\\s+greedy|LLM[-\\s]as[-\\s]judge)"
+        },
+        {
+          "text": "uses severity tiers (error / warn / info) in findings",
+          "type": "regex",
+          "pattern": "(##\\s+(ERRORS?|WARNS?|INFOS?|errors?|warns?|infos?)|✗.{0,500}⚠|\\[error\\][\\s\\S]{0,400}\\[warn\\])"
+        },
+        {
+          "text": "points at specific file:line locations",
+          "type": "regex",
+          "pattern": "(SKILL\\.md:\\d+|evals\\.json:\\d+|line\\s*\\d+|README\\.md:\\d+)"
+        },
+        {
+          "text": "proposes a concrete edit",
+          "type": "regex",
+          "pattern": "\\b([Cc]hange|[Ee]dit|[Uu]pdate|[Aa]dd|[Rr]emove|[Rr]eplace|[Rr]ewrite|[Tt]ighten|[Ss]wap|[Dd]rop|[Ss]plit)\\b"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "no-issues-case-solid-skill",
+      "prompt": "i think skills/skill-portability is in good shape but want a sanity check before i forget about it. quick review — if it's solid just say so, don't manufacture stuff",
+      "expected_output": "An honest review that, if the SKILL.md actually conforms, returns a clear pass verdict with a Clean / passes section enumerating WHICH specific repo rules pass (not vibes). Should classify the skill type and use the same severity-tiered format as a non-pass review (with empty error/warn sections explicitly), so the output shape is comparable across runs. Should ground the verdict in skill-creator/references rules — not invent nits to look thorough.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "issues a pass verdict in the documented SUMMARY shape (0 error / 0 warn / 0 info, NOT casual ship-it prose)",
+          "type": "regex",
+          "pattern": "(SUMMARY:\\s*0\\s+findings|0\\s*error\\s*/\\s*0\\s*warn\\s*/\\s*0\\s*info|zero\\s+(errors|findings))"
+        },
+        {
+          "text": "classifies the skill as discipline / technique / pattern / reference",
+          "type": "regex",
+          "pattern": "\\b([Dd]iscipline|[Tt]echnique|[Pp]attern|[Rr]eference)\\s+(skill|category|type)\\b"
+        },
+        {
+          "text": "produces a Clean / passes section enumerating what specifically conforms",
+          "type": "regex",
+          "pattern": "(##\\s+Clean|^Clean\\s*$|✓|passes:|conforms:|##\\s+What passes|specifically (passes|conforms))"
+        },
+        {
+          "text": "preserves the severity-tier shape on the pass case (## ERRORS / WARNS sections present, even if empty as `(none)`)",
+          "type": "regex",
+          "pattern": "##\\s+ERRORS[\\s\\S]{0,200}\\(none\\)[\\s\\S]{0,400}##\\s+WARNS[\\s\\S]{0,200}\\(none\\)",
+          "flags": "s"
+        },
+        {
+          "text": "cites Claude Code extension fields by name (argument-hint / user-invocable / model-invocable)",
+          "type": "regex",
+          "pattern": "(argument-hint|user-invocable|model-invocable)"
+        },
+        {
+          "text": "mentions running the lint to confirm (verbatim command, not loose `Lint:` prefix)",
+          "type": "regex",
+          "pattern": "(pnpm\\s+skill-tools\\s+lint(\\s+\\S+)?|node\\s+packages/skill-tools[^\\n]*\\blint\\b|skill-tools\\s+lint\\s+\\S+)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "review-and-trigger-behavioral-eval",
+      "prompt": "review skills/code-reviewer for me — and if you can also run the evals on it, would love to see how it actually does in practice not just on paper",
+      "expected_output": "A static review of skills/code-reviewer (severity-tiered, classified, file:line pointers) PLUS an explicit handling of the behavioral half: check whether skill-eval is available in the current session (skills/skill-eval/ present, /skill-eval slash command loaded, or Agent/Task dispatch tools available), then either invoke it OR explicitly state it's not available and prompt to install. Should NOT silently skip the behavioral half. Should also audit code-reviewer's own evals.json for assertion brittleness as part of the static review.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "names skill-eval as the behavioral validation tool",
+          "type": "regex",
+          "pattern": "(skill-eval|skill_eval)"
+        },
+        {
+          "text": "explicitly checks / states whether skill-eval is available in the current context",
+          "type": "regex",
+          "pattern": "(skill-eval (is |has been |was )?(available|loaded|present|installed|not available|not loaded|missing|deferred|invocable)|skill-eval (skill )?(exists|is in|found at|located)|skills/skill-eval|whether (skill-eval|the skill-eval skill)|[Bb]ehavioral handoff)"
+        },
+        {
+          "text": "either invokes / proposes the exact documented invocation OR asks to install (no fabricated `pnpm skill-tools eval` form — the skill teaches the slash command + node packages/skill-tools/dist/index.mjs path)",
+          "type": "regex",
+          "pattern": "(/skill-eval\\s+code-reviewer|node\\s+packages/skill-tools/dist/index\\.mjs\\s+eval|install\\s+skill-eval|add\\s+skill-eval|dispatch[^\\n]{0,80}skill-eval)"
+        },
+        {
+          "text": "classifies code-reviewer as discipline / technique / pattern / reference",
+          "type": "regex",
+          "pattern": "\\b([Dd]iscipline|[Tt]echnique|[Pp]attern|[Rr]eference)\\s+(skill|category|type)\\b"
+        },
+        {
+          "text": "uses severity tiers in the static review",
+          "type": "regex",
+          "pattern": "(##\\s+(ERRORS?|WARNS?|INFOS?|errors?|warns?|infos?)|✗.{0,500}⚠|\\[error\\][\\s\\S]{0,400}\\[warn\\])"
+        },
+        {
+          "text": "audits the eval assertion shapes for brittleness",
+          "type": "regex",
+          "pattern": "([Bb]rittle|[Nn]egative regex|per[-\\s]line|double[-\\s]assert|literal\\s+(word|match)|[Ff]alse[\\s-]positive|tighten|loose|matches?\\s+the\\s+prompt|prompt[\\s-]?echo)"
+        }
+      ]
+    }
+  ]
+}

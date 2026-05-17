@@ -104,11 +104,16 @@ export const themeNameSchema = z
   })
 
 /**
- * Zod schema for the color mode setting.
- *
- * Accepts `'dark'`, `'light'`, or `'toggle'`.
+ * Zod schema for the theme variant setting. Accepts `'dark'` or `'light'`.
  */
-export const colorModeSchema = z.enum(['dark', 'light', 'toggle'])
+export const themeVariantSchema = z.enum(['dark', 'light'])
+
+/**
+ * Legacy alias for `themeVariantSchema` — kept for migration ergonomics.
+ *
+ * @deprecated Use {@link themeVariantSchema}.
+ */
+export const colorModeSchema = themeVariantSchema
 
 /**
  * Zod schema for a CSS color string.
@@ -682,8 +687,8 @@ export const themeColorsSchema = z
  */
 export const themeConfigSchema = z
   .object({
-    name: z.string().default('base'),
-    colorMode: colorModeSchema.optional(),
+    name: z.string().default('default'),
+    variant: themeVariantSchema.optional(),
     switcher: z.boolean().optional(),
     colors: themeColorsSchema.optional(),
     darkColors: themeColorsSchema.optional(),

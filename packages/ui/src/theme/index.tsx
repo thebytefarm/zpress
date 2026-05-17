@@ -16,8 +16,8 @@ import './styles/layers.css'
 import './styles/overrides/fonts.css'
 import './styles/overrides/tokens.css'
 import './styles/overrides/rspress.css'
-// Theme color palettes — scoped via [data-zp-theme] selectors
-import './styles/themes/base.css'
+// Theme color palettes — scoped via [data-zp-theme][data-zp-variant] selectors
+import './styles/themes/default.css'
 import './styles/themes/midnight.css'
 import './styles/themes/arcade.css'
 // arcade-fx.css is intentionally separate from arcade.css:

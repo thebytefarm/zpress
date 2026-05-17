@@ -1,5 +1,5 @@
 .zp-site-footer {
-  background: var(--zp-c-bg-elv);
+  background: transparent;
   font-size: 13px;
   color: var(--zp-c-text-2);
 }
@@ -37,7 +37,7 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-2));
+  background: var(--zp-c-brand-1);
   display: grid;
   place-items: center;
   color: var(--zp-c-brand-fg);
@@ -119,4 +119,10 @@
 
 .zp-site-footer__tagline {
   white-space: nowrap;
+}
+
+.zp-site-footer__bottom-end {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }

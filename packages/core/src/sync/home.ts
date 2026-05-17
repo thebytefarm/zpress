@@ -95,12 +95,10 @@ export async function generateDefaultHomePage(
   const frontmatterFeatures = buildFrontmatterFeatures(features)
   const workspaceResult = buildWorkspaceData(config)
 
-  // Read optional landing-page extensions from config.home (loose typing — these
-  // are zpress-specific landing fields not in the strict HomeConfig type).
-  const homeExt = (config.home ?? {}) as Record<string, unknown>
-  const eyebrow = homeExt.eyebrow as string | undefined
-  const trust = homeExt.trust as Record<string, unknown> | undefined
-  const cta = homeExt.cta as Record<string, unknown> | undefined
+  // Landing-page extensions live on the typed `HomeConfig` now — no more
+  // `Record<string, unknown>` casts. Destructure with a defaulted empty
+  // object so optional fields surface as `undefined` cleanly.
+  const { eyebrow, trust, cta } = config.home ?? {}
 
   const heroConfig: Record<string, unknown> = {
     name: title,

@@ -1,6 +1,6 @@
 /* GENERATED — DO NOT EDIT — run scripts/generate-theme-css.mjs */
 
-html[data-zp-theme='midnight'] {
+html[data-zp-theme='midnight'][data-zp-variant='dark'] {
   --zp-c-brand-1: #60a5fa;
   --zp-c-brand-2: #3b82f6;
   --zp-c-brand-3: #2563eb;
@@ -244,12 +244,7 @@ html[data-zp-theme='midnight'] {
   --zp-bp-content: 1184px;
   --zp-blur-base: 8px;
   --zp-gradient-brand: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-3));
-  --zp-gradient-hero-title: linear-gradient(
-    120deg,
-    var(--zp-c-brand-1) 0%,
-    var(--zp-c-gradient-hero-cyan) 50%,
-    var(--zp-c-gradient-hero-purple) 100%
-  );
+  --zp-gradient-hero-title: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-light));
   --rp-c-bg: #0f0f0f;
   --rp-c-bg-soft: #1a1a1a;
   --rp-c-bg-mute: #161616;

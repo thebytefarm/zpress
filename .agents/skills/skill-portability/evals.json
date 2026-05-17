@@ -1,0 +1,154 @@
+{
+  "skill_name": "skill-portability",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "vague-compat-question-real-skill",
+      "prompt": "yo can you tell me if my code-reviewer skill works in cursor or codex? i'm pretty sure cursor uses .mdc files but idk what the rules are. it's at skills/code-reviewer/. give me a real answer not a guess",
+      "expected_output": "Compatibility matrix covering every provider returned by `providers.mjs` (currently Claude Code, Cursor, OpenAI Codex CLI, Agents-Skills Baseline). For each provider: verdict (compatible / partial / incompatible) plus specific reasons grounded in the skill's actual frontmatter and body — not vibes. Should explicitly note that Cursor uses .mdc rule files in .cursor/rules/ rather than SKILL.md, and that Codex uses AGENTS.md. A COMPAT.md file should also be written next to the skill or in the cwd.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "produces a compatibility matrix table",
+          "type": "regex",
+          "pattern": "\\|.*Claude.*\\|.*Cursor.*\\|"
+        },
+        {
+          "text": "names OpenAI Codex CLI explicitly",
+          "type": "regex",
+          "pattern": "codex",
+          "flags": "i"
+        },
+        {
+          "text": "covers the Agents-Skills baseline (or a baseline-compatible consumer)",
+          "type": "regex",
+          "pattern": "(agents-skills|agent-skills|baseline|gemini|opencode|\\bpi\\b|agentskills)",
+          "flags": "i"
+        },
+        {
+          "text": "references Cursor .mdc / .cursor/rules format",
+          "type": "regex",
+          "pattern": "\\.mdc|\\.cursor/rules"
+        },
+        {
+          "text": "writes a COMPAT report file",
+          "type": "regex",
+          "pattern": "COMPAT\\.md|compat[_-]report",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "cursor-mdc-masquerading-as-skill",
+      "prompt": "i pulled this from a teammate, they said it's a skill but it's got `globs:` and `alwaysApply:` in the frontmatter. will it load in claude code or codex? here's the file:\n\n---\ndescription: Vue 3 patterns\nglobs: ['**/*.vue']\nalwaysApply: false\n---\n\n# Vue 3 patterns\n\nUse the composition API. Prefer `<script setup>`. Avoid Options API.",
+      "expected_output": "Identifies the file as a Cursor .mdc rule, not a SKILL.md. Notes that `globs` and `alwaysApply` are Cursor-specific fields and the file lacks the `name` field required by Claude Code and the `skills` CLI. Verdict: incompatible for Claude Code, incompatible for Codex (which expects AGENTS.md format), native to Cursor. Calls out what would need to change to make it portable (add `name`, drop Cursor-specific fields or move them under a namespaced key).",
+      "files": [],
+      "assertions": [
+        {
+          "text": "identifies file as Cursor format",
+          "type": "regex",
+          "pattern": "cursor",
+          "flags": "i"
+        },
+        {
+          "text": "flags missing name field",
+          "type": "regex",
+          "pattern": "name|missing.*name|no.*name",
+          "flags": "i"
+        },
+        {
+          "text": "notes globs/alwaysApply are Cursor-specific",
+          "type": "regex",
+          "pattern": "globs|alwaysApply"
+        },
+        {
+          "text": "gives a not-compatible verdict for Claude Code (missing required `name` field is a hard reject, not partial)",
+          "type": "regex",
+          "pattern": "(not compatible|incompatible|won.t load|hard\\s+(fail|reject)|rejects?\\b)",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "tool-name-portability-audit",
+      "prompt": "audit skills/ts-best-practices-functional/ — it references AskUserQuestion and TaskCreate in the body. does this break compat with codex or the baseline (gemini / opencode)? i need specifics",
+      "expected_output": "Identifies AskUserQuestion and TaskCreate as Claude Code-specific tool names. Notes Codex CLI and the Agents-Skills baseline consumers (Gemini CLI uses snake_case run_shell_command etc., OpenCode uses lowercase bash etc.) do not expose those exact tool names — agents in those providers won't be able to call them by name. Recommends either (a) phrasing the body in terms of capabilities ('ask the user a structured question') so any provider's tool surface can fulfill it, or (b) gating the tool-specific instructions behind a 'when running in Claude Code' note. Verdict: portable in spirit, partially compatible in letter.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "calls out AskUserQuestion as Claude-specific",
+          "type": "regex",
+          "pattern": "AskUserQuestion"
+        },
+        {
+          "text": "calls out the task-tracking tool (TaskCreate, the modern Claude Code name) as Claude-specific",
+          "type": "regex",
+          "pattern": "TaskCreate"
+        },
+        { "text": "names Codex CLI", "type": "regex", "pattern": "codex", "flags": "i" },
+        {
+          "text": "suggests rephrasing or gating",
+          "type": "regex",
+          "pattern": "(rephrase|capabilit|gate|conditional|in terms of|provider-agnostic)",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "bulk-audit-no-path",
+      "prompt": "go through all my public skills and tell me which ones are claude-only vs portable. just give me the matrix",
+      "expected_output": "Discovers skills under skills/*/SKILL.md without being told the path. Parallelizes the audit (one agent per provider, or one per skill, but not strictly serial). Produces a single matrix with rows = skills, columns = providers, cells = compat verdict. Writes the matrix to a file too. Should NOT just pick one skill — should cover all of them.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "matrix has at least 3 distinct skill rows (one verdict per row)",
+          "type": "regex",
+          "pattern": "\\|[^|\\n]*\\|[^|\\n]*\\|[^|\\n]*\\|[^|\\n]*\\|[\\s\\S]*?\\n\\|[^|\\n]*\\|[^|\\n]*\\|[^|\\n]*\\|[^|\\n]*\\|[\\s\\S]*?\\n\\|[^|\\n]*\\|[^|\\n]*\\|[^|\\n]*\\|[^|\\n]*\\|",
+          "flags": "s"
+        },
+        {
+          "text": "produces a matrix that names every provider returned by providers.mjs",
+          "type": "regex",
+          "pattern": "claude[\\s\\S]*cursor[\\s\\S]*codex[\\s\\S]*(baseline|agents-skills|gemini|opencode|\\bpi\\b)|(baseline|agents-skills|gemini|opencode|\\bpi\\b)[\\s\\S]*claude[\\s\\S]*cursor[\\s\\S]*codex",
+          "flags": "is"
+        },
+        {
+          "text": "writes a report file",
+          "type": "regex",
+          "pattern": "COMPAT\\.md|compat[_-]report|matrix\\.md",
+          "flags": "i"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "clean-skill-recognition-test",
+      "prompt": "is ts-best-practices cross-provider safe? quick yes/no with reasons",
+      "expected_output": "Recognition test — ts-best-practices has portable frontmatter (name + description, no Claude-specific tool names in body). Verdict should be 'compatible' or 'mostly compatible' across all providers, with a note that Cursor would need the file renamed to .cursor/rules/ts-best-practices.mdc but the content travels. Should NOT false-positive by inventing problems that don't exist.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "gives a positive compat verdict overall (must NOT match `incompatible` — uses negative lookbehind)",
+          "type": "regex",
+          "pattern": "(\\b(?<!in)compatible\\b|\\bportable\\b|\\bworks\\b|\\bsafe\\b|^yes\\b)",
+          "flags": "i"
+        },
+        {
+          "text": "flags the Cursor file-location nuance",
+          "type": "regex",
+          "pattern": "(\\.mdc|\\.cursor/rules|rename)",
+          "flags": "i"
+        },
+        {
+          "text": "actually inspected the frontmatter (cites name or description)",
+          "type": "regex",
+          "pattern": "(name:\\s*ts-best-practices|frontmatter|description)",
+          "flags": "i"
+        }
+      ]
+    }
+  ]
+}

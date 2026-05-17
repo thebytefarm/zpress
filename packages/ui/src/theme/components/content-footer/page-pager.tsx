@@ -1,6 +1,8 @@
 import type React from 'react'
 import { match } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
+
 import './page-pager.css'
 
 export interface PagerLink {
@@ -41,26 +43,38 @@ export function PagePager(props: PagePagerProps): React.ReactElement | null {
       <nav className="zp-pager">
         {match(prev)
           .with(undefined, () => <span className="zp-pager__placeholder" />)
-          .otherwise((p) => (
-            <a className="zp-pager__link zp-pager__link--prev" href={p.href}>
-              <span className="zp-pager__label">
-                <Chev direction="left" />
-                Previous
-              </span>
-              <span className="zp-pager__title">{p.title}</span>
-            </a>
-          ))}
+          .otherwise((p) => {
+            const href = safeUrl(p.href)
+            if (href === null) {
+              return <span className="zp-pager__placeholder" />
+            }
+            return (
+              <a className="zp-pager__link zp-pager__link--prev" href={href}>
+                <span className="zp-pager__label">
+                  <Chev direction="left" />
+                  Previous
+                </span>
+                <span className="zp-pager__title">{p.title}</span>
+              </a>
+            )
+          })}
         {match(next)
           .with(undefined, () => <span className="zp-pager__placeholder" />)
-          .otherwise((n) => (
-            <a className="zp-pager__link zp-pager__link--next" href={n.href}>
-              <span className="zp-pager__label">
-                Next
-                <Chev direction="right" />
-              </span>
-              <span className="zp-pager__title">{n.title}</span>
-            </a>
-          ))}
+          .otherwise((n) => {
+            const href = safeUrl(n.href)
+            if (href === null) {
+              return <span className="zp-pager__placeholder" />
+            }
+            return (
+              <a className="zp-pager__link zp-pager__link--next" href={href}>
+                <span className="zp-pager__label">
+                  Next
+                  <Chev direction="right" />
+                </span>
+                <span className="zp-pager__title">{n.title}</span>
+              </a>
+            )
+          })}
       </nav>
     ))
 }

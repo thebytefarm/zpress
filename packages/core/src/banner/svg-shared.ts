@@ -24,7 +24,7 @@ export const COLORS = Object.freeze({
   green: '#a6e3a1',
   red: '#f38ba8',
   yellow: '#f9e2af',
-  brand: resolveBrandPalette('base').primary,
+  brand: resolveBrandPalette('default').primary,
 })
 
 /**

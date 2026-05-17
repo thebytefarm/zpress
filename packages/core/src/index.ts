@@ -17,6 +17,8 @@ export type {
   HomeConfig,
   HomeTrustConfig,
   HomeCtaConfig,
+  HomeGridConfig,
+  TruncateConfig,
   AnnouncementConfig,
   SiteConfig,
   SiteEditConfig,
@@ -25,6 +27,10 @@ export type {
   SiteCtaConfig,
   SiteFooterColumn,
   SiteFooterConfig,
+  FooterConfig,
+  SocialLink,
+  SocialLinkIcon,
+  OpenAPIConfig,
 } from './types.ts'
 
 export type { IconConfig, IconColor, ResolvedIcon } from './icon.ts'
@@ -37,6 +43,21 @@ export { loadConfig } from './config.ts'
 
 export type { ThemeConfig, ThemeName, ColorMode, ThemeColors } from './theme.ts'
 export { resolveDefaultColorMode, THEME_NAMES, COLOR_MODES } from './theme.ts'
+
+export type {
+  BuiltInThemeName,
+  BuiltInIconColor,
+  ThemeVariant,
+  ThemeMode,
+  ZpressTheme,
+  ZpressThemeInput,
+  ZpressThemeInputVariants,
+  ZpressTokens,
+  ThemeVariantTokens,
+} from '@zpress/theme'
+export { defineTheme, resolveDefaultVariant, resolveThemeVariants } from '@zpress/theme'
+
+export type { LoadConfigOptions } from '@zpress/config'
 
 export { sync, type SyncResult, type SyncOptions } from './sync/index.ts'
 export { resolveEntries } from './sync/resolve/index.ts'

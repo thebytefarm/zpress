@@ -371,20 +371,45 @@ const footerConfigSchema = z
   })
   .strict()
 
-const themeModeSchema = z.enum(['dark', 'light'])
-
-// `tokens` is `unknown` because `defineTheme` validates the token tree against
-// `tokensSchema` at factory time — duplicating that validation here would
-// produce two diverging error surfaces. Config-time validation only ensures
-// the envelope (`name`, `modes`, `defaultMode`) is structurally correct.
+// Each variant's tokens are `unknown` because `defineTheme` validates the
+// token tree against `tokensSchema` at factory time — duplicating that
+// validation here would produce two diverging error surfaces. Config-time
+// validation only ensures the envelope (`name`, `variants`, `defaultVariant`)
+// is structurally correct AND that the envelope rules `defineTheme` enforces
+// at factory time also hold at config-load time:
+//   1. `name` is a valid slug
+//   2. at least one of `variants.dark` / `variants.light` is present
+//   3. `defaultVariant`, when provided, points at a declared variant
 const zpressThemeInputSchema = z
   .object({
-    name: z.string(),
-    tokens: z.unknown(),
-    modes: z.array(themeModeSchema).optional(),
-    defaultMode: colorModeSchema.optional(),
+    name: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, {
+      message:
+        'Theme name must be a lowercase slug (a-z, 0-9, hyphen) starting with an alphanumeric character',
+    }),
+    variants: z
+      .object({
+        dark: z.unknown().optional(),
+        light: z.unknown().optional(),
+      })
+      .strict()
+      .refine((v) => v.dark !== undefined || v.light !== undefined, {
+        message: 'Theme variants must declare at least one of `dark` or `light`',
+      }),
+    defaultVariant: colorModeSchema.optional(),
   })
   .strict()
+  .refine(
+    (theme) => {
+      if (theme.defaultVariant === undefined) {
+        return true
+      }
+      return theme.variants[theme.defaultVariant] !== undefined
+    },
+    {
+      message: '`defaultVariant` must point at a variant declared in `variants`',
+      path: ['defaultVariant'],
+    }
+  )
 
 export const zpressConfigSchema = z
   .object({

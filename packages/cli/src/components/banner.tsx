@@ -14,12 +14,12 @@ import BigText from 'ink-big-text'
 import Gradient from 'ink-gradient'
 
 /**
- * Render the zpress logo banner with the base theme's brand gradient.
+ * Render the zpress logo banner with the default theme's brand gradient.
  *
  * @returns React element with the styled zpress banner
  */
 export function Banner(): React.ReactElement {
-  const colors = resolveBrandGradient('base')
+  const colors = resolveBrandGradient('default')
   return (
     <Gradient colors={[...colors]}>
       <BigText text="zpress" font="block" />

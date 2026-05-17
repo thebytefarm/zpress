@@ -137,8 +137,10 @@ html body:has(.zp-page-rail) .rp-nav {
 }
 
 /* ── Footer ────────────────────────────────────────────── */
+/* Footer inherits the page background — only the hairline at the top
+   separates it from the content above. */
 html .zp-site-footer {
-  background: var(--zp-c-bg-elv);
+  background: transparent;
   border-top: 1px solid var(--zp-c-border);
 }
 

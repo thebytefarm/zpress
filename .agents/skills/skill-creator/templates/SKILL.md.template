@@ -1,0 +1,66 @@
+---
+name: {{SKILL_NAME}}
+description: >-
+  This skill should be used when {{TRIGGER_CONDITION}}. Common triggers
+  include "{{TRIGGER_PHRASE_1}}", "{{TRIGGER_PHRASE_2}}", and
+  "{{TRIGGER_PHRASE_3}}". {{ONE_LINE_DISTINCTIVE}}. Skip when
+  {{ANTI_TRIGGER}}.
+# --- Claude Code extensions (ignored by other agents) ---
+argument-hint: '[<{{ARG_NAME}}>]'
+user-invocable: true
+model-invocable: true
+---
+
+# {{SKILL_NAME}}
+
+{{ONE_PARAGRAPH_OVERVIEW}}
+
+## When to use
+
+Verbatim trigger phrases:
+
+- "{{TRIGGER_PHRASE_1}}"
+- "{{TRIGGER_PHRASE_2}}"
+- "{{TRIGGER_PHRASE_3}}"
+
+## When NOT to use
+
+- {{ANTI_TRIGGER_1}}
+- {{ANTI_TRIGGER_2}}
+
+## Workflow
+
+### 1. {{STEP_1_NAME}}
+
+{{STEP_1_DETAIL}}
+
+### 2. {{STEP_2_NAME}}
+
+{{STEP_2_DETAIL}}
+
+### 3. {{STEP_3_NAME}}
+
+{{STEP_3_DETAIL}}
+
+## Examples
+
+<example>
+<input>{{EXAMPLE_USER_PROMPT}}</input>
+<output>
+{{EXAMPLE_AGENT_RESPONSE}}
+</output>
+</example>
+
+## References
+
+- {{REFERENCE_1}}
+- {{REFERENCE_2}}
+
+<!--
+## Rationalization table  (DISCIPLINE SKILLS ONLY — delete this section if not applicable)
+
+| Skipped rule | Verbatim excuse | Why it's wrong |
+|---|---|---|
+| {{RULE}} | {{EXCUSE_VERBATIM_FROM_TRANSCRIPT}} | {{WHY_IT_IS_WRONG}} |
+-->
+

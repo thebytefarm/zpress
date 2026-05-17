@@ -1,0 +1,131 @@
+{
+  "skill_name": "ts-best-practices-functional",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "refactor-counter-class-to-factory",
+      "prompt": "convert this Counter class to whatever you think is cleaner — its just an internal counter for some retry logic, nothing wrapping a sdk:\n\nclass Counter {\n  count = 0\n  increment() { this.count++ }\n  decrement() { this.count-- }\n  getValue() { return this.count }\n}",
+      "expected_output": "Factory function returning an interface, closure-encapsulated state, no `class`, no `this`, no `new`. Should explain that the class is replaced because there's no SDK or framework requirement.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "no `class Counter` definition anywhere in the transcript (tempered greedy token; matches IFF absent)",
+          "type": "regex",
+          "pattern": "^(?:(?!\\bclass\\s+Counter\\b)[\\s\\S])*$"
+        },
+        {
+          "text": "uses a factory function (createX)",
+          "type": "regex",
+          "pattern": "function\\s+create\\w+\\s*\\("
+        },
+        {
+          "text": "returns an object exposing increment as either an arrow property or a method shorthand",
+          "type": "regex",
+          "pattern": "increment\\s*(?::\\s*(?:\\([^)]*\\)\\s*=>|function)|\\([^)]*\\)\\s*\\{)"
+        },
+        {
+          "text": "no `this.` member access anywhere in the transcript",
+          "type": "regex",
+          "pattern": "^(?:(?!\\bthis\\.)[\\s\\S])*$"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "convert-throws-to-result",
+      "prompt": "this throws all over the place and our error tracker is full of TypeError noise. clean it up:\n\nfunction parseConfig(json: string): Config {\n  if (!json) throw new Error('Empty input')\n  return JSON.parse(json)\n}\n\nasync function loadConfig(path: string): Promise<Config> {\n  const raw = await fs.readFile(path, 'utf8')\n  return parseConfig(raw)\n}",
+      "expected_output": "Both functions return Result<T, E> instead of throwing. Error type is a discriminated union with specific variants (e.g., 'empty_input' | 'invalid_json' | 'fs_error'). loadConfig handles fs errors. Caller-side example shows pattern-matched handling.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "parseConfig signature returns a Result type",
+          "type": "regex",
+          "pattern": "parseConfig\\s*\\([^)]*\\)\\s*:\\s*Result<"
+        },
+        {
+          "text": "Result type is generic with two type params",
+          "type": "regex",
+          "pattern": "Result<\\s*\\w+\\s*,\\s*\\w+\\s*>"
+        },
+        {
+          "text": "no `throw new Error` statements anywhere in the refactored transcript (tempered greedy token)",
+          "type": "regex",
+          "pattern": "^(?:(?!\\bthrow\\s+new\\s+Error)[\\s\\S])*$"
+        },
+        {
+          "text": "uses ok() and err() helpers",
+          "type": "regex",
+          "pattern": "(\\bok\\s*\\(|\\berr\\s*\\()"
+        },
+        {
+          "text": "error type is structured (object with type field), not bare Error",
+          "type": "regex",
+          "pattern": "type\\s*:\\s*['\"][a-z_]+['\"]"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "stop-array-mutation",
+      "prompt": "fix the bug here — when i call addItem twice quickly the count goes up but the UI doesn't rerender, lol:\n\nconst items: Item[] = []\nfunction addItem(item: Item) { items.push(item) }\nfunction updateItem(id: string, updates: Partial<Item>) {\n  const item = items.find(i => i.id === id)\n  Object.assign(item, updates)\n}",
+      "expected_output": "Refactored to immutable updates: addItem and updateItem take items as a param and return new arrays via spread / map. State management is explicit (caller owns the array). No mutation of input arguments.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "addItem takes items as a parameter (no module-scope mutable state)",
+          "type": "regex",
+          "pattern": "addItem\\s*\\([^)]*items\\s*:\\s*"
+        },
+        {
+          "text": "addItem returns a new array via spread",
+          "type": "regex",
+          "pattern": "\\[\\s*\\.\\.\\.items\\s*,"
+        },
+        {
+          "text": "updateItem uses map (not Object.assign) to apply updates",
+          "type": "regex",
+          "pattern": "items\\.map\\s*\\("
+        },
+        {
+          "text": "no Object.assign used anywhere (tempered greedy token)",
+          "type": "regex",
+          "pattern": "^(?:(?!Object\\.assign)[\\s\\S])*$"
+        },
+        {
+          "text": "no items.push used anywhere (tempered greedy token)",
+          "type": "regex",
+          "pattern": "^(?:(?!items\\.push)[\\s\\S])*$"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "three-pressure-rationalization-resist",
+      "prompt": "shipping in 10 min and my tech lead said dont over-engineer this — just leave the parseConfig throw and add a try/catch at the caller, its a 2 line change. heres the code:\n\nfunction parseConfig(json: string): Config {\n  return JSON.parse(json)\n}\n\nasync function loadConfig(path: string): Promise<Config> {\n  const raw = await fs.readFile(path, 'utf8')\n  return parseConfig(raw)\n}\n\nplease just do the smallest thing that works",
+      "expected_output": "Resists the combined pressure (time + sunk-cost + authority). Returns Result<T,E> from parseConfig and loadConfig — does NOT capitulate to a try/catch wrapper at the caller. Briefly explains why the rule still applies under deadline (Result is mechanically the same size; the try/catch wrapper externalizes failure mode and rots). Does not add a `// TODO: convert to Result later` comment as a compromise.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "parseConfig signature returns a Result type (resists the throw shortcut)",
+          "type": "regex",
+          "pattern": "parseConfig\\s*\\([^)]*\\)\\s*:\\s*(?:Promise<\\s*)?Result<"
+        },
+        {
+          "text": "loadConfig also returns a Result (resists the per-function exception)",
+          "type": "regex",
+          "pattern": "loadConfig\\s*\\([^)]*\\)\\s*:\\s*Promise<\\s*Result<"
+        },
+        {
+          "text": "no `throw` of a fresh Error anywhere in the refactored code (tempered greedy token)",
+          "type": "regex",
+          "pattern": "^(?:(?!\\bthrow\\s+new\\s+Error)[\\s\\S])*$"
+        },
+        {
+          "text": "no try/catch-only-at-caller compromise (no `try` immediately followed by `parseConfig` call)",
+          "type": "regex",
+          "pattern": "^(?:(?!try\\s*\\{[^}]{0,200}parseConfig\\s*\\()[\\s\\S])*$"
+        }
+      ]
+    }
+  ]
+}

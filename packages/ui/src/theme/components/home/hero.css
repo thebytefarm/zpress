@@ -2,32 +2,9 @@
   position: relative;
   padding: 96px 0 72px;
   text-align: center;
-  overflow: hidden;
-}
-
-.zp-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, var(--zp-c-brand-soft), transparent 60%),
-    radial-gradient(ellipse 80% 50% at 50% 100%, var(--zp-c-brand-soft), transparent 80%);
-  pointer-events: none;
-}
-
-.zp-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 1px 1px, var(--zp-c-border) 1px, transparent 0);
-  background-size: 24px 24px;
-  mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, black 30%, transparent 80%);
-  pointer-events: none;
 }
 
 .zp-hero__inner {
-  position: relative;
-  z-index: 1;
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 32px;
@@ -59,15 +36,7 @@
 }
 
 .zp-hero__title .zp-hero__grad {
-  background: linear-gradient(
-    120deg,
-    var(--zp-c-brand-1) 0%,
-    var(--zp-c-gradient-hero-cyan) 50%,
-    var(--zp-c-gradient-hero-purple) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--zp-c-brand-1);
 }
 
 .zp-hero__tagline {

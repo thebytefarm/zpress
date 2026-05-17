@@ -1,6 +1,6 @@
 /* GENERATED — DO NOT EDIT — run scripts/generate-theme-css.mjs */
 
-html[data-zp-theme='arcade'] {
+html[data-zp-theme='arcade'][data-zp-variant='dark'] {
   --zp-c-brand-1: #00ff88;
   --zp-c-brand-2: #00cc6a;
   --zp-c-brand-3: #00aa55;
@@ -244,12 +244,7 @@ html[data-zp-theme='arcade'] {
   --zp-bp-content: 1184px;
   --zp-blur-base: 8px;
   --zp-gradient-brand: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-3));
-  --zp-gradient-hero-title: linear-gradient(
-    120deg,
-    var(--zp-c-brand-1) 0%,
-    var(--zp-c-gradient-hero-cyan) 50%,
-    var(--zp-c-gradient-hero-purple) 100%
-  );
+  --zp-gradient-hero-title: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-light));
   --rp-c-bg: #0d0d1a;
   --rp-c-bg-soft: #18183d;
   --rp-c-bg-mute: #141433;

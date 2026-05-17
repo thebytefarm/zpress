@@ -93,7 +93,7 @@ export async function startDevServer(options: ServerOptions): Promise<DevServerR
       logLevel: 'silent',
       vscode: options.vscode,
       themeOverride: options.theme,
-      colorModeOverride: options.colorMode,
+      variantOverride: options.colorMode as 'dark' | 'light' | undefined,
     })
     try {
       serverInstance = await dev({
@@ -236,7 +236,7 @@ export async function serveSite(options: ServerOptions): Promise<number> {
     paths: options.paths,
     vscode: options.vscode,
     themeOverride: options.theme,
-    colorModeOverride: options.colorMode,
+    variantOverride: options.colorMode as 'dark' | 'light' | undefined,
   })
   const preferredPort = options.port ?? SERVE_PORT
   const port = await getPort({ port: portNumbers(preferredPort, preferredPort + DEV_PORT_RANGE) })

@@ -154,7 +154,13 @@ const runCheck = async () => {
 // ---------------------------------------------------------------------------
 
 const isCheckMode = process.argv.includes('--check')
-const task = isCheckMode ? runCheck() : runWrite()
+// eslint-disable-next-line no-ternary -- two-branch entrypoint selector
+const task = (() => {
+  if (isCheckMode) {
+    return runCheck()
+  }
+  return runWrite()
+})()
 
 task.catch((err) => {
   process.stderr.write(`[zpress] generate-theme-css failed: ${err.message}\n`)

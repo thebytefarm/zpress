@@ -2,6 +2,8 @@ import type React from 'react'
 import { Button, OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components'
 import { match, P } from 'ts-pattern'
 
+import { safeUrl } from '../../lib/safe-url.ts'
+
 export interface TooltipProps {
   /**
    * Main tooltip text displayed on hover.
@@ -41,11 +43,17 @@ export function Tooltip({ tip, headline, cta, href, children }: TooltipProps): R
     .otherwise(() => null)
 
   const ctaEl = match({ cta, href })
-    .with({ cta: P.nonNullable, href: P.nonNullable }, ({ cta: label, href: url }) => (
-      <a className="zp-tooltip__cta" href={url}>
-        {label}
-      </a>
-    ))
+    .with({ cta: P.nonNullable, href: P.nonNullable }, ({ cta: label, href: url }) => {
+      const safeHref = safeUrl(url)
+      if (safeHref === null) {
+        return null
+      }
+      return (
+        <a className="zp-tooltip__cta" href={safeHref}>
+          {label}
+        </a>
+      )
+    })
     .otherwise(() => null)
 
   return (

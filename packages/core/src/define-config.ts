@@ -89,7 +89,8 @@ export function validateConfig(config: ZpressConfig): ConfigResult<ZpressConfig>
     return [featErr, null]
   }
 
-  const [themeErr] = validateTheme(config.theme)
+  const userThemeNames = (config.themes ?? []).map((t) => t.name)
+  const [themeErr] = validateTheme(config.theme, userThemeNames)
   if (themeErr) {
     return [themeErr, null]
   }
@@ -617,29 +618,33 @@ function validateThemeColors(colors: ThemeColors, label: string): ConfigResult<t
  * @param theme - Optional theme config to validate
  * @returns A `ConfigResult` tuple with `true` on success or `ConfigError` on failure
  */
-function validateTheme(theme: ThemeConfig | undefined): ConfigResult<true> {
+function validateTheme(
+  theme: ThemeConfig | undefined,
+  userThemeNames: readonly string[]
+): ConfigResult<true> {
   if (theme === undefined) {
     return [null, true]
   }
 
-  if (theme.name !== undefined && !(THEME_NAMES as readonly string[]).includes(theme.name)) {
+  const allKnownNames: readonly string[] = [
+    ...(THEME_NAMES as readonly string[]),
+    ...userThemeNames,
+  ]
+  if (theme.name !== undefined && !allKnownNames.includes(theme.name)) {
     return [
       configError(
         'invalid_theme',
-        `theme.name: "${theme.name}" is not a valid theme (use ${THEME_NAMES.map((n) => `"${n}"`).join(', ')})`
+        `theme.name: "${theme.name}" is not a valid theme (use ${allKnownNames.map((n) => `"${n}"`).join(', ')})`
       ),
       null,
     ]
   }
 
-  if (
-    theme.colorMode !== undefined &&
-    !(COLOR_MODES as readonly string[]).includes(theme.colorMode)
-  ) {
+  if (theme.variant !== undefined && !(COLOR_MODES as readonly string[]).includes(theme.variant)) {
     return [
       configError(
         'invalid_theme',
-        `theme.colorMode: "${theme.colorMode}" is not valid (use ${COLOR_MODES.map((m) => `"${m}"`).join(', ')})`
+        `theme.variant: "${theme.variant}" is not valid (use ${COLOR_MODES.map((m) => `"${m}"`).join(', ')})`
       ),
       null,
     ]

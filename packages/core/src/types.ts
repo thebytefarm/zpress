@@ -24,6 +24,8 @@ export type {
   HomeConfig,
   HomeTrustConfig,
   HomeCtaConfig,
+  HomeGridConfig,
+  TruncateConfig,
   AnnouncementConfig,
   SiteConfig,
   SiteEditConfig,
@@ -32,6 +34,9 @@ export type {
   SiteCtaConfig,
   SiteFooterColumn,
   SiteFooterConfig,
+  FooterConfig,
+  SocialLink,
+  SocialLinkIcon,
   Result,
 } from '@zpress/config'
 

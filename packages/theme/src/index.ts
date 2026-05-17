@@ -3,6 +3,7 @@ export type {
   BuiltInThemeName,
   IconColor,
   BuiltInIconColor,
+  ThemeVariant,
   ColorMode,
   ThemeColors,
   ThemeConfig,
@@ -10,15 +11,19 @@ export type {
 
 export {
   THEME_NAMES,
+  THEME_VARIANTS,
   COLOR_MODES,
   ICON_COLORS,
+  resolveDefaultVariant,
   resolveDefaultColorMode,
+  resolveThemeVariants,
   resolveThemeModes,
   isBuiltInTheme,
   isBuiltInIconColor,
 } from './definitions.ts'
 
 export {
+  themeVariantSchema,
   colorModeSchema,
   cssColorSchema,
   themeColorsSchema,
@@ -34,7 +39,13 @@ export {
   resolveBrandGradient,
 } from './brand-colors.ts'
 
-export type { ThemeMode, ZpressTheme, ZpressThemeInput } from './theme-registry.ts'
+export type {
+  ThemeMode,
+  ZpressTheme,
+  ZpressThemeInput,
+  ZpressThemeInputVariants,
+  ThemeVariantTokens,
+} from './theme-registry.ts'
 export { BUILT_IN_THEMES, defineTheme, themeToCss } from './theme-registry.ts'
 
 // Public token surface — kept narrow. `ZpressTokens` is the only shape
