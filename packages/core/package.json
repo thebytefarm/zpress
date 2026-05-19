@@ -1,6 +1,6 @@
 {
   "name": "@zpress/core",
-  "version": "0.11.0",
+  "version": "1.0.0-rc.0",
   "description": "Sync engine and asset utilities for zpress",
   "keywords": [
     "config",
@@ -44,15 +44,13 @@
     "@zpress/theme": "workspace:*",
     "es-toolkit": "catalog:",
     "fast-glob": "^3.3.3",
-    "gray-matter": "^4.0.3",
     "jiti": "^2.6.1",
-    "js-yaml": "^4.1.1",
     "liquidjs": "^10.25.6",
-    "ts-pattern": "catalog:"
+    "ts-pattern": "catalog:",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@rslib/core": "catalog:",
-    "@types/js-yaml": "^4.0.9",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

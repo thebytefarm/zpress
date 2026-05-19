@@ -1,4 +1,4 @@
-import type { z } from 'zod'
+import { z } from 'zod'
 
 import { themeNameSchema, tokensSchema } from './schema.ts'
 import type { TokenPath, ZpressTokens } from './tokens.ts'
@@ -15,6 +15,51 @@ import type { BuiltInThemeName, ThemeVariant } from './types.ts'
  * dark as its baseline aesthetic.
  */
 const DEFAULT_VARIANT_ORDER: readonly ThemeVariant[] = ['dark', 'light'] as const
+
+/**
+ * Name of the framework's default theme — used by `renderThemeCss` to
+ * decide which theme also emits the `:root { ... }` FOUC fallback. Kept
+ * in lockstep with `BUILT_IN_THEMES.default` and the build-time fallback
+ * in `packages/ui/src/config.ts`.
+ */
+const FOUC_ROOT_THEME_NAME = 'default' as const
+
+/**
+ * Envelope schema for `defineTheme` input. Validates the *shape* — name,
+ * variant keys, and `defaultVariant` cross-reference — without parsing
+ * the token trees themselves (those go through `tokensSchema` per
+ * variant). Same invariants enforced by `zpressThemeInputSchema` in
+ * `@zpress/config`; duplicated here because the config package depends
+ * on theme, not the other way around. Errors surface with stable paths
+ * (`variants`, `defaultVariant`) so consumers can pinpoint the problem.
+ */
+const themeInputEnvelopeSchema = z
+  .object({
+    name: z.string(),
+    variants: z
+      .object({
+        dark: z.unknown().optional(),
+        light: z.unknown().optional(),
+      })
+      .strict()
+      .refine((v) => v.dark !== undefined || v.light !== undefined, {
+        message: 'Theme variants must declare at least one of `dark` or `light`',
+      }),
+    defaultVariant: z.enum(['dark', 'light']).optional(),
+  })
+  .strict()
+  .refine(
+    (theme) => {
+      if (theme.defaultVariant === undefined) {
+        return true
+      }
+      return theme.variants[theme.defaultVariant] !== undefined
+    },
+    {
+      message: '`defaultVariant` must point at a variant declared in `variants`',
+      path: ['defaultVariant'],
+    }
+  )
 
 /**
  * Shape of the raw brand-palette entries below. Mirrors the public
@@ -230,8 +275,9 @@ const LEGACY_RP_VAR_MAP: Readonly<Record<string, TokenPath>> = Object.freeze({
 const LEGACY_RP_VAR_NAMES: readonly string[] = Object.freeze(Object.keys(LEGACY_RP_VAR_MAP))
 
 /**
- * Shared OpenAPI / OAS badge palette — light-mode values from `base.css` at
- * HEAD. Midnight and arcade override the entire set via their own constants.
+ * Shared OpenAPI / OAS badge palette — light-mode values from the
+ * `default` theme. Midnight and arcade override the entire set via
+ * their own constants.
  */
 const SHARED_OAS_COLORS_BASE = {
   get: '#16a34a',
@@ -270,8 +316,8 @@ const ARCADE_OAS_COLORS = {
 } as const
 
 /**
- * Shared semantic palette — derived from `:root` light defaults in `base.css`.
- * OpenAPI method colors are the canonical semantic source for
+ * Shared semantic palette — derived from the `default` theme's light
+ * variant. OpenAPI method colors are the canonical semantic source for
  * `success`/`error`/`warn`/`info`; `muted` mirrors the dimmed terminal grey.
  */
 const SHARED_SEMANTIC_COLORS = {
@@ -523,11 +569,12 @@ const SHARED_GRADIENTS = {
 // ---------------------------------------------------------------------------
 
 /**
- * The supported variants a theme can render in.
+ * Legacy alias for {@link ThemeVariant}. Retained inside `@zpress/theme`
+ * for one-version migration safety. Removed from `@zpress/core`,
+ * `@zpress/config`, and `@zpress/kit` public exports in v1 — new code
+ * should import `ThemeVariant` directly.
  *
- * A theme declares one token tree per variant it supports. The sun/moon
- * toggle in the topbar swaps between variants of the active theme; if a
- * theme registers only one variant, the toggle is hidden for that theme.
+ * @deprecated Use {@link ThemeVariant}.
  */
 export type ThemeMode = ThemeVariant
 
@@ -615,27 +662,22 @@ export interface ZpressThemeInput {
  * })
  */
 export function defineTheme(input: ZpressThemeInput): ZpressTheme {
-  const validatedName: string = themeNameSchema.parse(input.name)
-  // Surface a clear Zod error for callers who omit `variants` entirely —
-  // without this guard, accessing `input.variants.dark` would throw a raw
-  // `TypeError`, which is worse for debugging than the structured
-  // `ZodError` we promise as the public contract.
-  if (input.variants === undefined || input.variants === null) {
-    return tokensSchema.parse({}) as never
-  }
+  // Envelope validation first — name shape, at-least-one variant, and
+  // `defaultVariant` cross-reference. Failures surface as `ZodError`s
+  // with stable paths (`variants`, `defaultVariant`, etc.).
+  const envelope = themeInputEnvelopeSchema.parse(input)
+  const validatedName: string = themeNameSchema.parse(envelope.name)
   const variants: Record<ThemeVariant, ZpressTokens | undefined> = {
-    dark: validateVariant(input.variants.dark),
-    light: validateVariant(input.variants.light),
+    dark: validateVariant(envelope.variants.dark),
+    light: validateVariant(envelope.variants.light),
   }
   const presentVariants: readonly ThemeVariant[] = DEFAULT_VARIANT_ORDER.filter(
     (v) => variants[v] !== undefined
   )
-  if (presentVariants.length === 0) {
-    // Surface a clear Zod error consistent with the rest of `defineTheme`
-    // when neither variant is declared.
-    return tokensSchema.parse({}) as never
-  }
-  const defaultVariant: ThemeVariant = resolveDefaultVariant(input.defaultVariant, presentVariants)
+  const defaultVariant: ThemeVariant = pickInputDefaultVariant(
+    envelope.defaultVariant,
+    presentVariants
+  )
   return freezeTheme({
     name: validatedName,
     variants: filterPresentVariants(variants),
@@ -660,7 +702,7 @@ export function defineTheme(input: ZpressThemeInput): ZpressTheme {
  * @returns CSS source containing one block per variant
  */
 export function themeToCss(theme: ZpressTheme): string {
-  return renderThemeCss(theme, 'default')
+  return renderThemeCss(theme)
 }
 
 /**
@@ -778,20 +820,19 @@ function renderDeclarationBody(tokens: ZpressTokens): string {
 /**
  * Render the complete CSS for a theme. Emits one
  * `html[data-zp-theme='{name}'][data-zp-variant='{V}']` block per
- * variant present on the theme. When `theme.name` matches
- * `defaultThemeName`, an additional `:root { ... }` FOUC fallback block
- * is emitted for the theme's default variant.
+ * variant present on the theme. The framework's default theme
+ * (`FOUC_ROOT_THEME_NAME`) additionally emits a `:root { ... }` FOUC
+ * fallback block for its default variant.
  *
  * @private
  * @param theme - Theme to render
- * @param defaultThemeName - Name of the theme that should also emit `:root`
  * @returns CSS source containing one block per variant (plus optional FOUC root)
  */
-function renderThemeCss(theme: ZpressTheme, defaultThemeName: string): string {
+function renderThemeCss(theme: ZpressTheme): string {
   const variantBlocks = DEFAULT_VARIANT_ORDER.flatMap((variant) =>
     renderVariantBlock(theme, variant)
   )
-  if (theme.name !== defaultThemeName) {
+  if (theme.name !== FOUC_ROOT_THEME_NAME) {
     return variantBlocks.join('\n')
   }
   const defaultTokens = theme.variants[theme.defaultVariant]
@@ -837,27 +878,25 @@ function validateVariant(raw: unknown): ZpressTokens | undefined {
 }
 
 /**
- * Choose the default variant for a theme, falling back to the first
- * declared variant in `DEFAULT_VARIANT_ORDER` when the caller omitted
- * `defaultVariant`. Throws when the requested variant is not present.
+ * Choose the default variant for `defineTheme` input, falling back to
+ * the first declared variant in `DEFAULT_VARIANT_ORDER` when the caller
+ * omitted `defaultVariant`. Cross-reference of `defaultVariant` against
+ * `present` already runs in `themeInputEnvelopeSchema`, so this helper
+ * trusts its inputs.
+ *
+ * Renamed from `resolveDefaultVariant` so it doesn't shadow the
+ * identically named public export in `definitions.ts`.
  *
  * @private
- * @param requested - Caller-provided default variant (may be `undefined`)
+ * @param requested - Validated default variant (may be `undefined`)
  * @param present - Variants the theme actually declares
  * @returns Resolved default variant
  */
-function resolveDefaultVariant(
+function pickInputDefaultVariant(
   requested: ThemeVariant | undefined,
   present: readonly ThemeVariant[]
 ): ThemeVariant {
   if (requested !== undefined) {
-    if (!present.includes(requested)) {
-      // Surface a structured error consistent with other Zod errors raised
-      // by `defineTheme`. Path mirrors the input field for clarity.
-      return tokensSchema.parse({
-        __zpressInvalidDefaultVariant: { requested, present },
-      }) as never
-    }
     return requested
   }
   return present[0] as ThemeVariant
@@ -942,9 +981,8 @@ function freezeChildThenReturnParent<T>(parent: T, child: unknown): T {
 }
 
 /**
- * Build the `light` variant of the `default` theme — bright surfaces with
- * the brand-purple palette. Lifted from the previous
- * `packages/ui/src/theme/styles/themes/base.css` (light values).
+ * Build the `light` variant of the `default` theme — bright surfaces
+ * with the brand-purple palette.
  *
  * @private
  * @returns Untyped token object suitable for `tokensSchema.parse`

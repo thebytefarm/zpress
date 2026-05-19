@@ -175,6 +175,12 @@ function optionClassName(isActive: boolean): string {
  * applied — and Rspress's `.rp-dark` class is mirrored accordingly so
  * its built-in components stay aligned.
  *
+ * Keep the persistence keys (`zpress-theme`, `zpress-variant`,
+ * `rspress-theme-appearance`) and the `.rp-dark` / `data-zp-*` mirror
+ * logic in sync with:
+ *   - `packages/ui/src/config.ts` → `buildHeadScriptBody` (head IIFE)
+ *   - `theme-provider.tsx` → `resolveActiveVariant` / `applyVariant`
+ *
  * @private
  * @param theme - Theme option to apply
  */

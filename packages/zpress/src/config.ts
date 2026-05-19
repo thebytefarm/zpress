@@ -11,7 +11,7 @@ export type {
   Section,
   Feature,
   Workspace,
-  WorkspaceCategory,
+  WorkspaceGroup,
   Frontmatter,
   NavItem,
   CardConfig,

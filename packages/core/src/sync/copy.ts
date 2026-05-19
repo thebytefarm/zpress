@@ -3,10 +3,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import { log } from '@clack/prompts'
-import matter from 'gray-matter'
 import { match } from 'ts-pattern'
 
 import type { Frontmatter } from '../types.ts'
+import { parse as parseFrontmatter, stringify as stringifyFrontmatter } from './frontmatter.ts'
 import { rewriteImages } from './images.ts'
 import { rewriteLinks } from './rewrite-links.ts'
 import type { ManifestEntry, PageData, SyncContext } from './types.ts'
@@ -292,7 +292,7 @@ function injectFrontmatter(raw: string, fm: Frontmatter): string {
     return raw
   }
 
-  const parsed = matter(raw)
+  const parsed = parseFrontmatter(raw)
   const merged = { ...fm, ...parsed.data }
-  return matter.stringify(parsed.content, merged)
+  return stringifyFrontmatter(parsed.content, merged)
 }

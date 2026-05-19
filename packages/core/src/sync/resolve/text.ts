@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
 
 import { capitalize, words } from 'es-toolkit'
-import matter from 'gray-matter'
 import { match, P } from 'ts-pattern'
 
 import type { Section } from '../../types.ts'
+import { parse as parseFrontmatter } from '../frontmatter.ts'
 
 /**
  * Derive display text for a page.
@@ -82,7 +82,7 @@ export function kebabToTitle(slug: string): string {
  */
 async function deriveFromFrontmatter(sourcePath: string, fallbackSlug: string): Promise<string> {
   const content = await fs.readFile(sourcePath, 'utf8')
-  const parsed = matter(content)
+  const parsed = parseFrontmatter(content)
 
   return match(parsed.data.title)
     .with(P.string.minLength(1), (title) => title)
@@ -100,7 +100,7 @@ async function deriveFromFrontmatter(sourcePath: string, fallbackSlug: string): 
  */
 async function deriveFromHeading(sourcePath: string, fallbackSlug: string): Promise<string> {
   const content = await fs.readFile(sourcePath, 'utf8')
-  const { content: body } = matter(content)
+  const { content: body } = parseFrontmatter(content)
   return extractHeading(body, fallbackSlug)
 }
 

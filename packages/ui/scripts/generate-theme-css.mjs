@@ -154,7 +154,6 @@ const runCheck = async () => {
 // ---------------------------------------------------------------------------
 
 const isCheckMode = process.argv.includes('--check')
-// eslint-disable-next-line no-ternary -- two-branch entrypoint selector
 const task = (() => {
   if (isCheckMode) {
     return runCheck()

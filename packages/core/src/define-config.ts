@@ -1,4 +1,4 @@
-import { THEME_NAMES, COLOR_MODES } from '@zpress/theme'
+import { THEME_NAMES, THEME_VARIANTS } from '@zpress/theme'
 import { match, P } from 'ts-pattern'
 
 import { hasAnyGlobInclude, isSingleFileInclude } from './glob.ts'
@@ -10,7 +10,7 @@ import type {
   Section,
   Feature,
   Workspace,
-  WorkspaceCategory,
+  WorkspaceGroup,
   IconConfig,
   ThemeConfig,
   ThemeColors,
@@ -53,7 +53,7 @@ export function validateConfig(config: ZpressConfig): ConfigResult<ZpressConfig>
     return [pkgsErr, null]
   }
 
-  const [groupErr] = validateWorkspaceCategories(config.workspaces ?? [])
+  const [groupErr] = validateWorkspaceGroups(config.workspaces ?? [])
   if (groupErr) {
     return [groupErr, null]
   }
@@ -184,33 +184,30 @@ function validateWorkspaces(items: readonly Workspace[]): ConfigResult<true> {
 }
 
 /**
- * Validate workspace categories have required fields and non-empty items.
+ * Validate workspace groups have required fields and non-empty items.
  *
  * @private
- * @param categories - Workspace categories to validate
+ * @param groups - Workspace groups to validate
  * @returns A `ConfigResult` tuple with `true` on success or `ConfigError` on failure
  */
-function validateWorkspaceCategories(categories: readonly WorkspaceCategory[]): ConfigResult<true> {
-  const categoryError = categories.reduce<ConfigError | null>((acc, category) => {
+function validateWorkspaceGroups(groups: readonly WorkspaceGroup[]): ConfigResult<true> {
+  const categoryError = groups.reduce<ConfigError | null>((acc, group) => {
     if (acc) {
       return acc
     }
 
-    if (!category.title) {
-      return configError('missing_field', 'WorkspaceCategory: "title" is required')
+    if (!group.title) {
+      return configError('missing_field', 'WorkspaceGroup: "title" is required')
     }
 
-    if (!category.icon) {
-      return configError(
-        'missing_field',
-        `WorkspaceCategory "${category.title}": "icon" is required`
-      )
+    if (!group.icon) {
+      return configError('missing_field', `WorkspaceGroup "${group.title}": "icon" is required`)
     }
 
-    if (!category.items || category.items.length === 0) {
+    if (!group.items || group.items.length === 0) {
       return configError(
         'missing_field',
-        `WorkspaceCategory "${category.title}": "items" must be a non-empty array`
+        `WorkspaceGroup "${group.title}": "items" must be a non-empty array`
       )
     }
 
@@ -640,11 +637,14 @@ function validateTheme(
     ]
   }
 
-  if (theme.variant !== undefined && !(COLOR_MODES as readonly string[]).includes(theme.variant)) {
+  if (
+    theme.variant !== undefined &&
+    !(THEME_VARIANTS as readonly string[]).includes(theme.variant)
+  ) {
     return [
       configError(
         'invalid_theme',
-        `theme.variant: "${theme.variant}" is not valid (use ${COLOR_MODES.map((m) => `"${m}"`).join(', ')})`
+        `theme.variant: "${theme.variant}" is not valid (use ${THEME_VARIANTS.map((m) => `"${m}"`).join(', ')})`
       ),
       null,
     ]

@@ -45,6 +45,14 @@ Thumbs.db
 
 # Claude
 .claude/plans/
+.claude/skills/
+
+# Agent artifacts
+.agents/
+skills-lock.json
+
+# Headless dev artifacts
+packages/*/.zpress-dev-headless.mjs
 
 # Worktrees
 .worktrees/

@@ -3,7 +3,7 @@ export type {
   Section,
   Feature,
   Workspace,
-  WorkspaceCategory,
+  WorkspaceGroup,
   Frontmatter,
   NavItem,
   CardConfig,
@@ -41,14 +41,13 @@ export { ICON_PREFIXES } from './icons.generated.ts'
 export { defineConfig, validateConfig } from './define-config.ts'
 export { loadConfig } from './config.ts'
 
-export type { ThemeConfig, ThemeName, ColorMode, ThemeColors } from './theme.ts'
-export { resolveDefaultColorMode, THEME_NAMES, COLOR_MODES } from './theme.ts'
+export type { ThemeConfig, ThemeName, ThemeColors } from './theme.ts'
+export { THEME_NAMES } from './theme.ts'
 
 export type {
   BuiltInThemeName,
   BuiltInIconColor,
   ThemeVariant,
-  ThemeMode,
   ZpressTheme,
   ZpressThemeInput,
   ZpressThemeInputVariants,

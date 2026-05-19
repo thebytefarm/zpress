@@ -17,7 +17,7 @@
  * lossy (...args: unknown[]) => unknown inference, preserving exact call signatures.
  */
 
-import { colorModeSchema, themeColorsSchema, themeConfigSchema } from '@zpress/theme'
+import { themeColorsSchema, themeConfigSchema, themeVariantSchema } from '@zpress/theme'
 import { z } from 'zod'
 
 import type {
@@ -66,7 +66,7 @@ const frontmatterSchema = z
     pageClass: z.string().optional(),
     head: z.array(z.tuple([z.string(), z.record(z.string(), z.string())])).optional(),
   })
-  .passthrough() // Allow additional unknown fields
+  .strict()
 
 const navItemSchema: z.ZodType<NavItem> = z.lazy(() =>
   z
@@ -395,7 +395,7 @@ const zpressThemeInputSchema = z
       .refine((v) => v.dark !== undefined || v.light !== undefined, {
         message: 'Theme variants must declare at least one of `dark` or `light`',
       }),
-    defaultVariant: colorModeSchema.optional(),
+    defaultVariant: themeVariantSchema.optional(),
   })
   .strict()
   .refine(

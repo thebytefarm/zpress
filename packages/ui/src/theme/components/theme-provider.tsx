@@ -34,7 +34,7 @@ const REGISTRY_ENTRIES: readonly RegistryEntry[] = parseRegistry(__ZPRESS_THEME_
  * to set `data-zp-variants` on `<html>` so CSS can hide the appearance
  * toggle for themes that only declare one variant.
  */
-const THEME_VARIANTS: Readonly<Record<string, string>> = Object.freeze(
+const VARIANTS_BY_THEME: Readonly<Record<string, string>> = Object.freeze(
   Object.fromEntries(REGISTRY_ENTRIES.map((entry) => [entry.name, entry.variants.join(' ')]))
 )
 
@@ -42,7 +42,7 @@ const THEME_VARIANTS: Readonly<Record<string, string>> = Object.freeze(
  * Default variant for each theme — used when no `zpress-variant` is
  * persisted in `localStorage` or when the persisted value is stale.
  */
-const THEME_DEFAULT_VARIANTS: Readonly<Record<string, ThemeVariant>> = Object.freeze(
+const DEFAULT_VARIANT_BY_THEME: Readonly<Record<string, ThemeVariant>> = Object.freeze(
   Object.fromEntries(REGISTRY_ENTRIES.map((entry) => [entry.name, entry.defaultVariant]))
 )
 
@@ -178,7 +178,7 @@ export function ThemeProvider(): React.ReactElement | null {
 
     // 2. Set supported variants — CSS hides the appearance toggle for
     //    themes that only declare one variant.
-    const variants = THEME_VARIANTS[themeName]
+    const variants = VARIANTS_BY_THEME[themeName]
     if (variants) {
       html.dataset.zpVariants = variants
     } else {
@@ -206,16 +206,16 @@ export function ThemeProvider(): React.ReactElement | null {
     //    set; if it isn't (e.g. a devtools tinkerer flips `.rp-dark` off
     //    on `midnight`, which is dark-only), snap the class back rather
     //    than persisting an unsupported variant.
-    const supportedSet = new Set((THEME_VARIANTS[themeName] ?? 'dark').split(' '))
+    const supportedSet = new Set((VARIANTS_BY_THEME[themeName] ?? 'dark').split(' '))
     const observer = new MutationObserver((mutations) => {
       const classChanged = mutations.some((m) => m.attributeName === 'class')
       if (!classChanged) {
         return
       }
       const nowDark = html.classList.contains('rp-dark')
-      const nextVariant: ThemeVariant = match(nowDark)
-        .with(true, () => 'dark' as ThemeVariant)
-        .otherwise(() => 'light' as ThemeVariant)
+      const nextVariant = match(nowDark)
+        .with(true, (): ThemeVariant => 'dark')
+        .otherwise((): ThemeVariant => 'light')
       if (html.dataset.zpVariant === nextVariant) {
         return
       }
@@ -223,6 +223,10 @@ export function ThemeProvider(): React.ReactElement | null {
         // Unsupported variant for the active theme — snap Rspress's
         // class state back to match the current `data-zp-variant` and
         // do NOT persist the illegal flip.
+        //
+        // The classList mutation below re-fires this observer. The
+        // re-entrant pass hits the `dataset.zpVariant === nextVariant`
+        // early return above — safe, just one extra callback.
         if (html.dataset.zpVariant === 'dark') {
           html.classList.add('rp-dark', 'dark')
           html.dataset.dark = 'true'
@@ -284,6 +288,10 @@ function resolveActiveThemeName(persisted: string | null): string {
  * when it's still valid for the active theme; otherwise uses the theme's
  * own default variant; otherwise the build-time default; otherwise dark.
  *
+ * Keep the resolution ladder in sync with:
+ *   - `packages/ui/src/config.ts` → `buildHeadScriptBody` (head IIFE)
+ *   - `theme-switcher.tsx` → `applyTheme` (user-driven theme change)
+ *
  * @private
  * @param params - Persisted variant, build-time default, active theme name
  * @returns Resolved variant for this render
@@ -293,7 +301,7 @@ function resolveActiveVariant(params: {
   readonly buildTimeDefault: ThemeVariant | null
   readonly themeName: string
 }): ThemeVariant {
-  const supported = THEME_VARIANTS[params.themeName]
+  const supported = VARIANTS_BY_THEME[params.themeName]
   const supportedVariants = match(supported)
     .with(P.nullish, () => ['dark'])
     .otherwise((s) => s.split(' '))
@@ -301,7 +309,7 @@ function resolveActiveVariant(params: {
   if (params.persisted !== null && supportedSet.has(params.persisted)) {
     return params.persisted
   }
-  const themeDefault = THEME_DEFAULT_VARIANTS[params.themeName]
+  const themeDefault = DEFAULT_VARIANT_BY_THEME[params.themeName]
   if (themeDefault !== undefined && supportedSet.has(themeDefault)) {
     return themeDefault
   }

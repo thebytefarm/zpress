@@ -88,24 +88,76 @@ export type Result<T, E = Error> = readonly [E, null] | readonly [null, T]
 /**
  * Rspress frontmatter fields injectable at build time.
  *
- * Schema: `frontmatterSchema` in schema.ts validates this shape.
- * The index signature allows arbitrary extra fields (schema uses `.passthrough()`).
+ * Schema: `frontmatterSchema` in schema.ts validates this shape with
+ * `.strict()` — unknown keys are rejected at config-load time. To inject
+ * custom YAML fields into a page, add them to the source `.md`/`.mdx`
+ * frontmatter directly; this type is the typed surface for config-time
+ * injection only.
  */
 export interface Frontmatter {
+  /**
+   * Page title — overrides the derived title from heading or filename.
+   */
   readonly title?: string
+  /**
+   * Template applied to the document `<title>` tag. `false` disables
+   * the global template for this page.
+   */
   readonly titleTemplate?: string | boolean
+  /**
+   * Page description — used for `<meta name="description">` and as the
+   * default OpenGraph description.
+   */
   readonly description?: string
+  /**
+   * Layout to render the page with — defaults to Rspress's `'doc'` layout.
+   * Use `'home'` to opt this page into the home-page layout.
+   */
   readonly layout?: string
+  /**
+   * Show the docs sidebar on this page. Defaults to `true` for `doc`
+   * layout pages; set `false` to render full-bleed.
+   */
   readonly sidebar?: boolean
+  /**
+   * Show the right-hand table-of-contents aside. `'left'` places it on
+   * the left instead. Defaults to `true`.
+   */
   readonly aside?: boolean | 'left'
+  /**
+   * Outline rendering: `false` hides the outline, a number caps the
+   * heading depth, a `[min, max]` tuple sets a heading-depth range,
+   * `'deep'` includes every heading.
+   */
   readonly outline?: false | number | [number, number] | 'deep'
+  /**
+   * Show the topbar on this page. Defaults to `true`.
+   */
   readonly navbar?: boolean
+  /**
+   * Show the edit-this-page link under the article. Defaults to `true`
+   * when `site.edit` is configured.
+   */
   readonly editLink?: boolean
+  /**
+   * Show the "last updated" timestamp under the article. Defaults to
+   * `false`.
+   */
   readonly lastUpdated?: boolean
+  /**
+   * Show the site footer on this page. Defaults to `true`.
+   */
   readonly footer?: boolean
+  /**
+   * Extra class name applied to the page wrapper — useful for one-off
+   * layout tweaks.
+   */
   readonly pageClass?: string
+  /**
+   * Per-page `<head>` injections — array of `[tagName, attrs]` tuples
+   * appended to the document head.
+   */
   readonly head?: readonly [string, Record<string, string>][]
-  readonly [key: string]: unknown
 }
 
 /**
@@ -115,9 +167,23 @@ export interface Frontmatter {
  * The schema uses `z.ZodType<NavItem>` to enforce consistency.
  */
 export interface NavItem {
+  /**
+   * Visible label rendered in the topbar.
+   */
   readonly title: string
+  /**
+   * Destination URL — relative path or absolute URL. Required for leaf
+   * items; omit when `items` is provided (dropdown parent).
+   */
   readonly link?: string
+  /**
+   * Nested items — when present, this entry renders as a dropdown menu.
+   */
   readonly items?: readonly NavItem[]
+  /**
+   * Regex string matched against the current path to mark this item as
+   * active. When omitted, an exact `link` match is used.
+   */
   readonly activeMatch?: string
 }
 
@@ -175,11 +241,37 @@ export type TitleConfig =
  * ```
  */
 export interface CardConfig {
+  /**
+   * Card icon — Iconify id or `{ id, color }` object. Defaults to a
+   * rotating color based on the parent section's position.
+   */
   readonly icon?: IconConfig
+  /**
+   * Scope label (e.g. `'apps/'`, `'packages/'`) rendered above the
+   * card title as a small kicker.
+   */
   readonly scope?: string
+  /**
+   * One-line description rendered under the card title.
+   */
   readonly description?: string
+  /**
+   * Tag chips rendered below the description.
+   */
   readonly tags?: readonly string[]
-  readonly badge?: { readonly src: string; readonly alt: string }
+  /**
+   * Logo badge rendered in the card's top-right corner.
+   */
+  readonly badge?: {
+    /**
+     * URL to the badge image (typically an SVG logo).
+     */
+    readonly src: string
+    /**
+     * Alt text for the badge image.
+     */
+    readonly alt: string
+  }
 }
 
 /**
@@ -188,8 +280,18 @@ export interface CardConfig {
  * Schema: `heroActionSchema` in schema.ts validates this shape.
  */
 export interface HeroAction {
+  /**
+   * Visual treatment — `'brand'` is the primary filled button,
+   * `'alt'` is the secondary outline button.
+   */
   readonly theme: 'brand' | 'alt'
+  /**
+   * Button label.
+   */
   readonly text: string
+  /**
+   * Destination URL — relative path or absolute URL.
+   */
   readonly link: string
 }
 
@@ -199,10 +301,27 @@ export interface HeroAction {
  * Schema: `sidebarLinkSchema` in schema.ts validates this shape.
  */
 export interface SidebarLink {
+  /**
+   * Visible label rendered in the sidebar.
+   */
   readonly text: string
+  /**
+   * Destination URL — relative path or absolute URL.
+   */
   readonly link: string
+  /**
+   * Optional icon rendered to the left of the label.
+   */
   readonly icon?: IconConfig
+  /**
+   * Button style — `'brand'` is filled, `'alt'` is outline, `'ghost'`
+   * is text-only. Defaults to `'ghost'`.
+   */
   readonly style?: 'brand' | 'alt' | 'ghost'
+  /**
+   * Button shape — `'square'`, `'rounded'`, or `'circle'`. Defaults
+   * to `'rounded'`.
+   */
   readonly shape?: 'square' | 'rounded' | 'circle'
 }
 
@@ -225,7 +344,13 @@ export interface SidebarLink {
  * ```
  */
 export interface SidebarConfig {
+  /**
+   * Persistent links rendered above the sidebar nav tree.
+   */
   readonly above?: readonly SidebarLink[]
+  /**
+   * Persistent links rendered below the sidebar nav tree.
+   */
   readonly below?: readonly SidebarLink[]
 }
 
@@ -256,28 +381,108 @@ export interface SidebarConfig {
  * ```
  */
 export interface Section {
+  /**
+   * Display title — either a static string or a derivation rule that
+   * produces titles from frontmatter, headings, or filenames.
+   */
   readonly title: TitleConfig
+  /**
+   * One-line description rendered on the auto-generated landing page
+   * for this section.
+   */
   readonly description?: string
+  /**
+   * URL path for this section (e.g. `'/guides'`). When omitted, the
+   * section is sidebar-only (its children get their own paths).
+   */
   readonly path?: string
+  /**
+   * Glob pattern(s) that source content from the file system. When
+   * present, children are auto-discovered. Mutually exclusive with
+   * `content` and inline `items` containing `include` chains.
+   */
   readonly include?: string | readonly string[]
+  /**
+   * Inline page content — a string of Markdown/MDX or a function that
+   * returns it. Use for generated pages (changelogs, indexes) that
+   * don't live on disk.
+   */
   readonly content?: string | (() => string | Promise<string>)
+  /**
+   * Explicit child nodes. Mutually exclusive with `include` (auto-
+   * discovery) — pick one source of truth per section.
+   */
   readonly items?: readonly Section[]
+  /**
+   * When `true`, render an auto-generated landing page at this section's
+   * `path` listing its children as cards. Defaults to `true` for
+   * sections with no `content`.
+   */
   readonly landing?: boolean
+  /**
+   * Show this section as a collapsible group in the sidebar. Defaults
+   * to `true`.
+   */
   readonly collapsible?: boolean
+  /**
+   * Glob patterns of files to exclude when `include` is auto-discovering.
+   */
   readonly exclude?: readonly string[]
+  /**
+   * Hide this section (and all its children) from the sidebar.
+   * Useful for routes that are linked from content but shouldn't
+   * appear in nav.
+   */
   readonly hidden?: boolean
+  /**
+   * Frontmatter merged into every page resolved under this section.
+   * Per-file frontmatter takes precedence over these defaults.
+   */
   readonly frontmatter?: Frontmatter
+  /**
+   * Sort strategy applied when `include` auto-discovers children.
+   * - `'default'` — frontmatter `order` then alphabetical title
+   * - `'alpha'` — alphabetical by title
+   * - `'filename'` — alphabetical by source filename
+   * - `'none'` — preserve glob-discovery order
+   * - Custom comparator — sort by your own rule
+   */
   readonly sort?:
     | 'default'
     | 'alpha'
     | 'filename'
     | 'none'
     | ((a: ResolvedPage, b: ResolvedPage) => number)
+  /**
+   * Recurse into subdirectories when `include` auto-discovers content.
+   * Defaults to `true`.
+   */
   readonly recursive?: boolean
+  /**
+   * Filename (relative to the section's directory) treated as the
+   * landing page instead of generating one. Common values: `'index.md'`,
+   * `'README.md'`.
+   */
   readonly entryFile?: string
+  /**
+   * Icon rendered on the section's card and (when configured) in the
+   * sidebar.
+   */
   readonly icon?: IconConfig
+  /**
+   * Card appearance overrides — controls how this entry renders on its
+   * parent section's landing page.
+   */
   readonly card?: CardConfig
+  /**
+   * Render this section as a sidebar-rooted island — its children are
+   * shown in the sidebar only when the user is inside the section.
+   */
   readonly standalone?: boolean
+  /**
+   * Mark this section as a sidebar root — only one root can be active
+   * at a time, and the topbar treats it as the active workspace.
+   */
   readonly root?: boolean
 }
 
@@ -300,24 +505,83 @@ export interface Section {
  * ```
  */
 export interface Workspace {
+  /**
+   * Workspace display name (e.g. `'API'`, `'@acme/sdk'`).
+   */
   readonly title: string
+  /**
+   * Icon rendered on the workspace card and landing page.
+   */
   readonly icon?: IconConfig
+  /**
+   * One-line description rendered under the workspace title on cards
+   * and the workspace landing page.
+   */
   readonly description: string
+  /**
+   * Tag chips rendered below the description on the workspace card.
+   */
   readonly tags?: readonly string[]
-  readonly badge?: { readonly src: string; readonly alt: string }
+  /**
+   * Logo badge rendered in the card's top-right corner.
+   */
+  readonly badge?: {
+    /**
+     * URL to the badge image (typically an SVG logo).
+     */
+    readonly src: string
+    /**
+     * Alt text for the badge image.
+     */
+    readonly alt: string
+  }
+  /**
+   * URL path the workspace mounts under (e.g. `'/apps/api'`).
+   */
   readonly path: string
+  /**
+   * Glob pattern(s) that source content from the file system. When
+   * present, child pages are auto-discovered.
+   */
   readonly include?: string | readonly string[]
+  /**
+   * Explicit child sections — overrides `include`-based auto-discovery
+   * when both are set.
+   */
   readonly items?: readonly Section[]
+  /**
+   * Sort strategy applied to auto-discovered children. See `Section.sort`
+   * for the strategy values.
+   */
   readonly sort?:
     | 'default'
     | 'alpha'
     | 'filename'
     | 'none'
     | ((a: ResolvedPage, b: ResolvedPage) => number)
+  /**
+   * Glob patterns of files to exclude when `include` is auto-discovering.
+   */
   readonly exclude?: readonly string[]
+  /**
+   * Recurse into subdirectories when `include` auto-discovers content.
+   * Defaults to `true`.
+   */
   readonly recursive?: boolean
+  /**
+   * Filename (relative to the workspace's directory) treated as the
+   * landing page instead of generating one.
+   */
   readonly entryFile?: string
+  /**
+   * Frontmatter merged into every page under this workspace. Per-file
+   * frontmatter wins on conflict.
+   */
   readonly frontmatter?: Frontmatter
+  /**
+   * Per-workspace OpenAPI integration — generates API operation pages
+   * under this workspace's `path`.
+   */
   readonly openapi?: OpenAPIConfig
 }
 
@@ -338,11 +602,30 @@ export interface Workspace {
  * }
  * ```
  */
-export interface WorkspaceCategory {
+export interface WorkspaceGroup {
+  /**
+   * Group title — rendered as the section heading on the home page
+   * and as the workspace group label in nav.
+   */
   readonly title: string
+  /**
+   * One-line description rendered under the group title.
+   */
   readonly description?: string
+  /**
+   * Icon shown next to the group title (Iconify id only — `{ id, color }`
+   * objects are not supported for category icons).
+   */
   readonly icon: IconId
+  /**
+   * Workspaces grouped under this category. Rendered as cards in the
+   * order provided.
+   */
   readonly items: readonly Workspace[]
+  /**
+   * Optional URL the group title links to. When omitted, the title is
+   * non-interactive.
+   */
   readonly link?: string
 }
 
@@ -350,9 +633,23 @@ export interface WorkspaceCategory {
  * A fully resolved page after the sync engine processes the config.
  */
 export interface ResolvedPage {
+  /**
+   * Resolved display title — after title-derivation rules have run.
+   */
   readonly title: string
+  /**
+   * Resolved URL path the page is mounted at.
+   */
   readonly link: string
+  /**
+   * Absolute path to the source file on disk. Absent for inline
+   * (generated) pages produced from `content`.
+   */
   readonly source?: string
+  /**
+   * Merged frontmatter — section/workspace defaults plus the page's
+   * own frontmatter.
+   */
   readonly frontmatter: Frontmatter
 }
 
@@ -360,9 +657,21 @@ export interface ResolvedPage {
  * A fully resolved section.
  */
 export interface ResolvedSection {
+  /**
+   * Resolved section title.
+   */
   readonly title: string
+  /**
+   * URL of the section's landing page, if it has one.
+   */
   readonly link?: string
+  /**
+   * Whether this section renders as a collapsible group in the sidebar.
+   */
   readonly collapsible?: boolean
+  /**
+   * Resolved children — pages and nested sections in render order.
+   */
   readonly items: readonly (ResolvedPage | ResolvedSection)[]
 }
 
@@ -410,9 +719,21 @@ export interface OpenAPIConfig {
  * ```
  */
 export interface Feature {
+  /**
+   * Feature card title.
+   */
   readonly title: string
+  /**
+   * Body copy rendered under the title.
+   */
   readonly description: string
+  /**
+   * Destination URL when the card is clickable. Omit for static cards.
+   */
   readonly link?: string
+  /**
+   * Icon rendered above the title.
+   */
   readonly icon?: IconConfig
 }
 
@@ -423,7 +744,13 @@ export interface Feature {
  * overflow is clipped with an ellipsis via CSS `line-clamp`.
  */
 export interface TruncateConfig {
+  /**
+   * Maximum visible lines for the card title before truncation.
+   */
   readonly title?: number
+  /**
+   * Maximum visible lines for the card description before truncation.
+   */
   readonly description?: number
 }
 
@@ -431,7 +758,15 @@ export interface TruncateConfig {
  * Layout and styling options for a card grid section on the home page.
  */
 export interface HomeGridConfig {
+  /**
+   * Number of columns in the grid at desktop widths (1–4). Smaller
+   * breakpoints automatically reduce this.
+   */
   readonly columns?: 1 | 2 | 3 | 4
+  /**
+   * Line-clamp limits for card text. When omitted, no truncation is
+   * applied.
+   */
   readonly truncate?: TruncateConfig
 }
 
@@ -446,7 +781,13 @@ export interface HomeGridConfig {
  * ```
  */
 export interface HomeTrustConfig {
+  /**
+   * Lead phrase rendered before the names (e.g. `'Trusted by teams at'`).
+   */
   readonly lead?: string
+  /**
+   * Company / team names rendered as a comma-separated list after the lead.
+   */
   readonly names?: readonly string[]
 }
 
@@ -465,8 +806,18 @@ export interface HomeTrustConfig {
  * ```
  */
 export interface HomeCtaConfig {
+  /**
+   * Headline rendered at the top of the CTA band.
+   */
   readonly title?: string
+  /**
+   * Supporting sentence rendered under the headline.
+   */
   readonly subtitle?: string
+  /**
+   * Up to two action buttons rendered below the subtitle. Schema enforces
+   * the two-button cap.
+   */
   readonly actions?: readonly HeroAction[]
 }
 
@@ -487,7 +838,13 @@ export interface HomeCtaConfig {
  * ```
  */
 export interface HomeConfig {
+  /**
+   * Grid layout for the explicit `features` array on the home page.
+   */
   readonly features?: HomeGridConfig
+  /**
+   * Grid layout for the auto-generated workspace cards on the home page.
+   */
   readonly workspaces?: HomeGridConfig
   /**
    * Eyebrow text shown above the hero title (e.g. version chip).
@@ -543,8 +900,22 @@ export type SocialLinkIcon =
  * ```
  */
 export interface SocialLink {
+  /**
+   * Built-in icon name, or `{ svg }` object carrying a raw inline SVG
+   * string for custom icons not in the built-in set.
+   */
   readonly icon: SocialLinkIcon | { readonly svg: string }
+  /**
+   * How `content` is interpreted:
+   * - `'link'` — `content` is a URL the icon links to
+   * - `'text'` — `content` is rendered as text alongside the icon
+   * - `'img'` — `content` is the URL of an image to render
+   * - `'dom'` — `content` is a raw HTML fragment to render
+   */
   readonly mode: 'link' | 'text' | 'img' | 'dom'
+  /**
+   * The link href, label, image URL, or HTML — meaning depends on `mode`.
+   */
   readonly content: string
 }
 
@@ -562,8 +933,18 @@ export interface SocialLink {
  * ```
  */
 export interface FooterConfig {
+  /**
+   * Tagline rendered in the footer's left column.
+   */
   readonly message?: string
+  /**
+   * Copyright line rendered at the bottom of the footer.
+   */
   readonly copyright?: string
+  /**
+   * When `true`, render `config.socialLinks` icons in the footer.
+   * Defaults to `false` so social links only appear in the topbar.
+   */
   readonly socials?: boolean
 }
 
@@ -601,7 +982,13 @@ export interface AnnouncementConfig {
    * Optional call-to-action link appended after the message.
    */
   readonly cta?: {
+    /**
+     * Destination URL for the CTA — relative path or absolute URL.
+     */
     readonly href: string
+    /**
+     * Visible label for the CTA link.
+     */
     readonly label: string
   }
   /**
@@ -653,10 +1040,25 @@ export interface SiteReportConfig {
  * Sidebar promo card rendered at the bottom of the docs sidebar.
  */
 export interface SiteSidebarPromoConfig {
+  /**
+   * Promo card headline.
+   */
   readonly title: string
+  /**
+   * Body copy rendered under the headline.
+   */
   readonly body: string
+  /**
+   * CTA button rendered at the bottom of the promo card.
+   */
   readonly cta: {
+    /**
+     * Visible label on the CTA button.
+     */
     readonly text: string
+    /**
+     * Destination URL for the CTA — relative path or absolute URL.
+     */
     readonly href: string
   }
 }
@@ -665,7 +1067,13 @@ export interface SiteSidebarPromoConfig {
  * Call-to-action button rendered on the topbar (and in the mobile nav).
  */
 export interface SiteCtaConfig {
+  /**
+   * Visible label on the topbar CTA button.
+   */
   readonly text: string
+  /**
+   * Destination URL — relative path or absolute URL.
+   */
   readonly href: string
 }
 
@@ -673,9 +1081,21 @@ export interface SiteCtaConfig {
  * One column of footer links in the site footer grid.
  */
 export interface SiteFooterColumn {
+  /**
+   * Column heading rendered at the top of the column.
+   */
   readonly heading: string
+  /**
+   * Links rendered under the heading, in array order.
+   */
   readonly links: readonly {
+    /**
+     * Visible label for the link.
+     */
     readonly text: string
+    /**
+     * Destination URL — relative path or absolute URL.
+     */
     readonly href: string
   }[]
 }
@@ -779,8 +1199,20 @@ export interface SiteConfig {
  * what it is, where its content comes from, and where it sits in the sidebar.
  */
 export interface ZpressConfig {
+  /**
+   * Site title — used as the default `<title>` template suffix and as
+   * the brand label in the topbar when no logo is configured.
+   */
   readonly title?: string
+  /**
+   * Site description — used as the default `<meta name="description">`
+   * and as fallback OpenGraph description.
+   */
   readonly description?: string
+  /**
+   * Theme selection and customisation — built-in theme name, variant
+   * preference, switcher toggle, and color overrides.
+   */
   readonly theme?: ThemeConfig
   /**
    * Custom theme definitions registered at config time.
@@ -788,7 +1220,7 @@ export interface ZpressConfig {
    * Each entry is a `ZpressThemeInput` (the same shape accepted by
    * `defineTheme`). Registering a theme here makes its `name` selectable
    * via `theme.name` and via the theme switcher. Built-in themes
-   * (`base`, `midnight`, `arcade`) remain available regardless of this field.
+   * (`default`, `midnight`, `arcade`) remain available regardless of this field.
    *
    * @example
    * ```ts
@@ -796,14 +1228,28 @@ export interface ZpressConfig {
    *
    * export default defineConfig({
    *   themes: [
-   *     defineTheme({ name: 'custom', tokens: myTokens }),
+   *     defineTheme({
+   *       name: 'sunset',
+   *       variants: { dark: sunsetTokens },
+   *     }),
    *   ],
    * })
    * ```
    */
   readonly themes?: readonly ZpressThemeInput[]
+  /**
+   * Brand icon rendered next to the site title in the topbar. Iconify id
+   * only — the topbar logo position does not accept colored icon configs.
+   */
   readonly icon?: IconId
+  /**
+   * Short marketing tagline rendered under the site title on the home hero.
+   */
   readonly tagline?: string
+  /**
+   * Primary call-to-action buttons rendered on the home hero. Schema
+   * enforces a two-button cap.
+   */
   readonly actions?: readonly HeroAction[]
   /**
    * Workspace apps — standalone applications and runnable services (APIs,
@@ -824,15 +1270,53 @@ export interface ZpressConfig {
    * Each group receives the same card/landing-page treatment as apps and packages.
    * Rendered after apps and packages, in array order.
    */
-  readonly workspaces?: readonly WorkspaceCategory[]
+  readonly workspaces?: readonly WorkspaceGroup[]
+  /**
+   * Explicit feature cards on the home page. Rendered in array order
+   * inside a grid laid out by `home.features`.
+   */
   readonly features?: readonly Feature[]
+  /**
+   * Persistent sidebar links rendered above and below the sidebar
+   * nav tree on every doc page.
+   */
   readonly sidebar?: SidebarConfig
+  /**
+   * Information architecture tree — the single source of truth for
+   * pages, sections, sidebars, and URL paths. Required.
+   */
   readonly sections: readonly Section[]
+  /**
+   * Topbar navigation:
+   * - `'auto'` (default) — derived from `sections` roots
+   * - Explicit array — hand-authored nav items
+   */
   readonly nav?: 'auto' | readonly NavItem[]
+  /**
+   * Global glob patterns of files to exclude from auto-discovery in
+   * every section and workspace.
+   */
   readonly exclude?: readonly string[]
+  /**
+   * Top-level OpenAPI integration — mounts a single spec at the
+   * configured `path`. For multi-spec sites, configure `openapi` on
+   * each workspace instead.
+   */
   readonly openapi?: OpenAPIConfig
+  /**
+   * Home page layout customisation — grid columns, truncation, trust
+   * strip, eyebrow, and final CTA band.
+   */
   readonly home?: HomeConfig
+  /**
+   * Social links rendered in the topbar (and optionally in the footer
+   * when `footer.socials` is `true`).
+   */
   readonly socialLinks?: readonly SocialLink[]
+  /**
+   * Simple site footer — tagline, copyright, and the social-link
+   * mirror toggle. Extended footer columns live on `site.footer`.
+   */
   readonly footer?: FooterConfig
   /**
    * Site-level chrome configuration — version chip, edit/report links,

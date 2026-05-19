@@ -1,6 +1,6 @@
 {
   "name": "@zpress/templates",
-  "version": "0.1.2",
+  "version": "1.0.0-rc.0",
   "description": "Documentation templates SDK for zpress — use built-in templates, extend them, or register custom ones",
   "keywords": [
     "docs",

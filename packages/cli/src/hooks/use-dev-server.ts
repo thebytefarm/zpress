@@ -26,7 +26,7 @@ export interface UseDevServerProps {
   readonly clean?: boolean
   readonly port?: number
   readonly theme?: string
-  readonly colorMode?: string
+  readonly colorMode?: 'dark' | 'light'
   readonly vscode?: boolean
 }
 

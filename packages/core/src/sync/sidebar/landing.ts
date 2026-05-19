@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
 
-import matter from 'gray-matter'
 import { match, P } from 'ts-pattern'
 
 import { resolveOptionalIcon, serializeIcon } from '../../icon.ts'
 import type { IconColor } from '../../icon.ts'
+import { parse as parseFrontmatter } from '../frontmatter.ts'
 import type { ResolvedEntry } from '../types.ts'
 
 /**
@@ -212,7 +212,7 @@ async function resolveDescription(entry: ResolvedEntry): Promise<string | undefi
  */
 async function extractDescription(sourcePath: string): Promise<string | undefined> {
   const raw = await fs.readFile(sourcePath, 'utf8')
-  const { data, content } = matter(raw)
+  const { data, content } = parseFrontmatter(raw)
 
   if (data.description) {
     return String(data.description)

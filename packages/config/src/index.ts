@@ -5,7 +5,6 @@ export type {
   IconPrefix,
   IconId,
   IconConfig,
-  ColorMode,
   ThemeColors,
   ThemeConfig,
   ZpressThemeInput,
@@ -14,7 +13,7 @@ export type {
   CardConfig,
   Section,
   Workspace,
-  WorkspaceCategory,
+  WorkspaceGroup,
   TitleConfig,
   HeroAction,
   SidebarConfig,
@@ -61,9 +60,7 @@ export type {
 
 export {
   THEME_NAMES,
-  COLOR_MODES,
   ICON_COLORS,
-  resolveDefaultColorMode,
   isBuiltInTheme,
   isBuiltInIconColor,
   defineTheme,

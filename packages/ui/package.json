@@ -1,6 +1,6 @@
 {
   "name": "@zpress/ui",
-  "version": "0.9.1",
+  "version": "1.0.0-rc.0",
   "description": "Rspress plugin, theme components, and styles for zpress",
   "keywords": [
     "react",

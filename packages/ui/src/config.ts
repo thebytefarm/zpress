@@ -216,7 +216,8 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
     themeConfig: {
       // Rspress's sun/moon toggle is shown when the active theme exposes
       // more than one variant — when there's only one, the toggle is
-      // visually irrelevant. CSS in the theme provider hides it on
+      // visually irrelevant. CSS in
+      // `packages/ui/src/theme/styles/overrides/rspress.css` hides it on
       // single-variant themes via `[data-zp-variants]`.
       darkMode: true,
       search: true,
@@ -530,6 +531,12 @@ function resolveHomeConfig(config: ZpressConfig): HomeConfig {
  * `localStorage` against the embedded registry — stale or unsupported
  * values fall through to the build-time defaults rather than poisoning
  * first paint.
+ *
+ * Keep the persistence keys and resolution ladder in sync with:
+ *   - `theme/components/theme-provider.tsx` → `resolveActiveVariant`
+ *   - `theme/components/nav/theme-switcher.tsx` → `applyTheme`
+ * Any divergence between the three causes a flash between first paint,
+ * React hydration, and user-triggered theme switches.
  *
  * @private
  * @param options - Variant, theme name, vscode flag, and registry

@@ -1,12 +1,12 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import matter from 'gray-matter'
 import { match, P } from 'ts-pattern'
 
 import { hasGlobChars } from '../glob.ts'
 import { resolveOptionalIcon, serializeIcon } from '../icon.ts'
 import type { Section, Feature, ZpressConfig, Workspace } from '../types.ts'
+import { parse as parseFrontmatter, stringify as stringifyFrontmatter } from './frontmatter.ts'
 import { resolveSectionTitle } from './resolve/text.ts'
 
 /**
@@ -132,7 +132,7 @@ export async function generateDefaultHomePage(
       .otherwise(() => ({})),
   }
 
-  const content = matter.stringify('', frontmatterData)
+  const content = stringifyFrontmatter('', frontmatterData)
 
   return { content, workspaces: workspaceResult.data }
 }
@@ -452,7 +452,7 @@ async function extractSectionDescription(section: Section, repoRoot: string): Pr
 async function readFrontmatterDescription(filePath: string): Promise<string | undefined> {
   try {
     const raw = await fs.readFile(filePath, 'utf8')
-    const { data } = matter(raw)
+    const { data } = parseFrontmatter(raw)
     return (
       match(data.description)
         .with(P.nonNullable, String)

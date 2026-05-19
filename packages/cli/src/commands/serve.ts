@@ -14,7 +14,7 @@ export default command({
     open: z.boolean().optional().default(true),
     port: z.number().optional(),
     theme: z.string().optional(),
-    colorMode: z.string().optional(),
+    colorMode: z.enum(['dark', 'light']).optional(),
     vscode: z.boolean().optional().default(false),
   }),
   handler: async (ctx) => {
