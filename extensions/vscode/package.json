@@ -29,8 +29,8 @@
     "publish": "vsce publish --no-git-tag-version"
   },
   "devDependencies": {
-    "@types/vscode": "^1.115.0",
-    "@vscode/vsce": "^3.7.1",
+    "@types/vscode": "^1.120.0",
+    "@vscode/vsce": "^3.9.1",
     "esbuild": "^0.28.0",
     "typescript": "catalog:"
   },
