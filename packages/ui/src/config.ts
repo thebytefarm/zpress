@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import type { UserConfig } from '@rspress/core'
 import type {
@@ -217,6 +218,14 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
           // function-form fields (e.g. `logo`) can run at render time.
           // Falls back to a stub re-exporting `{}` when no config file exists.
           '@zpress/internal/user-config': userConfigAlias,
+          // The user's `zpress.config.ts` imports `defineConfig`/`defineTheme`
+          // from `@zpress/kit`. When Rspress's webpack bundles that config into
+          // the client (via the alias above), it needs to resolve `@zpress/kit`
+          // — and pnpm's symlinked layout doesn't always work from Rspress's
+          // resolve context. Point the alias at the kit's main entry directly.
+          // Uses `import.meta.resolve` (not CJS `require.resolve`) so the
+          // package's `"import"` export condition is honored.
+          '@zpress/kit': fileURLToPath(import.meta.resolve('@zpress/kit')),
         },
       },
       source: {

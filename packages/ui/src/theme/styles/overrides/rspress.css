@@ -43,18 +43,23 @@
     border-radius: 9999px;
   }
 
-  /* ── Single-variant themes — hide the appearance toggle when the
-   active theme only ships one variant. ─────────────────────── */
-  html[data-zp-variants='dark'] .rp-switch-appearance,
-  html[data-zp-variants='light'] .rp-switch-appearance,
-  html[data-zp-variants='dark'] .rp-nav-screen-appearance,
-  html[data-zp-variants='light'] .rp-nav-screen-appearance {
-    display: none;
-  }
-
   /* ── Tables ──────────────────────────────────────────────── */
   html table {
     border-radius: var(--rp-radius);
     overflow: hidden;
   }
+}
+
+/* ── Single-variant themes — hide the appearance toggle when the
+   active theme only ships one variant.
+
+   Intentionally **unlayered**: Rspress ships its appearance toggle styles
+   unlayered, and unlayered rules always win over layered ones regardless
+   of specificity. Hoisting this rule out of `@layer zpress.overrides` is
+   the only way to win the cascade without `!important`. ────────────── */
+html[data-zp-variants='dark'] .rp-switch-appearance,
+html[data-zp-variants='light'] .rp-switch-appearance,
+html[data-zp-variants='dark'] .rp-nav-screen-appearance,
+html[data-zp-variants='light'] .rp-nav-screen-appearance {
+  display: none;
 }
