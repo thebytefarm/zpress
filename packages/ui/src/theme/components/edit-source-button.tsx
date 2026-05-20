@@ -1,6 +1,6 @@
+import { match } from 'massaman/match'
 import type React from 'react'
 import { useEffect, useRef } from 'react'
-import { match } from 'ts-pattern'
 
 declare const __ZPRESS_VSCODE__: boolean
 

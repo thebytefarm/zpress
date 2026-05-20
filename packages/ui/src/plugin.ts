@@ -22,6 +22,7 @@ export function zpressPlugin(): RspressPlugin {
     globalUIComponents: [
       path.resolve(componentsDir, 'theme-provider.tsx'),
       path.resolve(componentsDir, 'edit-source-button.tsx'),
+      path.resolve(componentsDir, 'nav', 'nav-logo.tsx'),
     ],
   }
 }

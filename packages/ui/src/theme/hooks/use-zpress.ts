@@ -1,5 +1,5 @@
 import { useSite } from '@rspress/core/runtime'
-import type { FooterConfig, HomeConfig } from '@zpress/config'
+import type { FooterConfig, HomeConfig, SiteConfig } from '@zpress/config'
 
 export interface ZpressSidebarItem {
   readonly text?: string
@@ -41,6 +41,7 @@ interface ZpressThemeConfig {
   readonly standaloneScopePaths: readonly string[] | undefined
   readonly home: HomeConfig | undefined
   readonly zpressFooter: FooterConfig | undefined
+  readonly site: SiteConfig | undefined
 }
 
 /**

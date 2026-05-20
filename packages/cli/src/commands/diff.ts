@@ -1,11 +1,14 @@
 import { execFileSync } from 'node:child_process'
 
 import { command } from '@kidd-cli/core'
-import type { Section, ZpressConfig, Result } from '@zpress/core'
-import { createPaths, hasGlobChars, loadConfig, normalizeInclude } from '@zpress/core'
-import { uniq } from 'es-toolkit'
-import { match } from 'ts-pattern'
+import { hasGlobChars, normalizeInclude } from '@zpress/config'
+import type { Section, ZpressConfig, Result } from '@zpress/config'
+import { loadConfig } from '@zpress/config/loader'
+import { uniq } from 'massaman/array'
+import { match } from 'massaman/match'
 import { z } from 'zod'
+
+import { createPaths } from '../lib/paths.ts'
 
 const CONFIG_GLOBS = [
   'zpress.config.ts',

@@ -1,9 +1,12 @@
 /**
  * Zod schemas for zpress configuration validation.
  *
- * Note: Using 'zod/v3' import for compatibility with zod-to-json-schema@3.25.1
- * which requires Zod v3 schema objects even when Zod v4 is installed as peer dependency.
- * All schemas are redefined here using zod/v3 to avoid type incompatibilities.
+ * Theme schemas (`themeColorsSchema`, `themeConfigSchema`) are imported from
+ * `@zpress/theme` — that package owns the canonical theme surface; redefining
+ * them here would create drift. Because `@zpress/theme` uses Zod v4, this file
+ * also uses the Zod v4 entrypoint (`import { z } from 'zod'`). JSON Schema
+ * generation in `packages/config/scripts/generate-schema.ts` uses Zod v4's
+ * native `z.toJSONSchema()` accordingly.
  *
  * Recursive schemas (navItemSchema, entrySchema) are annotated with z.ZodType<T>
  * to enforce compile-time consistency between schemas and their TypeScript types.
@@ -14,16 +17,28 @@
  * lossy (...args: unknown[]) => unknown inference, preserving exact call signatures.
  */
 
-import { z } from 'zod/v3'
+import { themeColorsSchema, themeConfigSchema, themeVariantSchema } from '@zpress/theme'
+import { z } from 'zod'
 
 import type {
+  AnnouncementConfig,
   CardConfig,
   Frontmatter,
   HomeConfig,
+  HomeCtaConfig,
+  HomeTrustConfig,
   IconId,
+  LogoFn,
   NavItem,
   ResolvedPage,
   Section,
+  SiteConfig,
+  SiteCtaConfig,
+  SiteEditConfig,
+  SiteFooterColumn,
+  SiteFooterConfig,
+  SiteReportConfig,
+  SiteSidebarPromoConfig,
 } from './types.ts'
 
 // z.function() infers to (...args: unknown[]) => unknown, which loses
@@ -33,6 +48,8 @@ import type {
 const titleTransformSchema = z.custom<(text: string, slug: string) => string>(isFunction)
 const sortFnSchema = z.custom<(a: ResolvedPage, b: ResolvedPage) => number>(isFunction)
 const contentFnSchema = z.custom<() => string | Promise<string>>(isFunction)
+const logoFnSchema = z.custom<LogoFn>(isFunction)
+const logoConfigSchema = z.union([z.string(), logoFnSchema])
 
 const frontmatterSchema = z
   .object({
@@ -52,7 +69,7 @@ const frontmatterSchema = z
     pageClass: z.string().optional(),
     head: z.array(z.tuple([z.string(), z.record(z.string(), z.string())])).optional(),
   })
-  .passthrough() // Allow additional unknown fields
+  .strict()
 
 const navItemSchema: z.ZodType<NavItem> = z.lazy(() =>
   z
@@ -168,35 +185,6 @@ const featureSchema = z
   })
   .strict()
 
-const themeColorsSchema = z
-  .object({
-    brand: z.string().optional(),
-    brandLight: z.string().optional(),
-    brandDark: z.string().optional(),
-    brandSoft: z.string().optional(),
-    bg: z.string().optional(),
-    bgAlt: z.string().optional(),
-    bgElv: z.string().optional(),
-    bgSoft: z.string().optional(),
-    text1: z.string().optional(),
-    text2: z.string().optional(),
-    text3: z.string().optional(),
-    divider: z.string().optional(),
-    border: z.string().optional(),
-    homeBg: z.string().optional(),
-  })
-  .strict()
-
-const themeConfigSchema = z
-  .object({
-    name: z.string().default('base'),
-    colorMode: z.enum(['dark', 'light', 'toggle']).optional(),
-    switcher: z.boolean().optional(),
-    colors: themeColorsSchema.optional(),
-    darkColors: themeColorsSchema.optional(),
-  })
-  .strict()
-
 const sidebarLinkSchema = z
   .object({
     text: z.string(),
@@ -228,18 +216,122 @@ const homeGridConfigSchema = z
   })
   .strict()
 
-const homeConfigSchema = z
-  .object({
-    features: homeGridConfigSchema.optional(),
-    workspaces: homeGridConfigSchema.optional(),
-  })
-  .strict()
-
 const heroActionSchema = z
   .object({
     theme: z.enum(['brand', 'alt']),
     text: z.string(),
     link: z.string(),
+  })
+  .strict()
+
+const announcementConfigSchema = z
+  .object({
+    id: z.string().optional(),
+    lead: z.string().optional(),
+    message: z.string(),
+    cta: z
+      .object({
+        href: z.string(),
+        label: z.string(),
+      })
+      .strict()
+      .optional(),
+    persistent: z.boolean().optional(),
+  })
+  .strict()
+
+const trustConfigSchema = z
+  .object({
+    lead: z.string().optional(),
+    names: z.array(z.string()).optional(),
+  })
+  .strict()
+
+const ctaConfigSchema = z
+  .object({
+    title: z.string().optional(),
+    subtitle: z.string().optional(),
+    actions: z.array(heroActionSchema).optional(),
+  })
+  .strict()
+
+const homeConfigSchema = z
+  .object({
+    features: homeGridConfigSchema.optional(),
+    workspaces: homeGridConfigSchema.optional(),
+    eyebrow: z.string().optional(),
+    trust: trustConfigSchema.optional(),
+    cta: ctaConfigSchema.optional(),
+  })
+  .strict()
+
+const siteEditConfigSchema = z
+  .object({
+    repo: z.string(),
+    branch: z.string().optional(),
+    directory: z.string().optional(),
+    label: z.string().optional(),
+  })
+  .strict()
+
+const siteReportConfigSchema = z
+  .object({
+    repo: z.string(),
+    label: z.string().optional(),
+  })
+  .strict()
+
+const siteSidebarPromoConfigSchema = z
+  .object({
+    title: z.string(),
+    body: z.string(),
+    cta: z
+      .object({
+        text: z.string(),
+        href: z.string(),
+      })
+      .strict(),
+  })
+  .strict()
+
+const siteCtaConfigSchema = z
+  .object({
+    text: z.string(),
+    href: z.string(),
+  })
+  .strict()
+
+const siteFooterColumnSchema = z
+  .object({
+    heading: z.string(),
+    links: z.array(
+      z
+        .object({
+          text: z.string(),
+          href: z.string(),
+        })
+        .strict()
+    ),
+  })
+  .strict()
+
+const siteFooterConfigSchema = z
+  .object({
+    columns: z.array(siteFooterColumnSchema).optional(),
+    tagline: z.string().optional(),
+    brandMark: z.string().optional(),
+  })
+  .strict()
+
+const siteConfigSchema = z
+  .object({
+    version: z.string().optional(),
+    edit: siteEditConfigSchema.optional(),
+    report: siteReportConfigSchema.optional(),
+    sidebarPromo: siteSidebarPromoConfigSchema.optional(),
+    topbarCta: siteCtaConfigSchema.optional(),
+    announcement: announcementConfigSchema.optional(),
+    footer: siteFooterConfigSchema.optional(),
   })
   .strict()
 
@@ -282,12 +374,54 @@ const footerConfigSchema = z
   })
   .strict()
 
+// Each variant's tokens are `unknown` because `defineTheme` validates the
+// token tree against `tokensSchema` at factory time — duplicating that
+// validation here would produce two diverging error surfaces. Config-time
+// validation only ensures the envelope (`name`, `variants`, `defaultVariant`)
+// is structurally correct AND that the envelope rules `defineTheme` enforces
+// at factory time also hold at config-load time:
+//   1. `name` is a valid slug
+//   2. at least one of `variants.dark` / `variants.light` is present
+//   3. `defaultVariant`, when provided, points at a declared variant
+const zpressThemeInputSchema = z
+  .object({
+    name: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, {
+      message:
+        'Theme name must be a lowercase slug (a-z, 0-9, hyphen) starting with an alphanumeric character',
+    }),
+    variants: z
+      .object({
+        dark: z.unknown().optional(),
+        light: z.unknown().optional(),
+      })
+      .strict()
+      .refine((v) => v.dark !== undefined || v.light !== undefined, {
+        message: 'Theme variants must declare at least one of `dark` or `light`',
+      }),
+    defaultVariant: themeVariantSchema.optional(),
+  })
+  .strict()
+  .refine(
+    (theme) => {
+      if (theme.defaultVariant === undefined) {
+        return true
+      }
+      return theme.variants[theme.defaultVariant] !== undefined
+    },
+    {
+      message: '`defaultVariant` must point at a variant declared in `variants`',
+      path: ['defaultVariant'],
+    }
+  )
+
 export const zpressConfigSchema = z
   .object({
     title: z.string().optional(),
     description: z.string().optional(),
     theme: themeConfigSchema.optional(),
+    themes: z.array(zpressThemeInputSchema).optional(),
     icon: iconIdSchema.optional(),
+    logo: logoConfigSchema.optional(),
     tagline: z.string().optional(),
     apps: z.array(workspaceItemSchema).optional(),
     packages: z.array(workspaceItemSchema).optional(),
@@ -302,6 +436,7 @@ export const zpressConfigSchema = z
     socialLinks: z.array(socialLinkSchema).optional(),
     footer: footerConfigSchema.optional(),
     openapi: openapiConfigSchema.optional(),
+    site: siteConfigSchema.optional(),
   })
   .strict()
 
@@ -328,6 +463,30 @@ const _guardFrontmatter: z.ZodType<Frontmatter> = frontmatterSchema
 const _guardCardConfig: z.ZodType<CardConfig> = cardConfigSchema
 // oxlint-disable-next-line no-unused-vars -- compile-time type guard
 const _guardHomeConfig: z.ZodType<HomeConfig> = homeConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardHomeTrustConfig: z.ZodType<HomeTrustConfig> = trustConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardHomeCtaConfig: z.ZodType<HomeCtaConfig> = ctaConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardAnnouncementConfig: z.ZodType<AnnouncementConfig> = announcementConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteEditConfig: z.ZodType<SiteEditConfig> = siteEditConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteReportConfig: z.ZodType<SiteReportConfig> = siteReportConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteSidebarPromoConfig: z.ZodType<SiteSidebarPromoConfig> = siteSidebarPromoConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteCtaConfig: z.ZodType<SiteCtaConfig> = siteCtaConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteFooterColumn: z.ZodType<SiteFooterColumn> = siteFooterColumnSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteFooterConfig: z.ZodType<SiteFooterConfig> = siteFooterConfigSchema
+// oxlint-disable-next-line no-unused-vars -- compile-time type guard
+const _guardSiteConfig: z.ZodType<SiteConfig> = siteConfigSchema
+
+// Re-export theme schemas so they remain reachable via this module for
+// downstream consumers and JSON Schema generation tooling.
+export { themeColorsSchema, themeConfigSchema }
 
 // ---------------------------------------------------------------------------
 // Private

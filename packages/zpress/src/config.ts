@@ -1,17 +1,17 @@
 /**
  * Config-only entry point for `@zpress/kit` — re-exports `defineConfig` and
- * all config-related types from `@zpress/core`.
+ * all config-related types from `@zpress/config`.
  *
  * @module
  */
-export { defineConfig } from '@zpress/core'
+export { defineConfig } from '@zpress/config'
 
 export type {
   ZpressConfig,
   Section,
   Feature,
   Workspace,
-  WorkspaceCategory,
+  WorkspaceGroup,
   Frontmatter,
   NavItem,
   CardConfig,
@@ -20,4 +20,4 @@ export type {
   IconId,
   SidebarConfig,
   SidebarLink,
-} from '@zpress/core'
+} from '@zpress/config'

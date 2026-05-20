@@ -1,0 +1,82 @@
+{
+  "skill_name": "code-reviewer",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "adversarial-review-of-auth-snippet",
+      "prompt": "review this real quick before i merge — its just login validation:\n\nfunction login(email, password) {\n  const user = db.users.find((u) => u.email === email)\n  if (!user) return { ok: false, error: 'no user' }\n  if (user.password === password) return { ok: true, user }\n  return { ok: false, error: 'wrong password' }\n}",
+      "expected_output": "Review identifies: (a) plaintext password compare with ===, timing attack; (b) info leak via different error messages for missing user vs wrong password (user enumeration); (c) password compared in plaintext at all (should be bcrypt/argon2/scrypt hashed). Output uses the three-tier format with file:line refs.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "flags timing attack on password ===",
+          "type": "regex",
+          "pattern": "(timing|constant.?time|timingSafeEqual)"
+        },
+        {
+          "text": "flags user enumeration via different error messages",
+          "type": "regex",
+          "pattern": "(enumeration|leak|disclos|same error)"
+        },
+        {
+          "text": "flags plaintext password storage / comparison",
+          "type": "regex",
+          "pattern": "(bcrypt|argon2|scrypt|hash|plaintext)"
+        },
+        {
+          "text": "uses the documented three-tier output structure (## ERRORS / WARNS / INFOS or ✗/⚠/ℹ markers — not bare prose mentioning these words)",
+          "type": "regex",
+          "pattern": "(##\\s+(ERRORS?|WARNS?|INFOS?)|SUMMARY:\\s*\\d+\\s+findings|^✗\\s|^⚠\\s|^ℹ\\s|\\n✗\\s|\\n⚠\\s|\\nℹ\\s)"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "performance-review-nested-loop",
+      "prompt": "is this fast enough? we run it on every request. scores can be like 1000-5000 entries:\n\nfunction topByUser(scores) {\n  return scores.map((s) => {\n    const allForUser = scores.filter((x) => x.userId === s.userId)\n    return { ...s, max: Math.max(...allForUser.map((x) => x.score)) }\n  })\n}",
+      "expected_output": "Identifies O(n²) due to filter inside map. States the trigger scale. Suggests pre-bucketing into a Map<userId, score[]> for O(n). Possibly flags Math.max(...arr) spread issues for very large arrays.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "flags O(n^2) or quadratic complexity",
+          "type": "regex",
+          "pattern": "(O\\(n\\^?2\\)|O\\(n²\\)|quadratic|n\\*n|nested.+loop)"
+        },
+        {
+          "text": "suggests Map / bucket / groupBy",
+          "type": "regex",
+          "pattern": "(\\bMap\\b|bucket|groupBy|group by|index by)"
+        },
+        {
+          "text": "reasons about the consequence of the trigger scale (not just restating it from the prompt — must include a derived term like 'becomes', 'at scale', 'reaches', or n^2 math)",
+          "type": "regex",
+          "pattern": "(at\\s+\\d+|when\\s+(scores|n|the\\s+input)\\s+(reaches|grows|hits)|\\bn\\^?2\\b\\s*[≈=≥]|becomes\\s+\\d+\\s*[*x×]\\s*\\d+|on\\s+the\\s+order\\s+of)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "architecture-review-of-coupled-modules",
+      "prompt": "i think auth and billing have gotten messy. heres the imports:\n\n// src/auth/session.ts\nimport { getPlanForOrg } from '../billing/plan'\nfunction loadSession(cookie) {\n  const orgId = parseCookie(cookie)\n  return { orgId, plan: getPlanForOrg(orgId) }\n}\n\n// src/billing/usage.ts\nimport { loadSession } from '../auth/session'\nfunction recordUsage(req, units) {\n  const s = loadSession(req.cookies.session)\n  // ...\n}\n\nshould i refactor before adding 2 more billing features?",
+      "expected_output": "Flags bidirectional coupling between auth and billing. Names the consequence (can't extract billing into a service, can't test auth without billing fixtures). Proposes a concrete fix: introduce a Principal/UserContext type owned by auth (id + orgId only), have billing read that and look up plan downstream. Recommends doing the refactor before the next 2 features.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "identifies bidirectional / cyclic coupling",
+          "type": "regex",
+          "pattern": "(bidirection|cycl|two.way|circular|both ways|each other)"
+        },
+        {
+          "text": "names a concrete fix involving a new type or boundary",
+          "type": "regex",
+          "pattern": "(Principal|context|interface|extract|invert|boundary|seam)"
+        },
+        {
+          "text": "explicitly recommends doing the refactor before the new features (structural cue, not just any 'before' in prose)",
+          "type": "regex",
+          "pattern": "(refactor\\s+(this\\s+)?(first|before)|(do|tackle|land)\\s+(this\\s+|the\\s+)?refactor\\s+before|recommend\\s+(refactoring|fixing|restructuring|extracting)\\s+before|don.t\\s+add\\s+(more|the\\s+next))"
+        }
+      ]
+    }
+  ]
+}

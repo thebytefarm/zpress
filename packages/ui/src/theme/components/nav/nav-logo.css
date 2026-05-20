@@ -1,0 +1,42 @@
+/**
+ * NavLogo slot — portaled into `.rp-nav__title__link` to render zpress's
+ * theme-aware `<ZpressLogo />` SVG or the user's function-form logo.
+ *
+ * Render pipeline:
+ *   1. Initial paint: Rspress emits its native `<img src="/logo.svg">`
+ *      (the auto-generated static SVG with hardcoded brand color).
+ *   2. After hydration: NavLogo's portal mounts a `<span class="zp-nav-logo">`
+ *      child with an inline SVG that reads `var(--rp-c-brand)` via
+ *      `currentColor`, giving us theme-aware color switching.
+ *   3. CSS below hides the native img + fallback span when our portal mounts
+ *      so only the theme-aware version shows.
+ *
+ * The `:has(.zp-nav-logo)` guard means CSS only hides Rspress's native logo
+ * when our slot actually mounted — if NavLogo fails for any reason, the
+ * static `/logo.svg` stays visible as a graceful fallback.
+ */
+
+.zp-nav-logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.zp-nav-logo > svg {
+  display: block;
+  height: 1.75rem;
+  width: auto;
+}
+
+/* When our theme-aware portal mounts, hide Rspress's stock title elements
+   so we don't double-render. Covers both:
+   - the fallback `<span>title</span>` (rendered when no logo string)
+   - the native `<img class="rspress-logo">` (rendered for string logos
+     including our `/logo.svg` default).
+   The `:not(.zp-nav-logo)` guard is critical — our portal IS a span, so
+   a bare `> span` selector would hide it too. */
+.rp-nav__title__link:has(.zp-nav-logo) > span:not(.zp-nav-logo),
+.rp-nav__title__link:has(.zp-nav-logo) > .rp-nav__title__logo,
+.rp-nav__title__link:has(.zp-nav-logo) > img.rspress-logo {
+  display: none;
+}

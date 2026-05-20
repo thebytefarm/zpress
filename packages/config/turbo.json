@@ -3,6 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "generate:schema": {
+      "dependsOn": ["^build"],
       "inputs": ["src/**", "scripts/generate-schema.ts"],
       "outputs": ["schemas/**"]
     },

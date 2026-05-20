@@ -4,8 +4,10 @@ import fsPromises from 'node:fs/promises'
 import path from 'node:path'
 
 import { command } from '@kidd-cli/core'
-import type { Paths } from '@zpress/core'
-import { createPaths, generateAssets } from '@zpress/core'
+
+import { generateAssets } from '../lib/banner/index.ts'
+import { createPaths } from '../lib/paths.ts'
+import type { Paths } from '../lib/paths.ts'
 
 const CONFIG_FILENAME = 'zpress.config.ts'
 

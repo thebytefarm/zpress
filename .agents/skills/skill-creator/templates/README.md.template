@@ -1,0 +1,31 @@
+# {{SKILL_NAME}}
+
+> {{ONE_LINE_TAGLINE}}
+
+{{ONE_PARAGRAPH_DESCRIPTION}}
+
+## Install
+
+```bash
+npx skills add zrosenbauer/skills --skill {{SKILL_NAME}}
+```
+
+## What it does
+
+{{2_3_BULLETS_OF_KEY_BEHAVIORS}}
+
+- {{BEHAVIOR_1}}
+- {{BEHAVIOR_2}}
+- {{BEHAVIOR_3}}
+
+## Trigger phrases
+
+This skill activates on phrases like:
+
+- "{{TRIGGER_PHRASE_1}}"
+- "{{TRIGGER_PHRASE_2}}"
+- "{{TRIGGER_PHRASE_3}}"
+
+## License
+
+[MIT](./LICENSE) © {{AUTHOR}}

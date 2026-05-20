@@ -1,35 +1,40 @@
 ---
 title: Themes
-description: How built-in themes, color modes, and color token overrides control the visual identity of your documentation site.
+description: How built-in themes, dark/light variants, and color token overrides control the visual identity of your documentation site.
 ---
 
 import { BrowserWindow } from '@theme'
 
 # Themes
 
-How the visual identity of your documentation site is controlled through built-in themes, color modes, and token overrides.
+How the visual identity of your documentation site is controlled through built-in themes, per-theme variants, and color token overrides.
 
 ## Overview
 
-A theme in zpress is a complete set of color tokens for both light and dark modes. zpress ships with three built-in themes — Base, Midnight, and Arcade — each with its own default color mode. You can override individual color tokens without creating a custom theme, and optionally enable a runtime theme switcher for your readers.
+A theme in zpress is a **brand identity** with one or more **variants**. Each variant is a complete set of design tokens that targets either the `dark` or `light` aesthetic. zpress ships with three built-in themes — Default, Midnight, and Arcade — and dark is the framework's baseline (the initial paint is always dark unless the user explicitly toggles to light on a multi-variant theme).
+
+| UI                | Job                                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------- |
+| ☀️ / 🌙 in nav    | Swap between variants _within_ the active theme (hidden when the active theme has only one variant). |
+| 🎨 in site footer | Switch between _registered themes_ (only rendered when `theme.switcher: true`).                      |
 
 ## Built-in Themes
 
-### Base
+### Default
 
-The default theme. A clean purple/violet palette with full dark/light mode toggle support.
+The framework default. Brand-purple identity with both `dark` and `light` variants — the sun/moon toggle is enabled.
 
-**Default color mode:** `toggle` (users can switch between light and dark)
+**Variants:** `dark` (default) · `light`
 
 <BrowserWindow url="https://docs.example.com">
-  ![Base theme](../.assets/theme-base.png)
+  ![Default theme — dark](../.assets/theme-base.png)
 </BrowserWindow>
 
 ### Midnight
 
-A super-dark, high-contrast theme with blue-tinted brand colors. Both light and dark variants use very dark backgrounds — light mode is "less dark" and dark mode is near-black.
+Opinionated near-black blue theme. Single-variant (`dark` only) — the sun/moon toggle is hidden when this theme is active.
 
-**Default color mode:** `dark`
+**Variants:** `dark`
 
 <BrowserWindow url="https://docs.example.com">
   ![Midnight theme](../.assets/theme-midnight.png)
@@ -37,9 +42,9 @@ A super-dark, high-contrast theme with blue-tinted brand colors. Both light and 
 
 ### Arcade
 
-A retro neon theme inspired by arcade cabinets and CRT monitors. Vibrant neon green brand color with deep indigo backgrounds. Includes custom hover animations: border tracing on cards, CRT scanlines on code blocks, neon pulse on buttons, and glow effects on sidebar items.
+Retro neon-green theme inspired by arcade cabinets and CRT monitors. Single-variant (`dark` only). Includes custom hover animations: border tracing on cards, CRT scanlines on code blocks, neon pulse on buttons, glow effects on sidebar items.
 
-**Default color mode:** `dark`
+**Variants:** `dark`
 
 <BrowserWindow url="https://docs.example.com">
   ![Arcade theme](../.assets/theme-arcade.png)
@@ -63,44 +68,34 @@ export default defineConfig({
 })
 ```
 
+The `name` accepts any built-in theme (`default`, `midnight`, `arcade`) or any custom theme registered in the top-level `themes` array. An unknown name writes a build-time warning to stderr and falls back to `default`.
+
 ### Options
 
-| Property     | Type                               | Default           | Description                                  |
-| ------------ | ---------------------------------- | ----------------- | -------------------------------------------- |
-| `name`       | `'base' \| 'midnight' \| 'arcade'` | `'base'`          | Built-in theme to use                        |
-| `colorMode`  | `'dark' \| 'light' \| 'toggle'`    | Per-theme default | Force a color mode or allow toggling         |
-| `switcher`   | `boolean`                          | `false`           | Show a theme switcher dropdown in the navbar |
-| `colors`     | `ThemeColors`                      | —                 | Override base/light mode colors              |
-| `darkColors` | `ThemeColors`                      | —                 | Override dark mode colors                    |
+| Property     | Type                                  | Default         | Description                                                                                                |
+| ------------ | ------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
+| `name`       | `'default' \| 'midnight' \| 'arcade'` | `'default'`     | Built-in or registered theme to use                                                                        |
+| `variant`    | `'dark' \| 'light'`                   | Theme's default | Force an initial variant. Must be present in the theme's `variants`; otherwise the theme's default is used |
+| `switcher`   | `boolean`                             | `false`         | Show the theme switcher dropdown in the site footer                                                        |
+| `colors`     | `ThemeColors`                         | —               | Color overrides applied to the `light` variant                                                             |
+| `darkColors` | `ThemeColors`                         | —               | Color overrides applied to the `dark` variant                                                              |
 
-### Color mode
+### Forcing a starting variant
 
-Each theme has a default color mode. You can override it:
-
-```ts
-theme: {
-  name: 'base',
-  colorMode: 'dark',
-}
-```
-
-| Value    | Behavior                                     |
-| -------- | -------------------------------------------- |
-| `toggle` | Users can switch between light and dark mode |
-| `dark`   | Dark mode is forced, toggle is hidden        |
-| `light`  | Light mode is forced, toggle is hidden       |
-
-### Theme switcher
-
-Enable the theme switcher to let users switch between all three built-in themes at runtime:
+Each theme picks its own initial variant when there's no persisted preference. You can override this from the config:
 
 ```ts
 theme: {
-  switcher: true,
+  name: 'default',
+  variant: 'light',  // start in light mode on first visit
 }
 ```
 
-The switcher appears as a paint bucket icon in the navigation bar. Theme selection persists across page loads via `localStorage`.
+The user's last variant choice persists in `localStorage` and overrides this default on subsequent visits.
+
+### Hiding the toggle
+
+Themes with only one variant (`midnight`, `arcade`) automatically hide the ☀️/🌙 toggle. CSS keys off `data-zp-variants` on `<html>` — the provider sets it from the active theme's variant list. No config needed.
 
 ## Color Overrides
 
@@ -118,6 +113,11 @@ theme: {
   },
 }
 ```
+
+- `colors` applies to the **light** variant of the active theme.
+- `darkColors` applies to the **dark** variant.
+
+When the user toggles variants, the matching set kicks in.
 
 ### Available color tokens
 
@@ -138,22 +138,96 @@ theme: {
 | `border`     | Border color                      |
 | `homeBg`     | Home page background              |
 
-Color values must be valid CSS hex (`#xxx` or `#xxxxxx`) or `rgba()` values.
+Color values must be valid CSS hex (`#xxx` or `#xxxxxx`) or `rgba()` values. The schema additionally rejects CSS terminators (`;`, `{`, `}`, `</style>`) to defend against injection in tenant-supplied themes.
+
+## Custom Themes
+
+When the built-in themes plus color overrides aren't enough, register a fully custom theme through `defineTheme`. The theme is validated at config time and emitted as one `html[data-zp-theme='{name}'][data-zp-variant='{variant}']` CSS block per variant.
+
+```ts
+import { defineConfig, defineTheme } from '@zpress/kit'
+
+const sunset = defineTheme({
+  name: 'sunset',
+  defaultVariant: 'dark',
+  variants: {
+    dark: {
+      colors: {
+        brand: {
+          primary: '#ff7a3d',
+          hover: '#ff8c54',
+          active: '#e65f24',
+          fg: '#2a0f06',
+          soft: 'rgba(255, 122, 61, 0.14)',
+          onBrand: '#2a0f06',
+          light: '#ffa56a',
+          lighter: '#ffc89a',
+        },
+        // ... see `ZpressTokens` for the full token tree
+      },
+      // ... spacing, radii, fonts, shadows, motion, etc.
+    },
+    // Add a `light: { ... }` entry to enable the toggle for this theme.
+  },
+})
+
+export default defineConfig({
+  themes: [sunset],
+  theme: { name: 'sunset' },
+  // ...
+})
+```
+
+### Sharing tokens between variants
+
+Token tree shapes are identical across variants. To share spacing/radii/fonts/etc. between `dark` and `light`, use object spread:
+
+```ts
+const shared = {
+  spacing: { ... },
+  radii:   { ... },
+  fonts:   { ... },
+}
+
+defineTheme({
+  name: 'sunset',
+  variants: {
+    dark:  { ...shared, colors: { /* dark palette */ } },
+    light: { ...shared, colors: { /* light palette */ } },
+  },
+})
+```
+
+`defineTheme` validates each variant against the full token schema, so omitting a leaf surfaces a clear `ZodError` at config time.
+
+### Constraints
+
+| Constraint                     | Detail                                                                                                                                                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Theme `name` is a slug         | Must match `/^[a-z0-9][a-z0-9-]*$/`. Used directly in the `html[data-zp-theme='{name}']` selector.                                                                                                                                                      |
+| At least one variant required  | `variants` must declare `dark`, `light`, or both. Empty `variants: {}` raises a `ZodError`.                                                                                                                                                             |
+| Token tree must be complete    | Every leaf in `ZpressTokens` is required _per variant_. `defineTheme` validates each declared variant through `tokensSchema` and throws on missing leaves.                                                                                              |
+| Token values are CSS-safe      | Token strings reject `;`, `{`, `}`, and `</style>` to prevent CSS injection in tenant-supplied themes.                                                                                                                                                  |
+| Persisted theme is validated   | When `switcher: true`, the active theme is persisted in `localStorage`. On the next visit the value is intersected against the registry — stale entries are cleared and the user falls back to the build-time default.                                  |
+| Persisted variant is validated | The active variant is persisted in `localStorage['zpress-variant']`. On the next visit it's intersected against the active theme's `variants` — when the user's theme no longer supports that variant, the theme's `defaultVariant` is applied instead. |
 
 ## Comparing Approaches
 
-| Theme    | Best For                          | Color Mode Default |
-| -------- | --------------------------------- | ------------------ |
-| Base     | General-purpose docs              | `toggle`           |
-| Midnight | Developer tools, dark-first sites | `dark`             |
-| Arcade   | Playful branding, creative tools  | `dark`             |
+| Theme    | Best For                          | Variants    | Default variant |
+| -------- | --------------------------------- | ----------- | --------------- |
+| Default  | General-purpose docs              | dark, light | `dark`          |
+| Midnight | Developer tools, dark-first sites | dark        | `dark`          |
+| Arcade   | Playful branding, creative tools  | dark        | `dark`          |
 
 ## Design Decisions
 
-- **Three opinionated themes, not a theme builder** — providing complete themes rather than a raw token system reduces decision fatigue. Color overrides provide the escape hatch for brand customization.
-- **CSS custom properties** — overrides are injected as inline CSS variables, making them debuggable in browser devtools and compatible with any CSS-in-JS approach.
-- **Reduced motion support** — the Arcade theme's animations respect `prefers-reduced-motion`, disabling all continuous animations (border tracing, CRT scanlines, neon pulse, glow bar) automatically.
+- **Themes are brand identities; variants are dark/light.** This separation matches Chakra UI's `_dark`/`_light` and shadcn/ui's `.dark` selector — a theme is a brand, and dark/light is a property of the _site_ (not the theme).
+- **Dark is the framework baseline.** `defaultVariant: 'dark'` on every built-in. Light is a real first-class option, but you have to opt in.
+- **Single-variant themes hide the toggle.** Midnight and Arcade are opinionated dark experiences — surfacing a light toggle would lie about what they ship.
+- **CSS custom properties.** Overrides are injected as inline CSS variables, debuggable in browser devtools and compatible with any CSS-in-JS approach.
+- **Reduced motion support.** The Arcade theme's animations respect `prefers-reduced-motion`, disabling all continuous animations (border tracing, CRT scanlines, neon pulse, glow bar) automatically.
 
 ## References
 
 - [Configuration reference](/reference/configuration#top-level-fields) — `theme` field in the top-level config
+- [`defineTheme` API](/reference/configuration#siteconfig) — full input shape

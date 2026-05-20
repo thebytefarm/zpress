@@ -12,8 +12,8 @@ import {
   useHotkey,
   useInput,
 } from '@kidd-cli/core/ui'
+import { match } from 'massaman/match'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { match } from 'ts-pattern'
 
 import { Banner } from '../components/banner.tsx'
 import { useDevServer } from '../hooks/use-dev-server.ts'
@@ -33,7 +33,7 @@ interface DevScreenProps {
   readonly clean?: boolean
   readonly port?: number
   readonly theme?: string
-  readonly colorMode?: string
+  readonly colorMode?: 'dark' | 'light'
   readonly vscode?: boolean
 }
 

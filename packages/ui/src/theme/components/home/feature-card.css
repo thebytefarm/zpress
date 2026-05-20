@@ -6,7 +6,7 @@
 .zp-feature-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--zp-s-10);
   height: 100%;
 }
 
@@ -14,22 +14,22 @@
 .zp-feature-card__header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--zp-s-12);
 }
 
 .zp-feature-card__title {
   font-family: 'Geist Pixel Square', var(--rp-font-family-base, sans-serif);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--rp-c-text-1, var(--zp-c-text-1, #fbfbfb));
-  line-height: 1.4;
+  font-size: var(--zp-fs-feature-title);
+  font-weight: var(--zp-fw-bold);
+  color: var(--rp-c-text-1, var(--zp-c-text-1));
+  line-height: var(--zp-lh-tight);
 }
 
 /* Row 2: description */
 .zp-feature-card__desc {
-  font-size: 16px;
-  color: var(--rp-c-text-2, var(--zp-c-text-2, rgba(251, 251, 251, 0.72)));
-  line-height: 1.5;
+  font-size: var(--zp-fs-feature-desc);
+  color: var(--rp-c-text-2, var(--zp-c-text-2));
+  line-height: var(--zp-lh-base);
 }
 
 /* ── Truncation ────────────────────────────────────────────── */
@@ -39,4 +39,14 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Row 3: link tail (mockup pattern) */
+.zp-feature-card__link {
+  margin-top: auto;
+  padding-top: var(--zp-s-16);
+  font-family: var(--zp-font-family-mono);
+  font-size: var(--zp-fs-feature-link);
+  color: var(--zp-c-brand-1);
+  font-weight: 500;
 }

@@ -1,24 +1,25 @@
-/**
- * Theme types for zpress.
- *
- * Uses LiteralUnion to provide autocomplete for built-in themes
- * while allowing custom theme names.
- */
-
 import type { LiteralUnion } from 'type-fest'
 
 /**
  * Theme name with autocomplete for built-in themes and support for custom themes.
  *
- * Built-in themes: 'base', 'midnight', 'arcade'
+ * Built-in themes: 'default', 'midnight', 'arcade'
  * Custom themes: any string value
  */
-export type ThemeName = LiteralUnion<'base' | 'midnight' | 'arcade', string>
+export type ThemeName = LiteralUnion<'default' | 'midnight' | 'arcade', string>
 
 /**
  * Built-in theme names for validation and iteration.
  */
-export type BuiltInThemeName = 'base' | 'midnight' | 'arcade'
+export type BuiltInThemeName = 'default' | 'midnight' | 'arcade'
+
+/**
+ * The set of variants a theme can render in. A theme registers tokens
+ * under each variant it supports (`variants.dark`, `variants.light`).
+ * The sun/moon toggle in the topbar switches between variants of the
+ * active theme; if a theme has only one variant, the toggle is hidden.
+ */
+export type ThemeVariant = 'dark' | 'light'
 
 /**
  * Icon color with autocomplete for built-in colors and support for custom colors.
@@ -45,9 +46,12 @@ export type BuiltInIconColor =
   | 'slate'
 
 /**
- * How dark/light mode is controlled.
+ * Legacy alias for `ThemeVariant`. Retained for migration ergonomics — new
+ * code should prefer `ThemeVariant`.
+ *
+ * @deprecated Use {@link ThemeVariant}.
  */
-export type ColorMode = 'dark' | 'light' | 'toggle'
+export type ColorMode = ThemeVariant
 
 /**
  * Optional color overrides keyed to CSS custom properties.
@@ -78,24 +82,26 @@ export interface ThemeColors {
 export interface ThemeConfig {
   /**
    * Theme to use. Built-in themes get autocomplete, custom themes are also supported.
-   * @default 'base'
+   * @default 'default'
    */
   readonly name?: ThemeName
   /**
-   * Color mode behavior. Defaults to the theme's natural mode.
+   * Initial variant to render. When omitted, falls back to the theme's
+   * own `defaultVariant`. A persisted value in `localStorage` overrides
+   * this on subsequent visits when it points at a still-registered variant.
    */
-  readonly colorMode?: ColorMode
+  readonly variant?: ThemeVariant
   /**
    * Show the theme switcher dropdown in the nav bar.
    * @default false
    */
   readonly switcher?: boolean
   /**
-   * Partial color overrides applied in light mode (or base mode).
+   * Partial color overrides applied to the `light` variant.
    */
   readonly colors?: ThemeColors
   /**
-   * Partial color overrides applied only in dark mode.
+   * Partial color overrides applied to the `dark` variant.
    */
   readonly darkColors?: ThemeColors
 }

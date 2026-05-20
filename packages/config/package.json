@@ -1,6 +1,6 @@
 {
   "name": "@zpress/config",
-  "version": "0.5.2",
+  "version": "1.0.0-rc.0",
   "description": "Configuration loading and validation for zpress",
   "keywords": [
     "config",
@@ -26,6 +26,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
+    "./loader": {
+      "types": "./dist/loader.d.ts",
+      "import": "./dist/loader.mjs"
+    },
     "./schema": {
       "default": "./schemas/schema.json"
     }
@@ -44,18 +48,26 @@
   "dependencies": {
     "@zpress/theme": "workspace:*",
     "c12": "4.0.0-beta.4",
-    "es-toolkit": "catalog:",
-    "ts-pattern": "catalog:",
+    "massaman": "^0.2.0",
     "type-fest": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@rslib/core": "catalog:",
     "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
     "tsx": "^4.21.0",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "zod-to-json-schema": "^3.25.2"
+  },
+  "peerDependencies": {
+    "react": "^19.2.5"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=24.0.0"

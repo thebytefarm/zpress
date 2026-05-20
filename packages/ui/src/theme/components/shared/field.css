@@ -1,7 +1,7 @@
 /* ── Field ── */
 
 .zp-field {
-  padding: 12px 16px;
+  padding: var(--zp-s-12) var(--zp-s-16);
   border-bottom: 1px solid var(--zp-c-border);
 }
 
@@ -13,42 +13,42 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: var(--zp-s-8);
   flex-wrap: wrap;
-  margin-bottom: 4px;
+  margin-bottom: var(--zp-s-4);
 }
 
 .zp-field__name {
   font-family: var(--zp-font-family-mono);
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--zp-fs-field-name);
   color: var(--zp-c-text-1);
 }
 
 .zp-field__name--deprecated {
   text-decoration: line-through;
-  opacity: 0.6;
+  opacity: var(--zp-opacity-deprecated);
 }
 
 .zp-field__type {
   display: inline-block;
-  padding: 1px 8px;
-  border-radius: 9999px;
+  padding: var(--zp-s-1) var(--zp-s-8);
+  border-radius: var(--zp-radius-pill);
   font-family: var(--zp-font-family-mono);
-  font-size: 11px;
+  font-size: var(--zp-fs-field-type);
   color: var(--zp-c-text-2);
   background: var(--zp-c-bg-soft);
 }
 
 .zp-field__badge {
-  font-size: 11px;
+  font-size: var(--zp-fs-field-badge);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--zp-letter-wide);
 }
 
 .zp-field__badge--required {
-  color: #f87171;
+  color: var(--zp-c-tint-red-fg);
 }
 
 .zp-field__badge--optional {
@@ -56,31 +56,31 @@
 }
 
 .zp-field__badge--deprecated {
-  padding: 1px 8px;
-  border-radius: 9999px;
-  background: rgba(251, 191, 36, 0.12);
-  color: #fbbf24;
+  padding: var(--zp-s-1) var(--zp-s-8);
+  border-radius: var(--zp-radius-pill);
+  background: var(--zp-c-tint-amber-bg);
+  color: var(--zp-c-tint-amber-fg);
 }
 
 .zp-field__default {
-  font-size: 12px;
+  font-size: var(--zp-fs-field-default);
   color: var(--zp-c-text-3);
-  margin-bottom: 2px;
+  margin-bottom: var(--zp-s-2);
 }
 
 .zp-field__default code {
   font-family: var(--zp-font-family-mono);
-  font-size: 11px;
-  padding: 1px 4px;
-  border-radius: 4px;
+  font-size: var(--zp-fs-field-default-code);
+  padding: var(--zp-s-1) var(--zp-s-4);
+  border-radius: var(--zp-radius-sm);
   background: var(--zp-c-bg-soft);
   color: var(--zp-c-text-2);
 }
 
 .zp-field__body {
-  font-size: 14px;
+  font-size: var(--zp-fs-field-body);
   color: var(--zp-c-text-2);
-  line-height: 1.6;
+  line-height: var(--zp-lh-relaxed);
 }
 
 .zp-field__body > p {
@@ -90,24 +90,24 @@
 /* ── FieldGroup (top-level) ── */
 
 .zp-field-group {
-  margin: 16px 0;
+  margin: var(--zp-s-16) 0;
 }
 
 .zp-field-group__title {
-  font-size: 14px;
+  font-size: var(--zp-fs-field-group-title);
   font-weight: 600;
   color: var(--zp-c-text-1);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: var(--zp-s-12);
+  padding-bottom: var(--zp-s-8);
   border-bottom: 1px solid var(--zp-c-border);
 }
 
 /* ── FieldGroup (expandable) ── */
 
 .zp-field-group--expandable {
-  margin: 8px 0 0;
+  margin: var(--zp-s-8) 0 0;
   border: 1px solid var(--zp-c-border);
-  border-radius: 6px;
+  border-radius: var(--zp-radius-md-sm);
   overflow: hidden;
 }
 
@@ -115,13 +115,13 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: var(--zp-s-6);
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--zp-s-8) var(--zp-s-12);
   border: none;
   background: var(--zp-c-bg-soft);
   color: var(--zp-c-text-2);
-  font-size: 12px;
+  font-size: var(--zp-fs-field-trigger);
   font-weight: 500;
   cursor: pointer;
 }
@@ -134,10 +134,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: var(--zp-size-chevron);
+  height: var(--zp-size-chevron);
   color: var(--zp-c-text-3);
-  transition: transform 0.2s;
+  transition: transform var(--zp-duration-base);
 }
 
 .zp-field-group--expandable[data-open] .zp-field-group__chevron {
@@ -146,7 +146,7 @@
 
 .zp-field-group__panel {
   display: none;
-  padding: 4px 0;
+  padding: var(--zp-s-4) 0;
 }
 
 .zp-field-group--expandable[data-open] .zp-field-group__panel {
@@ -154,5 +154,5 @@
 }
 
 .zp-field-group--expandable .zp-field {
-  padding-left: 24px;
+  padding-left: var(--zp-s-24);
 }

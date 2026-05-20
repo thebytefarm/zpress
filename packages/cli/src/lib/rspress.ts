@@ -4,12 +4,14 @@ import { Server } from 'node:http'
 import { platform } from 'node:os'
 
 import { dev, build, serve } from '@rspress/core'
-import type { Paths, ZpressConfig } from '@zpress/core'
-import { createRspressConfig } from '@zpress/ui'
+import type { ZpressConfig } from '@zpress/config'
+import type { ThemeVariant } from '@zpress/theme'
+import { createRspressConfig } from '@zpress/ui/node'
 import getPort, { portNumbers } from 'get-port'
-import { match } from 'ts-pattern'
+import { toError } from 'massaman/conversion'
+import { match } from 'massaman/match'
 
-import { toError } from './error'
+import type { Paths } from './paths.ts'
 
 /**
  * Default port for the dev server.
@@ -27,7 +29,7 @@ interface ServerOptions {
   readonly port?: number
   readonly vscode?: boolean
   readonly theme?: string
-  readonly colorMode?: string
+  readonly colorMode?: ThemeVariant
 }
 
 /**
@@ -93,7 +95,7 @@ export async function startDevServer(options: ServerOptions): Promise<DevServerR
       logLevel: 'silent',
       vscode: options.vscode,
       themeOverride: options.theme,
-      colorModeOverride: options.colorMode,
+      variantOverride: options.colorMode,
     })
     try {
       serverInstance = await dev({
@@ -236,7 +238,7 @@ export async function serveSite(options: ServerOptions): Promise<number> {
     paths: options.paths,
     vscode: options.vscode,
     themeOverride: options.theme,
-    colorModeOverride: options.colorMode,
+    variantOverride: options.colorMode,
   })
   const preferredPort = options.port ?? SERVE_PORT
   const port = await getPort({ port: portNumbers(preferredPort, preferredPort + DEV_PORT_RANGE) })

@@ -1,27 +1,14 @@
-/**
- * Public API for `@zpress/kit` — re-exports all user-facing functions,
- * values, and types from `@zpress/core` and `@zpress/ui`.
- *
- * @module
- */
-export {
-  defineConfig,
-  loadConfig,
-  sync,
-  resolveEntries,
-  loadManifest,
-  createPaths,
-  hasGlobChars,
-} from '@zpress/core'
+export { defineConfig, defineTheme, hasGlobChars } from '@zpress/config'
+export { ZpressLogo } from '@zpress/ui'
+export type { ZpressLogoProps } from '@zpress/ui'
 
-export { createRspressConfig, zpressPlugin } from '@zpress/ui'
-
+// Config types — what consumers fill in when writing `zpress.config.ts`.
 export type {
   ZpressConfig,
   Section,
   Feature,
   Workspace,
-  WorkspaceCategory,
+  WorkspaceGroup,
   Frontmatter,
   NavItem,
   CardConfig,
@@ -30,17 +17,49 @@ export type {
   ResolvedPage,
   ResolvedSection,
   Result,
+  TitleConfig,
+  HeroAction,
+  HomeConfig,
+  HomeTrustConfig,
+  HomeCtaConfig,
+  HomeGridConfig,
+  TruncateConfig,
+  AnnouncementConfig,
+  SiteConfig,
+  SiteEditConfig,
+  SiteReportConfig,
+  SiteSidebarPromoConfig,
+  SiteCtaConfig,
+  SiteFooterColumn,
+  SiteFooterConfig,
+  FooterConfig,
+  SocialLink,
+  SocialLinkIcon,
+  OpenAPIConfig,
   IconConfig,
   IconColor,
   IconId,
   IconPrefix,
-  Paths,
-  SyncResult,
-  SyncOptions,
-  SyncContext,
-  PageData,
-  ResolvedEntry,
-  SidebarItem,
-  Manifest,
-  ManifestEntry,
-} from '@zpress/core'
+  LogoConfig,
+  LogoContext,
+  LogoFn,
+  LogoImage,
+} from '@zpress/config'
+
+// Theme types — what `defineTheme` accepts and returns.
+export type {
+  ZpressTheme,
+  ZpressThemeInput,
+  ZpressThemeInputVariants,
+  ZpressTokens,
+  ThemeVariant,
+  ThemeVariantTokens,
+  ThemeName,
+  ThemeColors,
+  ThemeConfig,
+  BuiltInThemeName,
+  BuiltInIconColor,
+} from '@zpress/theme'
+
+// Config loader option types.
+export type { LoadConfigOptions } from '@zpress/config'

@@ -1,0 +1,33 @@
+.zp-trust {
+  padding: 32px 0;
+}
+
+.zp-trust__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--zp-font-family-mono);
+  font-size: 12px;
+  color: var(--zp-c-text-3);
+}
+
+.zp-trust__lead {
+  margin-right: 4px;
+}
+
+.zp-trust__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zp-trust__name {
+  color: var(--zp-c-text-1);
+  font-weight: 500;
+}
+
+.zp-trust__sep {
+  color: var(--zp-c-text-3);
+}

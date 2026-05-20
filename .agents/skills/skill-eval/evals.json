@@ -1,0 +1,78 @@
+{
+  "skill_name": "skill-eval",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "errors-on-missing-evals-json",
+      "prompt": "rerun the baselines for nonexistent-skill-xyz — i think it might be drifting after the last claude upgrade",
+      "expected_output": "Refuses to invent results. Reports that the skill `nonexistent-skill-xyz` doesn't exist (no SKILL.md or evals.json found under `skills/` or `.agents/skills/`) and points the user at `/skill-creator` to author it (or at hand-writing `evals.json`). Does NOT fabricate transcripts or grading.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "names the missing artifact (evals.json or SKILL.md)",
+          "type": "regex",
+          "pattern": "(evals\\.json|SKILL\\.md|no\\s+skill|doesn.?t\\s+exist|not\\s+found)"
+        },
+        {
+          "text": "points the user at skill-creator (or to authoring evals.json by hand)",
+          "type": "regex",
+          "pattern": "(/?skill-creator|author\\s+(an?\\s+)?evals|hand-?(write|author)|create\\s+(the\\s+)?evals)"
+        },
+        {
+          "text": "does not fabricate a benchmark / iteration / grading result for the missing skill (no '✓' / 'passed N/M' / 'iteration-' phrasing for nonexistent-skill-xyz)",
+          "type": "regex",
+          "pattern": "^(?!.*nonexistent-skill-xyz.*(passed|iteration-|grading\\.json|benchmark)).*$",
+          "flags": "s"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "all-flag-resolves-via-filesystem",
+      "prompt": "test all the skills, want to see what's drifting",
+      "expected_output": "Resolves the target list by scanning the filesystem under `skills/` and `.agents/skills/` for directories with both `SKILL.md` and `evals.json`. References the iteration-N workspace pattern and the per-skill `.workspace/` location. Plans to run BOTH the without_skill (RED) and with_skill (GREEN) variants per scenario, then grade deterministically.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "scans the filesystem for skills with evals.json (mentions the dir or the file as the discovery mechanism)",
+          "type": "regex",
+          "pattern": "(skills/|\\.agents/skills/|find\\s+(every|all|each)\\s+(skill|directory)|scan\\s+(the\\s+)?(skills|directories)|ls\\s+(skills|.agents))"
+        },
+        {
+          "text": "names the per-skill workspace + iteration-N convention",
+          "type": "regex",
+          "pattern": "(\\.workspace/|iteration-\\d|next\\s+iteration|max\\(N\\)|iteration\\s+number)"
+        },
+        {
+          "text": "names both variants (without_skill / RED and with_skill / GREEN) — not just one",
+          "type": "regex",
+          "pattern": "(without_skill[\\s\\S]+with_skill|with_skill[\\s\\S]+without_skill|RED[\\s\\S]+GREEN|baseline[\\s\\S]+with\\s+(the\\s+)?skill)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "single-skill-rerun-runs-both-variants",
+      "prompt": "rerun the evals for ts-best-practices and tell me if anything regressed",
+      "expected_output": "Plans both the without_skill (RED baseline) and with_skill (GREEN) dispatches via the Agent tool — not just one. Saves transcripts to the per-skill `.workspace/iteration-N/eval-K-name/` location with the next iteration number computed from existing iterations. Grades each transcript deterministically (regex / contains / file_exists, no LLM-as-judge). Reports per-eval pass/fail and flags regressions explicitly.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "dispatches BOTH without_skill (RED baseline) and with_skill (GREEN) — explicitly mentions both",
+          "type": "regex",
+          "pattern": "(without_skill[\\s\\S]+with_skill|with_skill[\\s\\S]+without_skill|RED[\\s\\S]+GREEN|baseline[\\s\\S]+with\\s+(the\\s+)?skill\\s+loaded)"
+        },
+        {
+          "text": "names the deterministic grading mechanism (regex / contains / file_exists; no LLM-as-judge)",
+          "type": "regex",
+          "pattern": "(deterministic|regex|contains|file_exists|no\\s+LLM-?as-?judge|not\\s+LLM)"
+        },
+        {
+          "text": "computes the next iteration number from existing workspace state (not 'iteration-1' blindly)",
+          "type": "regex",
+          "pattern": "(next\\s+iteration|max\\(N\\)|max\\s+iteration|highest\\s+iteration|N\\s*\\+\\s*1|increment\\s+(the\\s+)?iteration|existing\\s+iteration)"
+        }
+      ]
+    }
+  ]
+}

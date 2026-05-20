@@ -2,12 +2,14 @@ import { createHash } from 'node:crypto'
 import { watch } from 'node:fs'
 import path from 'node:path'
 
-import type { ZpressConfig, Paths } from '@zpress/core'
-import { loadConfig, sync } from '@zpress/core'
-import { debounce } from 'es-toolkit'
+import type { ZpressConfig } from '@zpress/config'
+import { loadConfig } from '@zpress/config/loader'
+import { toError } from 'massaman/conversion'
+import { debounce } from 'massaman/function'
 
 import type { WatcherCallbacks, WatcherHandle } from './dev-types.ts'
-import { toError } from './error'
+import type { Paths } from './paths.ts'
+import { sync } from './sync/index.ts'
 
 const CONFIG_EXTENSIONS = ['.ts', '.mts', '.cts', '.js', '.mjs', '.cjs', '.json'] as const
 

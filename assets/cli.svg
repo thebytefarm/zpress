@@ -9,7 +9,7 @@
       .btn-green { fill: #a6e3a1; }
       .text { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; }
       .command { fill: #cdd6f4; }
-      .brand { fill: #a78bfa; }
+      .brand { fill: #60a5fa; }
       .green { fill: #a6e3a1; }
       .dim { fill: #6c7086; }
       .white { fill: #cdd6f4; }

@@ -1,7 +1,8 @@
 import { command } from '@kidd-cli/core'
-import { createPaths, loadConfig } from '@zpress/core'
+import { loadConfig } from '@zpress/config/loader'
 import { z } from 'zod'
 
+import { createPaths } from '../lib/paths.ts'
 import { openBrowser, serveSite } from '../lib/rspress.ts'
 
 /**
@@ -14,7 +15,7 @@ export default command({
     open: z.boolean().optional().default(true),
     port: z.number().optional(),
     theme: z.string().optional(),
-    colorMode: z.string().optional(),
+    colorMode: z.enum(['dark', 'light']).optional(),
     vscode: z.boolean().optional().default(false),
   }),
   handler: async (ctx) => {

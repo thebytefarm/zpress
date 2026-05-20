@@ -1,0 +1,36 @@
+{
+  "skill_name": "{{SKILL_NAME}}",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "{{EVAL_0_NAME}}",
+      "prompt": "{{REALISTIC_USER_PROMPT_WITH_CONTEXT_TYPOS_AND_VAGUENESS}}",
+      "expected_output": "{{PLAIN_ENGLISH_DESCRIPTION_OF_GOOD_OUTPUT}}",
+      "files": [],
+      "assertions": [
+        { "text": "{{ASSERTION_DESCRIPTION_0_0}}", "type": "regex", "pattern": "{{REGEX_PATTERN}}" },
+        { "text": "{{ASSERTION_DESCRIPTION_0_1}}", "type": "contains", "substring": "{{LITERAL_SUBSTRING}}" }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "{{EVAL_1_NAME}}",
+      "prompt": "{{ANOTHER_REALISTIC_PROMPT}}",
+      "expected_output": "{{PLAIN_ENGLISH_DESCRIPTION}}",
+      "files": [],
+      "assertions": [
+        { "text": "{{ASSERTION_DESCRIPTION_1_0}}", "type": "regex", "pattern": "{{REGEX_PATTERN}}" }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "{{EVAL_2_NAME}}",
+      "prompt": "{{THIRD_REALISTIC_PROMPT}}",
+      "expected_output": "{{PLAIN_ENGLISH_DESCRIPTION}}",
+      "files": [],
+      "assertions": [
+        { "text": "{{ASSERTION_DESCRIPTION_2_0}}", "type": "regex", "pattern": "{{REGEX_PATTERN}}" }
+      ]
+    }
+  ]
+}

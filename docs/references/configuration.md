@@ -29,13 +29,15 @@ Configuration is loaded via [c12](https://github.com/unjs/c12), which supports `
 | `sections`    | `Section[]`           | (required) | Information architecture tree                                                                  |
 | `nav`         | `'auto' \| NavItem[]` | `'auto'`   | Top navigation bar                                                                             |
 | `theme`       | `ThemeConfig`         | —          | Theme configuration (name, color mode, color overrides)                                        |
+| `themes`      | `ZpressThemeInput[]`  | —          | Custom themes registered alongside the built-ins. See [Themes](/concepts/themes#custom-themes) |
+| `site`        | `SiteConfig`          | —          | Site chrome — version chip, edit/report links, sidebar promo, topbar CTA, announcement, footer |
 | `features`    | `Feature[]`           | —          | Explicit home page feature cards (replaces auto-gen)                                           |
 | `actions`     | `HeroAction[]`        | —          | Home page hero call-to-action buttons                                                          |
 | `sidebar`     | `SidebarConfig`       | —          | Persistent links above/below the sidebar nav tree                                              |
 | `workspaces`  | `WorkspaceCategory[]` | —          | Named groups of workspace items for home/landing pages                                         |
 | `openapi`     | `OpenAPIConfig`       | —          | OpenAPI spec integration for interactive API docs                                              |
 | `exclude`     | `string[]`            | —          | Glob patterns excluded globally across all sources                                             |
-| `home`        | `HomeConfig`          | —          | Home page grid layout for features and workspaces                                              |
+| `home`        | `HomeConfig`          | —          | Home page layout (eyebrow, trust strip, CTA band, grid columns)                                |
 | `socialLinks` | `SocialLink[]`        | —          | Social media links displayed in the navigation bar                                             |
 | `footer`      | `FooterConfig`        | —          | Footer message, copyright text, and social link visibility                                     |
 | `icon`        | `string`              | —          | Path to a custom favicon served from `.zpress/public/`. Defaults to auto-generated `/icon.svg` |
@@ -292,19 +294,35 @@ Each `SidebarLink` has:
 
 ## HomeConfig
 
-Layout and styling options for the home page card grids.
+Home page layout — hero eyebrow, trust strip, final CTA band, and card-grid layout for features and workspaces.
 
 ```ts
 home: {
+  eyebrow: '★ open source · v1.0 · MIT',
   features: { columns: 3, truncate: { description: 2 } },
   workspaces: { columns: 2, truncate: { title: 1, description: 2 } },
+  trust: {
+    lead: 'used by docs at',
+    names: ['Acme', 'Globex', 'Initech'],
+  },
+  cta: {
+    title: 'Ship the docs your team deserves.',
+    subtitle: 'One CLI. Three minutes. Production-ready.',
+    actions: [
+      { theme: 'brand', text: 'Get started', link: '/getting-started/quick-start' },
+      { theme: 'alt', text: 'Star on GitHub →', link: 'https://github.com/acme/docs' },
+    ],
+  },
 }
 ```
 
-| Field        | Type             | Description                        |
-| ------------ | ---------------- | ---------------------------------- |
-| `features`   | `HomeGridConfig` | Layout options for feature cards   |
-| `workspaces` | `HomeGridConfig` | Layout options for workspace cards |
+| Field        | Type              | Description                                                     |
+| ------------ | ----------------- | --------------------------------------------------------------- |
+| `eyebrow`    | `string`          | Eyebrow chip rendered above the hero title (e.g. version label) |
+| `features`   | `HomeGridConfig`  | Layout options for feature cards                                |
+| `workspaces` | `HomeGridConfig`  | Layout options for workspace cards                              |
+| `trust`      | `HomeTrustConfig` | Trust strip rendered between the hero and the features grid     |
+| `cta`        | `HomeCtaConfig`   | Final CTA band rendered just above the footer                   |
 
 Each `HomeGridConfig` has:
 
@@ -314,6 +332,120 @@ Each `HomeGridConfig` has:
 | `truncate` | `TruncateConfig`   | Max visible lines before clipping with ellipsis |
 
 `TruncateConfig` accepts `title?: number` and `description?: number` for line-clamp values.
+
+`HomeTrustConfig`:
+
+| Field   | Type       | Description                                          |
+| ------- | ---------- | ---------------------------------------------------- |
+| `lead`  | `string`   | Short lead phrase (e.g. `"used by docs at"`)         |
+| `names` | `string[]` | List of names to render (renders nothing when empty) |
+
+`HomeCtaConfig`:
+
+| Field      | Type           | Description                                           |
+| ---------- | -------------- | ----------------------------------------------------- |
+| `title`    | `string`       | CTA headline                                          |
+| `subtitle` | `string`       | Optional supporting text                              |
+| `actions`  | `HeroAction[]` | Up to two CTA buttons (same shape as `actions` above) |
+
+## SiteConfig
+
+Site-level chrome — version chip, edit/report links, sidebar promo, topbar CTA, announcement banner, and extended footer. Every field is optional; pieces with no config render nothing.
+
+```ts
+site: {
+  version: 'v1.0',
+  edit:   { repo: 'acme/docs', branch: 'main', directory: 'docs' },
+  report: { repo: 'acme/docs' },
+  sidebarPromo: {
+    title: 'Try Acme Cloud',
+    body:  'Hosted Acme in two clicks.',
+    cta:   { text: 'Start free', href: 'https://acme.io' },
+  },
+  topbarCta: { text: 'Get started →', href: '/getting-started' },
+  announcement: {
+    id: 'v1',
+    lead: 'NEW',
+    message: 'Acme Docs 1.0 is here.',
+    cta: { href: '/changelog', label: 'What changed' },
+  },
+  footer: {
+    columns: [
+      { heading: 'Product', links: [{ text: 'Features', href: '/features' }] },
+      { heading: 'Community', links: [{ text: 'GitHub', href: 'https://github.com/acme' }] },
+    ],
+    tagline: 'Built with zpress',
+  },
+}
+```
+
+| Field          | Type                     | Description                                                                 |
+| -------------- | ------------------------ | --------------------------------------------------------------------------- |
+| `version`      | `string`                 | Version label next to the brand in the topbar (e.g. `'v1.0'`). Omit to hide |
+| `edit`         | `SiteEditConfig`         | "Edit this page on GitHub" link rendered under every doc page               |
+| `report`       | `SiteReportConfig`       | "Report an issue" link rendered under every doc page                        |
+| `sidebarPromo` | `SiteSidebarPromoConfig` | Promo card pinned to the bottom of the docs sidebar                         |
+| `topbarCta`    | `SiteCtaConfig`          | Topbar CTA button (also mirrored into the mobile nav)                       |
+| `announcement` | `AnnouncementConfig`     | Announcement banner rendered above the topbar                               |
+| `footer`       | `SiteFooterConfig`       | Footer columns, tagline, and brand mark                                     |
+
+`SiteEditConfig`:
+
+| Field       | Type     | Description                                                           |
+| ----------- | -------- | --------------------------------------------------------------------- |
+| `repo`      | `string` | `"org/repo"` shorthand or full URL                                    |
+| `branch`    | `string` | Branch to link against (default `"main"`)                             |
+| `directory` | `string` | Subdirectory inside the repo containing the docs (default: repo root) |
+| `label`     | `string` | Override the visible label (default `"Edit this page on GitHub"`)     |
+
+`SiteReportConfig`:
+
+| Field   | Type     | Description                                              |
+| ------- | -------- | -------------------------------------------------------- |
+| `repo`  | `string` | `"org/repo"` shorthand or full issues URL                |
+| `label` | `string` | Override the visible label (default `"Report an issue"`) |
+
+`SiteSidebarPromoConfig`:
+
+| Field   | Type                             | Description    |
+| ------- | -------------------------------- | -------------- |
+| `title` | `string`                         | Promo headline |
+| `body`  | `string`                         | Body copy      |
+| `cta`   | `{ text: string; href: string }` | CTA button     |
+
+`SiteCtaConfig`:
+
+| Field  | Type     | Description  |
+| ------ | -------- | ------------ |
+| `text` | `string` | Button label |
+| `href` | `string` | Click target |
+
+`AnnouncementConfig`:
+
+| Field        | Type                              | Description                                                        |
+| ------------ | --------------------------------- | ------------------------------------------------------------------ |
+| `id`         | `string`                          | Stable id — when present, dismissal persists in `localStorage`     |
+| `lead`       | `string`                          | Highlighted lead phrase rendered before the message (e.g. `"NEW"`) |
+| `message`    | `string`                          | Body text of the announcement                                      |
+| `cta`        | `{ href: string; label: string }` | Optional CTA appended after the message                            |
+| `persistent` | `boolean`                         | When `true`, hides the dismiss button                              |
+
+`SiteFooterConfig`:
+
+| Field       | Type                 | Description                                                               |
+| ----------- | -------------------- | ------------------------------------------------------------------------- |
+| `columns`   | `SiteFooterColumn[]` | Link columns rendered in the footer grid. Omit for a minimal footer       |
+| `tagline`   | `string`             | Small tagline rendered on the right side of the bottom strip              |
+| `brandMark` | `string`             | Brand mark character rendered in the footer's brand block (default `'Z'`) |
+
+`SiteFooterColumn`:
+
+| Field     | Type                               | Description    |
+| --------- | ---------------------------------- | -------------- |
+| `heading` | `string`                           | Column heading |
+| `links`   | `{ text: string; href: string }[]` | Column links   |
+
+> **Security note** — all `href` values inside `site.*` are validated through a safe-URL helper that rejects `javascript:`, `data:`, `vbscript:`, and `file:` schemes. Relative paths, fragment anchors, `http://`, `https://`, `mailto:`, and `tel:` are allowed.
 
 ## SocialLink
 

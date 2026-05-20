@@ -4,7 +4,7 @@ import { defineConfig } from './define-config.ts'
 import { validateConfig } from './validator.ts'
 
 const validConfig = {
-  sections: [{ title: 'Test', path: 'test' }],
+  sections: [{ title: 'Test', path: '/test', content: '# Test' }],
 }
 
 describe('validateConfig()', () => {

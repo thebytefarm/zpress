@@ -1,7 +1,3 @@
-/**
- * Config loading with c12 supporting .ts/.json/.jsonc/.yml files.
- */
-
 import { loadConfig as c12LoadConfig } from 'c12'
 
 import { configError } from './errors.ts'

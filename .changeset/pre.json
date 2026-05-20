@@ -1,0 +1,16 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "example-kitchen-sink": "0.0.2",
+    "example-simple": "0.0.2",
+    "zpress-vscode": "0.2.2",
+    "@zpress/cli": "0.9.1",
+    "@zpress/config": "0.5.2",
+    "@zpress/templates": "0.1.2",
+    "@zpress/theme": "0.3.2",
+    "@zpress/ui": "0.9.1",
+    "@zpress/kit": "0.2.23"
+  },
+  "changesets": ["v1-release"]
+}

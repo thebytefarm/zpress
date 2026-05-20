@@ -16,7 +16,7 @@ export default screen({
     clean: z.boolean().optional().default(false),
     port: z.number().optional(),
     theme: z.string().optional(),
-    colorMode: z.string().optional(),
+    colorMode: z.enum(['dark', 'light']).optional(),
     vscode: z.boolean().optional().default(false),
   }),
   render: DevScreen,

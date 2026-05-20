@@ -2,14 +2,14 @@
  * Theme switcher dropdown styles.
  */
 
-.theme-switcher {
+.zp-theme-switcher {
   position: relative;
   display: inline-flex;
   align-items: center;
   margin-left: 8px;
 }
 
-.theme-switcher-btn {
+.zp-theme-switcher__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -26,14 +26,14 @@
     border-color 0.2s;
 }
 
-.theme-switcher-btn:hover {
+.zp-theme-switcher__btn:hover {
   color: var(--zp-c-text-1);
   border-color: var(--zp-c-brand-1);
 }
 
-.theme-switcher-dropdown {
+.zp-theme-switcher__dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  bottom: calc(100% + 8px);
   right: 0;
   z-index: 100;
   min-width: 160px;
@@ -44,7 +44,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.theme-switcher-option {
+.zp-theme-switcher__option {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -62,16 +62,16 @@
     color 0.15s;
 }
 
-.theme-switcher-option:hover {
+.zp-theme-switcher__option:hover {
   background: var(--zp-c-bg-soft);
   color: var(--zp-c-text-1);
 }
 
-.theme-switcher-option--active {
+.zp-theme-switcher__option--active {
   color: var(--zp-c-brand-1);
 }
 
-.theme-switcher-swatch {
+.zp-theme-switcher__swatch {
   display: inline-block;
   width: 12px;
   height: 12px;
@@ -80,13 +80,13 @@
   flex-shrink: 0;
 }
 
-.theme-switcher-check {
+.zp-theme-switcher__check {
   margin-left: auto;
   font-size: 11px;
   opacity: 0.7;
 }
 
-.theme-switcher-name {
+.zp-theme-switcher__name {
   flex: 1;
   text-align: left;
 }

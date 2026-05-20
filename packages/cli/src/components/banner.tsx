@@ -3,26 +3,25 @@
 | Banner
 |==========================================================================
 |
-| Styled zpress logo banner using cfonts block font with purple gradient.
+| Styled zpress logo banner using cfonts block font with the active
+| theme's brand gradient. Color stops come from `@zpress/theme` so the
+| TUI stays in sync with the docs site and SVG assets.
 |
 */
 
+import { resolveBrandGradient } from '@zpress/theme'
 import BigText from 'ink-big-text'
 import Gradient from 'ink-gradient'
 
 /**
- * Brand colors for the zpress purple gradient (light to dark).
- */
-const GRADIENT_COLORS = ['#c4b5fd', '#8b5cf6', '#7c3aed'] as const
-
-/**
- * Render the zpress logo banner with purple gradient coloring.
+ * Render the zpress logo banner with the default theme's brand gradient.
  *
  * @returns React element with the styled zpress banner
  */
 export function Banner(): React.ReactElement {
+  const colors = resolveBrandGradient('default')
   return (
-    <Gradient colors={[...GRADIENT_COLORS]}>
+    <Gradient colors={[...colors]}>
       <BigText text="zpress" font="block" />
     </Gradient>
   )

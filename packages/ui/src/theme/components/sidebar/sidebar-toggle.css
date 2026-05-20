@@ -1,0 +1,118 @@
+.zp-sidebar-toggle {
+  /* Pinned to the far-left of the nav, matching the mockup hamburger
+     position. The nav itself is set to position: relative below. */
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--zp-radius-card);
+  color: var(--zp-c-text-2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+/* Hide Rspress's mobile hamburger always — our `.zp-sidebar-toggle`
+   owns the role of "menu trigger" across all widths. On mobile our
+   toggle programmatically forwards the click to Rspress's hamburger
+   (its handler is preserved, only the visual is hidden) so the
+   slide-over mobile menu still works. */
+html .rp-nav-hamburger {
+  display: none !important;
+}
+
+/* Replace the hamburger icon inside Rspress's mobile sub-bar
+   (`.rp-sidebar-menu__left`) with a "panel-left" affordance so it
+   doesn't visually echo the navbar's hamburger. The bar itself stays
+   visible because it serves a distinct role (show sidebar / outline
+   on mobile). */
+html .rp-sidebar-menu__left > svg {
+  display: none;
+}
+html .rp-sidebar-menu__left::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2'/><line x1='9' y1='3' x2='9' y2='21'/></svg>")
+    no-repeat center / contain;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2'/><line x1='9' y1='3' x2='9' y2='21'/></svg>")
+    no-repeat center / contain;
+}
+
+.zp-sidebar-toggle:hover {
+  background: var(--zp-c-bg-soft);
+  color: var(--zp-c-text-1);
+}
+
+/* Pin the nav to the top of the viewport AND make it the positioning
+   context for the absolutely-positioned toggle. `sticky` covers both:
+   it pins on scroll while still acting as the offset parent for
+   `position: absolute` children. */
+html .rp-nav,
+html .rspress-nav {
+  position: sticky;
+  top: 0;
+}
+
+html .rp-nav__left,
+html .rspress-nav__left {
+  padding-left: 36px;
+}
+
+/* When collapsed, hide the sidebar + placeholder. Doc / outline reflow
+   into the freed space automatically because Rspress sidebar uses sticky
+   positioning + flex layout. (`.rp-doc-layout__menu` is hidden globally
+   above so it doesn't need to be repeated here.) */
+html[data-zp-sidebar-collapsed='true'] .rp-doc-layout__sidebar,
+html[data-zp-sidebar-collapsed='true'] .rp-doc-layout__sidebar-placeholder {
+  display: none !important;
+}
+
+/* Rspress's mobile nav-screen renders dividers around sections like
+   translations / appearance-toggle / socials. When some of those
+   sections are absent or hidden, two dividers end up adjacent — a
+   pair of stacked empty hairlines. Collapse consecutive dividers and
+   hide a trailing one with no following content. */
+html .rp-nav-screen-divider + .rp-nav-screen-divider,
+html .rp-nav-screen-divider:last-child {
+  display: none;
+}
+
+/* Mobile slide-over: overlay the entire viewport so the menu covers
+   the navbar AND the announcement bar, instead of starting below them.
+   Without this, the banner+nav take ~84px at the top that the user
+   can still see (and accidentally tap) while the menu is open.
+   Applies to both Rspress's nav screen (`.rp-nav-screen` — top-nav
+   items) and the doc sidebar slide-over. */
+@media (max-width: 768px) {
+  html .rp-doc-layout__sidebar,
+  html .rp-nav-screen {
+    top: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 100 !important;
+    background: var(--zp-c-bg-elv);
+  }
+}
+
+/* When collapsed: cap the doc reading width and center it within the
+   available space (rail width minus outline). Prevents the prose from
+   stretching edge-to-edge and makes the layout feel intentional. */
+html[data-zp-sidebar-collapsed='true'] .rp-doc-layout__doc {
+  max-width: var(--zp-content-collapsed-max, 1000px) !important;
+  margin: 0 auto !important;
+}
+
+html[data-zp-sidebar-collapsed='true'] .rp-doc-layout__doc-container {
+  max-width: var(--zp-content-collapsed-max, 1000px);
+  margin: 0 auto;
+}

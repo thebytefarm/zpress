@@ -1,10 +1,10 @@
 import { useFrontmatter } from '@rspress/core/runtime'
 import type { HomeGridConfig } from '@zpress/config'
+import { match, P } from 'massaman/match'
 import type React from 'react'
-import { match, P } from 'ts-pattern'
 
 import { useZpress } from '../../hooks/use-zpress'
-import { FeatureCard, FeatureGrid } from './feature-card'
+import { FeatureCard } from './feature-card'
 import type { FeatureItem } from './feature-card'
 
 /**
@@ -28,7 +28,21 @@ export function HomeFeature(): React.ReactElement | null {
   return match(features)
     .with(
       P.when((f): f is readonly FeatureItem[] => Array.isArray(f) && f.length > 0),
-      (items) => <FeatureGrid>{items.map((f, i) => renderFeature(f, i, gridConfig))}</FeatureGrid>
+      (items) => (
+        <div className="zp-feature-section">
+          <div className="zp-feature-section-head">
+            <div className="zp-feature-section-head__eyebrow">Features</div>
+            <h2 className="zp-feature-section-head__title">Built for the way you ship.</h2>
+            <p className="zp-feature-section-head__sub">
+              Everything you need, nothing you don&apos;t. Configured in TypeScript, validated at
+              boot.
+            </p>
+          </div>
+          <div className="zp-feature-grid">
+            {items.map((f, i) => renderFeature(f, i, gridConfig))}
+          </div>
+        </div>
+      )
     )
     .otherwise(() => null)
 }

@@ -1,4 +1,4 @@
-import { kebabCase } from 'es-toolkit'
+import { kebabCase } from 'massaman/string'
 
 import type { Template, TemplateVariables } from './types.ts'
 

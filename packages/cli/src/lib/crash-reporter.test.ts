@@ -54,7 +54,7 @@ describe('reportCrash()', () => {
     expect(report.level).toBe('fatal')
     expect(report.source).toBe('middleware')
     expect(report.command).toBe('dev')
-    expect(report.args).toEqual({ port: 6174 })
+    expect(report.args).toStrictEqual({ port: 6174 })
     expect(report.error.name).toBe('Error')
     expect(report.error.message).toBe('json check')
     expect(report.error.stack).toBeDefined()
@@ -76,7 +76,7 @@ describe('reportCrash()', () => {
     expect(result.logPath).not.toBeNull()
     const report = JSON.parse(readFileSync(result.logPath as string, 'utf8'))
     expect(report.command).toBe('build')
-    expect(report.args).toEqual({ clean: true, check: false })
+    expect(report.args).toStrictEqual({ clean: true, check: false })
   })
 
   it('should set command and args to null when not provided', () => {

@@ -1,0 +1,103 @@
+.zp-announce {
+  position: relative;
+  height: var(--zp-announce-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 48px;
+  background: linear-gradient(
+    90deg,
+    var(--zp-c-brand-soft) 0%,
+    transparent 50%,
+    var(--zp-c-brand-soft) 100%
+  );
+  border-bottom: 1px solid var(--zp-c-border);
+  font-size: 12.5px;
+  color: var(--zp-c-text-2);
+}
+
+.zp-announce__pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--zp-c-brand-1);
+  animation: zp-announce-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes zp-announce-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--zp-c-brand-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+.zp-announce__msg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.zp-announce__lead {
+  color: var(--zp-c-text-1);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.zp-announce__cta {
+  color: var(--zp-c-brand-1);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.zp-announce__cta:hover {
+  color: var(--zp-c-brand-2);
+}
+
+.zp-announce__close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: var(--zp-c-text-3);
+  cursor: pointer;
+}
+
+.zp-announce__close:hover {
+  background: var(--zp-c-bg-soft);
+  color: var(--zp-c-text-1);
+}
+
+/* Mobile: shrink padding so the message doesn't wrap weirdly inside a
+   fixed 36px row. Let the bar grow vertically when the message + CTA
+   would otherwise collide with the close button. */
+@media (max-width: 720px) {
+  html .zp-announce {
+    height: auto;
+    min-height: var(--zp-announce-h);
+    padding: 6px 36px 6px 12px;
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: left;
+    justify-content: flex-start;
+  }
+  html .zp-announce__msg {
+    flex: 1;
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  html .zp-announce__close {
+    right: 6px;
+  }
+}

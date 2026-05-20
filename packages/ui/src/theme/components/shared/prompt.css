@@ -5,7 +5,7 @@
 .zp-prompt {
   display: flex;
   flex-direction: column;
-  margin: 16px 0;
+  margin: var(--zp-s-16) 0;
   border: 1px solid var(--zp-c-border);
   border-radius: var(--rp-radius);
   overflow: visible;
@@ -15,8 +15,8 @@
 .zp-prompt__header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--zp-s-10);
+  padding: var(--zp-s-10) var(--zp-s-14);
   background: var(--zp-c-bg-elv);
   border-radius: var(--rp-radius);
 }
@@ -30,21 +30,21 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: var(--zp-size-prompt-icon);
+  height: var(--zp-size-prompt-icon);
   color: var(--zp-c-brand-1);
 }
 
 .zp-prompt__description {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: var(--zp-fs-prompt-desc);
+  line-height: var(--zp-lh-base);
   color: var(--zp-c-text-1);
 }
 
 .zp-prompt__feedback {
-  font-size: 12px;
+  font-size: var(--zp-fs-prompt-feedback);
   font-weight: 500;
   color: var(--zp-c-brand-1);
   white-space: nowrap;
@@ -53,7 +53,7 @@
 .zp-prompt__actions {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--zp-s-4);
   flex-shrink: 0;
 }
 
@@ -63,20 +63,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--zp-s-6);
   padding: 0;
   border: 1px solid var(--zp-c-border);
   border-radius: var(--rp-radius);
   background: var(--zp-c-bg);
   color: var(--zp-c-text-2);
   font-family: var(--zp-font-family-base);
-  font-size: 12px;
+  font-size: var(--zp-fs-prompt-btn);
   font-weight: 500;
   cursor: pointer;
   transition:
-    color 0.15s,
-    border-color 0.15s,
-    background 0.15s;
+    color var(--zp-duration-fast),
+    border-color var(--zp-duration-fast),
+    background var(--zp-duration-fast);
 }
 
 .zp-prompt__btn:hover {
@@ -85,13 +85,13 @@
 }
 
 .zp-prompt__btn--primary {
-  padding: 4px 12px;
-  height: 30px;
+  padding: var(--zp-s-4) var(--zp-s-12);
+  height: var(--zp-size-prompt-btn);
 }
 
 .zp-prompt__btn--icon {
-  width: 30px;
-  height: 30px;
+  width: var(--zp-size-prompt-btn);
+  height: var(--zp-size-prompt-btn);
 }
 
 /* ── Dropdown ─────────────────────────────────────────────── */
@@ -102,32 +102,32 @@
 
 .zp-prompt__menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + var(--zp-s-6));
   right: 0;
-  z-index: 50;
-  min-width: 220px;
-  padding: 4px;
+  z-index: var(--zp-z-dropdown);
+  min-width: var(--zp-size-menu-min);
+  padding: var(--zp-s-4);
   background: var(--zp-c-bg);
   border: 1px solid var(--zp-c-border);
   border-radius: var(--rp-radius);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--zp-shadow-menu);
 }
 
 .zp-prompt__menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--zp-s-10);
   width: 100%;
-  padding: 8px 10px;
+  padding: var(--zp-s-8) var(--zp-s-10);
   border: none;
   border-radius: var(--rp-radius-small);
   background: none;
   color: var(--zp-c-text-1);
   font-family: var(--zp-font-family-base);
-  font-size: 13px;
+  font-size: var(--zp-fs-prompt-menu-item);
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--zp-duration-fast);
 }
 
 .zp-prompt__menu-item:hover {
@@ -139,8 +139,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
+  width: var(--zp-size-prompt-menu-icon);
+  height: var(--zp-size-prompt-menu-icon);
   color: var(--zp-c-text-2);
 }
 
@@ -153,13 +153,13 @@
 
 .zp-prompt__menu-label {
   font-weight: 500;
-  line-height: 1.3;
+  line-height: var(--zp-lh-tighter);
 }
 
 .zp-prompt__menu-desc {
-  font-size: 11px;
+  font-size: var(--zp-fs-prompt-menu-desc);
   color: var(--zp-c-text-3);
-  line-height: 1.3;
+  line-height: var(--zp-lh-tighter);
 }
 
 /* ── Hidden raw & Code block ──────────────────────────────── */

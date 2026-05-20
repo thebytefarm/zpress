@@ -12,9 +12,9 @@ import { Icon } from '../shared/icon.tsx'
  */
 export function VscodeTag(): React.ReactElement {
   return (
-    <span className="vscode-tag" title="VS Code preview mode" aria-label="VS Code preview mode">
+    <span className="zp-vscode-tag" title="VS Code preview mode" aria-label="VS Code preview mode">
       <Icon icon="vscode-icons:file-type-vscode" width={14} height={14} />
-      <span className="vscode-tag-text">vscode</span>
+      <span className="zp-vscode-tag__text">vscode</span>
     </span>
   )
 }

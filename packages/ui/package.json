@@ -1,6 +1,6 @@
 {
   "name": "@zpress/ui",
-  "version": "0.9.1",
+  "version": "1.0.0-rc.0",
   "description": "Rspress plugin, theme components, and styles for zpress",
   "keywords": [
     "react",
@@ -27,6 +27,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.mjs"
+    },
     "./theme": {
       "types": "./src/theme/index.tsx",
       "import": "./src/theme/index.tsx"
@@ -42,8 +46,9 @@
   },
   "scripts": {
     "build": "rslib build",
-    "postbuild": "node scripts/minify-head.mjs",
+    "postbuild": "node scripts/generate-theme-css.mjs && oxfmt --write src/theme/styles/themes src/head/css/themes && node scripts/minify-head.mjs",
     "dev": "rslib build --watch --no-clean",
+    "generate:theme-css": "node scripts/generate-theme-css.mjs",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit"
   },
@@ -59,14 +64,13 @@
     "@iconify-json/vscode-icons": "^1.2.45",
     "@iconify/react": "^6.0.2",
     "@zpress/config": "workspace:*",
-    "@zpress/core": "workspace:*",
     "@zpress/theme": "workspace:*",
     "katex": "^0.16.45",
+    "massaman": "^0.2.0",
     "mermaid": "^10.9.5",
     "openapi-sampler": "^1.7.2",
     "react-aria-components": "^1.17.0",
     "ts-morph": "^27.0.2",
-    "ts-pattern": "catalog:",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { isFunction } from 'es-toolkit'
+import { isFunction } from 'massaman/predicate'
 
 import { getBuiltInTemplates } from './built-in.ts'
 import type { ExtendTemplateOptions, Template, TemplateRegistry } from './types.ts'

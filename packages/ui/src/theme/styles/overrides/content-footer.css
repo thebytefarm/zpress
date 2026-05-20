@@ -1,0 +1,80 @@
+/**
+ * Content footer — feedback widget + meta-actions block portalled into
+ * Rspress's `.rp-doc-footer` so they live INSIDE the doc rail at the
+ * reading width. Sits above Rspress's built-in `.rp-prev-next-page`
+ * pager (which we restyle below to match the approved mockup).
+ */
+
+/* ── Portal wrapper — sits at the top of `.rp-doc-footer` ── */
+html .rp-doc-footer .zp-content-footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--zp-c-border);
+}
+
+/* Rspress occasionally renders an empty `.rp-doc-footer__edit` row.
+   Hide it so we don't get a phantom 0-height divider before our content. */
+html .rp-doc-footer__edit:empty {
+  display: none;
+}
+
+/* ── Restyle Rspress's prev/next pager to match the mockup ── */
+html .rp-prev-next-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+html .rp-prev-next-page__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--zp-c-border);
+  border-radius: var(--zp-radius-card);
+  background: var(--zp-c-bg-soft);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+html .rp-prev-next-page__item:hover {
+  border-color: var(--zp-c-border);
+  background: var(--zp-c-bg-elv);
+}
+
+html .rp-prev-next-page__item--next,
+html .rp-prev-next-page__next {
+  align-items: flex-end;
+  text-align: right;
+}
+
+html .rp-prev-next-page__item__desc {
+  font-family: var(--zp-font-family-mono);
+  font-size: 11px;
+  color: var(--zp-c-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+html .rp-prev-next-page__item__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--zp-c-text-1);
+}
+
+/* Chevron icons Rspress injects inside the title — size them down and
+   mute their color so they read as subtle direction indicators. */
+html .rp-prev-next-page__icon {
+  width: 12px;
+  height: 12px;
+  color: var(--zp-c-text-3);
+  flex-shrink: 0;
+}

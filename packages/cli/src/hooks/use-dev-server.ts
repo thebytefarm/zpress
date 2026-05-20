@@ -1,6 +1,7 @@
-import type { SyncResult } from '@zpress/core'
-import { createPaths, loadConfig, sync } from '@zpress/core'
-import { attemptAsync, mapValues } from 'es-toolkit'
+import { loadConfig } from '@zpress/config/loader'
+import { attemptAsync } from 'massaman/control'
+import { toError } from 'massaman/conversion'
+import { mapValues } from 'massaman/object'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { clean } from '../commands/clean.ts'
@@ -14,8 +15,10 @@ import type {
   WatcherHandle,
   WatcherStatus,
 } from '../lib/dev-types.ts'
-import { toError } from '../lib/error.ts'
+import { createPaths } from '../lib/paths.ts'
 import { startDevServer } from '../lib/rspress.ts'
+import { sync } from '../lib/sync/index.ts'
+import type { SyncResult } from '../lib/sync/index.ts'
 import { createWatcher } from '../lib/watcher.ts'
 
 /**
@@ -26,7 +29,7 @@ export interface UseDevServerProps {
   readonly clean?: boolean
   readonly port?: number
   readonly theme?: string
-  readonly colorMode?: string
+  readonly colorMode?: 'dark' | 'light'
   readonly vscode?: boolean
 }
 
@@ -107,18 +110,19 @@ export function useDevServer(props: UseDevServerProps): UseDevServerResult {
         return
       }
 
-      const [syncErr, syncResult] = await attemptAsync<SyncResult, Error>(() =>
+      const syncOutcome = await attemptAsync<SyncResult>(() =>
         sync(config, { paths, quiet: props.quiet ?? true, openapiCache: openapiCache.current })
       )
 
       if (disposed.current) {
         return
       }
-      if (syncErr) {
-        set.error(`Sync failed: ${syncErr.message}`)
+      if (!syncOutcome.ok) {
+        set.error(`Sync failed: ${syncOutcome.error.message}`)
         set.phase('error')
         return
       }
+      const syncResult = syncOutcome.value
       if (syncResult.error) {
         set.error(syncResult.error)
         set.phase('error')
@@ -127,10 +131,7 @@ export function useDevServer(props: UseDevServerProps): UseDevServerResult {
 
       set.lastSync(syncResult)
 
-      const [serverErr, server] = await attemptAsync<
-        Awaited<ReturnType<typeof startDevServer>>,
-        Error
-      >(() =>
+      const serverOutcome = await attemptAsync<Awaited<ReturnType<typeof startDevServer>>>(() =>
         startDevServer({
           config,
           paths,
@@ -142,16 +143,17 @@ export function useDevServer(props: UseDevServerProps): UseDevServerResult {
       )
 
       if (disposed.current) {
-        if (server) {
-          await server.close()
+        if (serverOutcome.ok) {
+          await serverOutcome.value.close()
         }
         return
       }
-      if (serverErr) {
-        set.error(`Dev server failed: ${serverErr.message}`)
+      if (!serverOutcome.ok) {
+        set.error(`Dev server failed: ${serverOutcome.error.message}`)
         set.phase('error')
         return
       }
+      const server = serverOutcome.value
 
       // oxlint-disable-next-line functional/immutable-data -- ref assignment for cleanup
       serverClose.current = server.close
@@ -198,11 +200,12 @@ export function useDevServer(props: UseDevServerProps): UseDevServerResult {
       set.phase('ready')
     }
 
-    init().catch((uncaught: unknown) => {
+    // oxlint-disable-next-line promise/prefer-await-to-callbacks unicorn/catch-error-name -- useEffect cannot be async; outer scope already binds `error`
+    init().catch((cause: unknown) => {
       if (disposed.current) {
         return
       }
-      const normalized = toError(uncaught)
+      const normalized = toError(cause)
       const result = reportCrash({
         error: normalized,
         source: 'middleware',

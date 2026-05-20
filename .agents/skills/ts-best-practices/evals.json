@@ -1,0 +1,97 @@
+{
+  "skill_name": "ts-best-practices",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "validate-config-quick-and-dirty",
+      "prompt": "ok i need a function that validates a config object real quick — has to check name, port, and a debug flag. just write it im in a meeting in 5 min",
+      "expected_output": "Function takes an object parameter typed with a *Params interface, returns a typed result, has JSDoc with @param/@returns/@example, no `any`, no positional primitive arguments. Time pressure should not collapse to a one-liner that takes 3 strings.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "uses *Params or *Options interface for object params",
+          "type": "regex",
+          "pattern": "interface\\s+\\w+(Params|Options|Args)"
+        },
+        {
+          "text": "destructures the params object in the function signature",
+          "type": "regex",
+          "pattern": "\\(\\s*\\{\\s*\\w+"
+        },
+        {
+          "text": "has JSDoc @param tag",
+          "type": "regex",
+          "pattern": "@param"
+        },
+        {
+          "text": "has JSDoc @returns tag",
+          "type": "regex",
+          "pattern": "@returns"
+        },
+        {
+          "text": "does not use `any` anywhere in the transcript (tempered greedy token; matches IFF `: any` is absent everywhere)",
+          "type": "regex",
+          "pattern": "^(?:(?!:\\s*any\\b)[\\s\\S])*$"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "refactor-status-ifelse-chain",
+      "prompt": "can u fix this. it works but my reviewer is gonna complain:\n\nfunction render(d) {\n  if (d.status === 'building') return 'Building...'\n  else if (d.status === 'ready') {\n    if (d.error) return 'Failed: ' + d.error\n    else return 'Ready at ' + d.url\n  } else return 'Unknown'\n}",
+      "expected_output": "Refactored to ts-pattern's match() with .exhaustive(), parameter typed as Deployment (or similar discriminated union), no nested if/else, no ternaries.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "imports ts-pattern's match",
+          "type": "regex",
+          "pattern": "import\\s+\\{[^}]*\\bmatch\\b[^}]*\\}\\s+from\\s+['\"]ts-pattern['\"]"
+        },
+        {
+          "text": "uses .exhaustive() for compile-time safety",
+          "type": "regex",
+          "pattern": "\\.exhaustive\\s*\\(\\s*\\)"
+        },
+        {
+          "text": "no else-if chains remain anywhere (tempered greedy token)",
+          "type": "regex",
+          "pattern": "^(?:(?!else\\s+if)[\\s\\S])*$"
+        },
+        {
+          "text": "no ternary used in the refactor (tempered greedy token)",
+          "type": "regex",
+          "pattern": "^(?:(?!\\?\\s*['\"\\w]+\\s*:\\s*['\"\\w]+)[\\s\\S])*$"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "create-id-types-positional-args-trap",
+      "prompt": "create types for User and Org and a function getUser(userId, orgId) — they're both strings, like uuids. just need it to fetch a user from the db basically",
+      "expected_output": "Branded types for UserId and OrgId so they can't be confused at the call site. getUser takes a *Params object (not positional primitives). User and Org are PascalCase, fields use camelCase, files would be kebab-case.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "defines branded UserId type",
+          "type": "regex",
+          "pattern": "type\\s+UserId\\s*="
+        },
+        {
+          "text": "defines branded OrgId type",
+          "type": "regex",
+          "pattern": "type\\s+OrgId\\s*="
+        },
+        {
+          "text": "uses a Brand or __brand pattern",
+          "type": "regex",
+          "pattern": "(__brand|Brand<)"
+        },
+        {
+          "text": "getUser takes object params, not positional strings",
+          "type": "regex",
+          "pattern": "getUser\\s*\\(\\s*\\{"
+        }
+      ]
+    }
+  ]
+}

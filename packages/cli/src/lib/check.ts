@@ -10,11 +10,13 @@
 import path from 'node:path'
 
 import type { Log } from '@kidd-cli/core'
-import { configError, checkWorkspaceIncludes } from '@zpress/core'
-import type { ConfigError, ConfigWarning, Paths, ZpressConfig } from '@zpress/core'
+import { configError } from '@zpress/config'
+import type { ConfigError, ConfigWarning, ZpressConfig } from '@zpress/config'
+import { toError } from 'massaman/conversion'
 
-import { toError } from './error.ts'
+import type { Paths } from './paths.ts'
 import { buildSiteForCheck } from './rspress.ts'
+import { checkWorkspaceIncludes } from './sync/workspace.ts'
 
 // oxlint-disable-next-line prefer-regex-literals, no-control-regex -- regex literal is clearer for a well-known ANSI escape pattern
 const ANSI_PATTERN = /\u001B\[[0-9;]*m/g

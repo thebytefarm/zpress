@@ -5,33 +5,33 @@
 .zp-badge {
   display: inline-flex;
   align-items: center;
-  padding: 1px 8px;
-  border-radius: 9999px;
-  font-size: 11px;
+  padding: var(--zp-s-1) var(--zp-s-8);
+  border-radius: var(--zp-radius-pill);
+  font-size: var(--zp-fs-badge);
   font-weight: 600;
-  line-height: 1.6;
-  letter-spacing: 0.02em;
+  line-height: var(--zp-lh-relaxed);
+  letter-spacing: var(--zp-letter-wide);
   text-transform: uppercase;
   white-space: nowrap;
   vertical-align: middle;
 }
 
 .zp-badge--info {
-  background: rgba(37, 99, 235, 0.12);
-  color: #2563eb;
+  background: var(--zp-c-badge-info-bg);
+  color: var(--zp-c-badge-info-fg);
 }
 
 .zp-badge--success {
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
+  background: var(--zp-c-badge-success-bg);
+  color: var(--zp-c-badge-success-fg);
 }
 
 .zp-badge--warning {
-  background: rgba(217, 119, 6, 0.12);
-  color: #d97706;
+  background: var(--zp-c-badge-warning-bg);
+  color: var(--zp-c-badge-warning-fg);
 }
 
 .zp-badge--error {
-  background: rgba(220, 38, 38, 0.12);
-  color: #dc2626;
+  background: var(--zp-c-badge-error-bg);
+  color: var(--zp-c-badge-error-fg);
 }

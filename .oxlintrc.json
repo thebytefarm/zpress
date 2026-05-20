@@ -134,6 +134,7 @@
     "dist",
     "build",
     "coverage",
+    ".agents",
     ".claude",
     ".vitepress",
     ".zpress",

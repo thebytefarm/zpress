@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { arch, platform, version as nodeVersion } from 'node:process'
 
-import { toError } from './error.ts'
+import { toError } from 'massaman/conversion'
 
 /**
  * Source of the crash — where it was caught.

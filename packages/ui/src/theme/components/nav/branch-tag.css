@@ -2,7 +2,7 @@
  * Branch tag pill — git branch badge positioned in the nav bar.
  */
 
-.branch-tag {
+.zp-branch-tag {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -24,31 +24,31 @@
     color 0.2s;
 }
 
-.branch-tag:hover {
+.zp-branch-tag:hover {
   border-color: var(--zp-c-brand-1);
   color: var(--zp-c-brand-1);
   text-decoration: none !important;
 }
 
-.branch-tag:focus-visible {
+.zp-branch-tag:focus-visible {
   outline: 2px solid var(--rp-c-brand);
   outline-offset: 2px;
 }
 
-.branch-tag svg {
+.zp-branch-tag svg {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
 }
 
-.branch-tag-text {
+.zp-branch-tag__text {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .branch-tag-text {
+  .zp-branch-tag__text {
     display: none;
   }
 }

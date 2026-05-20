@@ -1,6 +1,6 @@
 {
   "name": "@zpress/kit",
-  "version": "0.2.23",
+  "version": "1.0.0-rc.0",
   "description": "Documentation framework powered by Rspress with a config-driven information architecture",
   "keywords": [
     "docs",
@@ -44,7 +44,8 @@
   },
   "dependencies": {
     "@zpress/cli": "workspace:*",
-    "@zpress/core": "workspace:*",
+    "@zpress/config": "workspace:*",
+    "@zpress/theme": "workspace:*",
     "@zpress/ui": "workspace:*"
   },
   "devDependencies": {
