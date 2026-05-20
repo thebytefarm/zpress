@@ -49,6 +49,7 @@ export function Layout(): React.ReactElement {
   const { frontmatter } = useFrontmatter()
   const fmRecord = frontmatter as Record<string, unknown>
   const isHome = fmRecord.pageType === 'home'
+  const isBlank = fmRecord.pageType === 'blank'
   const filepathValue = fmRecord.__filepath
   const pagePath = match(filepathValue)
     .with(P.string, (v) => v)
@@ -136,9 +137,10 @@ export function Layout(): React.ReactElement {
       </div>
     ))
 
-  // Home pages render SiteFooter inside their PageRail; doc pages render it
+  // Home pages render SiteFooter inside their PageRail; blank pages are
+  // chromeless by design (no nav, no footer); doc pages render the footer
   // here via the bottom slot so it's full-width below the gutter rail.
-  const bottomSlot = match(isHome)
+  const bottomSlot = match(isHome || isBlank)
     .with(true, () => null)
     .otherwise(() => <SiteFooter />)
 
