@@ -59,18 +59,35 @@ export function NavLogo(): React.ReactElement | null {
   const [themeContext, setThemeContext] = useState<LogoContext | null>(null)
 
   useEffect(() => {
-    const link = globalThis.document.querySelector('.rp-nav__title__link') as HTMLElement | null
-    setTarget(link)
-
     const html = globalThis.document.documentElement
     setThemeContext(readThemeContext(html))
 
+    // Resolve the portal target. Because NavLogo can mount before Rspress
+    // renders the nav, we observe DOM mutations until `.rp-nav__title__link`
+    // appears, then stop observing childList to keep the observer cheap.
+    function findTarget() {
+      return globalThis.document.querySelector('.rp-nav__title__link') as HTMLElement | null
+    }
+
+    const initialTarget = findTarget()
+    if (initialTarget !== null) {
+      setTarget(initialTarget)
+    }
+
     const observer = new MutationObserver(() => {
       setThemeContext(readThemeContext(html))
+      if (initialTarget === null) {
+        const link = findTarget()
+        if (link !== null) {
+          setTarget(link)
+        }
+      }
     })
     observer.observe(html, {
       attributes: true,
       attributeFilter: ['data-zp-theme', 'data-zp-variant', 'class', 'style'],
+      childList: true,
+      subtree: true,
     })
 
     return () => observer.disconnect()

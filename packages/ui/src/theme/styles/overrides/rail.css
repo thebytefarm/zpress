@@ -14,7 +14,7 @@
 
 /* ── Token overrides — tighten Rspress defaults to match mockup ── */
 html:root {
-  --rp-nav-height: 48px;
+  --rp-nav-height: 56px;
   --rp-sidebar-width: 260px;
   --rp-sidebar-padding: 0px;
   --rp-outline-width: 240px;
@@ -196,11 +196,18 @@ html .rp-nav__menu a {
   font-size: 13px;
 }
 
-/* Pin `font-weight` on active states so the box doesn't reflow when the
-   active page changes. Rspress's defaults jump to 600 on `--active`,
-   widening the text and shifting the layout. Color change alone marks
-   active in these surfaces. */
+/* Pin `font-weight` across ALL nav item states (idle, hover, active) so
+   the box never reflows when the active page changes or on hover.
+   Rspress defaults jump to 600 on `--active` and some themes bump on
+   hover — both cause layout shift. Color alone marks state. */
+html .rp-nav-menu__item,
+html .rp-nav-menu a,
+html .rp-nav__menu a,
+html .rp-hover-group__item,
+html .rp-hover-group__item:hover,
 html .rp-hover-group__item--active,
+html .rp-nav-screen-menu-item,
+html .rp-nav-screen-menu-item:hover,
 html .rp-nav-screen-menu-item--active {
   font-weight: 500;
 }

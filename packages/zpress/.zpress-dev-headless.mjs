@@ -3,8 +3,12 @@
 import { resolve } from 'node:path'
 
 import { dev } from '@rspress/core'
-import { loadConfig, createPaths, sync } from '@zpress/kit'
-import { createRspressConfig } from '@zpress/ui'
+import { loadConfig } from '@zpress/config/loader'
+import { createRspressConfig } from '@zpress/ui/node'
+
+// Workspace-internal imports — this script is local-only, not published.
+import { createPaths } from '../cli/dist/index.mjs'
+import { sync } from '../cli/dist/index.mjs'
 
 const cwd = resolve(import.meta.dirname, '..', '..')
 const [configErr, config] = await loadConfig(cwd)

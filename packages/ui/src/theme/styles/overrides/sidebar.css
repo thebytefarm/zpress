@@ -58,6 +58,20 @@
     font-size: 13px;
   }
 
+  /* Tighten sidebar horizontal padding — Rspress's defaults leave too
+     much room on the left/right inside the rail, which makes the
+     content feel narrow. */
+  html .rp-doc-layout__sidebar,
+  html .rspress-sidebar {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 16px;
+  }
+
+  html .rp-sidebar-body {
+    padding-bottom: 16px;
+  }
+
   /* ── Active item — accent stripe on the left edge ─────────── */
   /* Pin `font-weight` to the base value. Rspress's default jumps to 600
      on `--active`, which widens the text and reflows the sidebar layout
