@@ -1,9 +1,10 @@
 import fs from 'node:fs/promises'
 
 import { command } from '@kidd-cli/core'
-import { createPaths } from '@zpress/core'
-import type { Paths } from '@zpress/core'
 import { compact } from 'es-toolkit'
+
+import { createPaths } from '../lib/paths.ts'
+import type { Paths } from '../lib/paths.ts'
 
 /**
  * Remove zpress build artifacts and caches.

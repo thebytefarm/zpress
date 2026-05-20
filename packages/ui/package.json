@@ -27,6 +27,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.mjs"
+    },
     "./theme": {
       "types": "./src/theme/index.tsx",
       "import": "./src/theme/index.tsx"
@@ -60,7 +64,6 @@
     "@iconify-json/vscode-icons": "^1.2.45",
     "@iconify/react": "^6.0.2",
     "@zpress/config": "workspace:*",
-    "@zpress/core": "workspace:*",
     "@zpress/theme": "workspace:*",
     "katex": "^0.16.45",
     "mermaid": "^10.9.5",

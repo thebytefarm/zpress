@@ -45,7 +45,7 @@
   "dependencies": {
     "@zpress/cli": "workspace:*",
     "@zpress/config": "workspace:*",
-    "@zpress/core": "workspace:*",
+    "@zpress/theme": "workspace:*",
     "@zpress/ui": "workspace:*"
   },
   "devDependencies": {

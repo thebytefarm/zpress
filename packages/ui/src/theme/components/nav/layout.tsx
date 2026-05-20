@@ -106,7 +106,11 @@ export function Layout(): React.ReactElement {
   const belowItems = sidebarBelow ?? []
 
   const beforeSidebar = match(aboveItems.length > 0)
-    .with(true, () => <SidebarLinks items={aboveItems} position="above" />)
+    .with(true, () => (
+      <div className="zp-sidebar-top">
+        <SidebarLinks items={aboveItems} position="above" />
+      </div>
+    ))
     .otherwise(() => null)
 
   const sidebarPromo = match(sidebarPromoConfig)
@@ -115,14 +119,22 @@ export function Layout(): React.ReactElement {
       <SidebarPromo title={p.title} body={p.body} ctaText={p.cta.text} ctaHref={p.cta.href} />
     ))
 
-  const afterSidebar = (
-    <>
-      {match(belowItems.length > 0)
-        .with(true, () => <SidebarLinks items={belowItems} position="below" />)
-        .otherwise(() => null)}
-      {sidebarPromo}
-    </>
-  )
+  const belowLinks = match(belowItems.length > 0)
+    .with(true, () => <SidebarLinks items={belowItems} position="below" />)
+    .otherwise(() => null)
+
+  // Wrap below-links + promo in a single sticky bottom region so they hug
+  // the viewport bottom while the nav tree scrolls between them and the
+  // sticky top region. Only render the wrapper when there's something to
+  // pin — otherwise the sidebar scrolls cleanly with no empty band.
+  const afterSidebar = match(belowLinks === null && sidebarPromo === null)
+    .with(true, () => null)
+    .otherwise(() => (
+      <div className="zp-sidebar-bottom">
+        {belowLinks}
+        {sidebarPromo}
+      </div>
+    ))
 
   // Home pages render SiteFooter inside their PageRail; doc pages render it
   // here via the bottom slot so it's full-width below the gutter rail.

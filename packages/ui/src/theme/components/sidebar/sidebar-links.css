@@ -5,17 +5,11 @@
   padding: 8px 0;
 }
 
-.zp-sidebar-links--above {
-  border-bottom: 1px solid var(--rp-c-divider);
-  padding-bottom: 12px;
-  margin-bottom: 4px;
-}
-
-.zp-sidebar-links--below {
-  border-top: 1px solid var(--rp-c-divider);
-  padding-top: 12px;
-  margin-top: 4px;
-}
+/* Position modifiers (`--above` / `--below`) used to own their own
+   divider hairlines + spacing, but the `.zp-sidebar-top` and
+   `.zp-sidebar-bottom` wrappers (added in v1) now provide the dividers
+   and edge-to-edge backgrounds. Keep the modifier classes as semantic
+   hooks for downstream consumers, but don't paint extra borders here. */
 
 /* ── Base ───────────────────────────────────────────────── */
 

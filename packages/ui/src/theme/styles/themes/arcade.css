@@ -246,8 +246,10 @@ html[data-zp-theme='arcade'][data-zp-variant='dark'] {
   --zp-gradient-brand: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-3));
   --zp-gradient-hero-title: linear-gradient(135deg, var(--zp-c-brand-1), var(--zp-c-brand-light));
   --rp-c-bg: #0d0d1a;
+  --rp-c-bg-alt: #10102a;
+  --rp-c-bg-dark: #10102a;
+  --rp-c-bg-mute: #0d0d1a;
   --rp-c-bg-soft: #18183d;
-  --rp-c-bg-mute: #141433;
   --rp-c-brand: #00ff88;
   --rp-c-brand-light: #66ffbb;
   --rp-c-brand-lighter: #99ffcc;
@@ -255,10 +257,17 @@ html[data-zp-theme='arcade'][data-zp-variant='dark'] {
   --rp-c-brand-darker: #00aa55;
   --rp-c-brand-tint: rgba(0, 255, 136, 0.14);
   --rp-c-divider: #1a1a40;
+  --rp-c-divider-dark: #252560;
+  --rp-c-divider-light: #1a1a40;
   --rp-c-link: #00ff88;
   --rp-c-text-1: #e0ffe0;
   --rp-c-text-2: rgba(224, 255, 224, 0.72);
   --rp-c-text-3: rgba(224, 255, 224, 0.48);
+  --rp-c-text-4: rgba(224, 255, 224, 0.48);
+  --rp-c-text-code: #e0ffe0;
   --rp-code-block-bg: #10102a;
   --rp-home-background-bg: #0d0d1a;
+  --rp-home-feature-bg: #18183d;
+  --rp-home-hero-secondary-color: rgba(224, 255, 224, 0.72);
+  --rp-home-hero-title-color: #e0ffe0;
 }

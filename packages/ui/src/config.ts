@@ -7,11 +7,11 @@ import type { UserConfig } from '@rspress/core'
 import type {
   BuiltInThemeName,
   HomeConfig,
+  Paths,
   ThemeColors,
   ThemeName,
   ZpressConfig,
 } from '@zpress/config'
-import type { Paths } from '@zpress/core'
 import {
   BUILT_IN_THEMES,
   defineTheme,
@@ -24,7 +24,7 @@ import type { ThemeVariant, ZpressTheme } from '@zpress/theme'
 import fileTree from 'rspress-plugin-file-tree'
 import katex from 'rspress-plugin-katex'
 import supersub from 'rspress-plugin-supersub'
-import { match } from 'ts-pattern'
+import { match, P } from 'ts-pattern'
 
 import { getThemeCss } from './css.ts'
 import { readJs } from './head/read.ts'
@@ -130,6 +130,16 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
   const reactAlias = path.dirname(selfRequire.resolve('react/package.json'))
   const reactDomAlias = path.dirname(selfRequire.resolve('react-dom/package.json'))
 
+  // Bundle the user's zpress.config.{ts,js,...} into the browser graph so
+  // function-form fields (e.g. `logo: ({ theme }) => <ZpressLogo />`) can
+  // run at render time. The slot component imports from this alias; the
+  // shim falls back to an empty object so the import always resolves even
+  // when the user has no config file or only data fields.
+  const userConfigAlias = resolveUserConfigAlias(paths.repoRoot)
+  const resolvedLogo = match(config.logo)
+    .with(P.string, (s) => s)
+    .otherwise(() => '')
+
   return {
     root: paths.contentDir,
     outDir: paths.distDir,
@@ -142,7 +152,10 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
     description: config.description ?? 'Documentation',
 
     icon: config.icon ?? '/icon.svg',
-    logo: '/logo.svg',
+    // String logos pass through to Rspress's stock `<img>` rendering.
+    // Function logos and the default-branded fallback render via the
+    // <NavLogo /> globalUIComponent which portals into `.rp-nav__title__link`.
+    logo: resolvedLogo,
     logoText: '',
 
     themeDir: path.resolve(import.meta.dirname, 'theme'),
@@ -192,6 +205,10 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
           // Allow generated MDX files in .zpress/content/ to import
           // zpress React components used in landing pages.
           '@zpress/ui/theme': path.resolve(import.meta.dirname, 'theme', 'index.tsx'),
+          // Bridge the user's zpress.config.* into the browser bundle so
+          // function-form fields (e.g. `logo`) can run at render time.
+          // Falls back to a stub re-exporting `{}` when no config file exists.
+          '@zpress/internal/user-config': userConfigAlias,
         },
       },
       source: {
@@ -365,7 +382,7 @@ function resolveActiveVariant(params: {
   const supported = resolveSupportedVariants(params.themeName, params.userThemes)
   const themeBlock = params.config.theme
   const fromConfig = match(themeBlock)
-    .with(undefined, () => undefined)
+    .with(undefined, () => {})
     .otherwise((block) => block.variant)
   const requested = params.override ?? fromConfig
   if (requested !== undefined && supported.includes(requested)) {
@@ -636,4 +653,59 @@ function toLabel(name: string): string {
     return name
   }
   return name.charAt(0).toUpperCase() + name.slice(1)
+}
+
+/**
+ * Extensions in priority order — first match wins. Mirrors `c12`'s
+ * default zpress.config resolution so the alias points at the same file
+ * c12 loaded server-side.
+ */
+const USER_CONFIG_EXTENSIONS: readonly string[] = Object.freeze([
+  '.ts',
+  '.mts',
+  '.cts',
+  '.js',
+  '.mjs',
+  '.cjs',
+])
+
+/**
+ * Path to the empty stub re-exported when the user has no zpress.config
+ * file at the standard location (or only has a non-bundleable variant
+ * like `.json` / `.yaml`). Keeps the `@zpress/internal/user-config` alias
+ * resolvable so the slot component's import never breaks the build.
+ */
+const USER_CONFIG_STUB_PATH = path.resolve(
+  import.meta.dirname,
+  'theme',
+  'lib',
+  'user-config-stub.ts'
+)
+
+/**
+ * Resolve the absolute path used by the `@zpress/internal/user-config`
+ * webpack alias.
+ *
+ * Looks for a bundleable user config (`zpress.config.{ts,mts,cts,js,mjs,cjs}`)
+ * in `repoRoot`; falls back to a stub that re-exports `{}` so the slot
+ * component's import always resolves.
+ *
+ * JSON / YAML configs are intentionally not aliased — they can't carry
+ * function values (which is the whole point of the bridge), and Rspress's
+ * `logo` string field already handles their static `logo` paths.
+ *
+ * @private
+ * @param repoRoot - Project root directory (`paths.repoRoot`)
+ * @returns Absolute path to the user's config file or the empty stub
+ */
+function resolveUserConfigAlias(repoRoot: string): string {
+  const candidates = USER_CONFIG_EXTENSIONS.map((ext) =>
+    path.resolve(repoRoot, `zpress.config${ext}`)
+  )
+  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- candidates derived from trusted repoRoot + known extension list
+  const found = candidates.find((p) => existsSync(p))
+  if (found !== undefined) {
+    return found
+  }
+  return USER_CONFIG_STUB_PATH
 }

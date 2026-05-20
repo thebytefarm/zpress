@@ -193,6 +193,14 @@
     "icon": {
       "type": "string"
     },
+    "logo": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {}
+      ]
+    },
     "tagline": {
       "type": "string"
     },

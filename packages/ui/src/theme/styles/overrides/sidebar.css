@@ -59,9 +59,14 @@
   }
 
   /* ── Active item — accent stripe on the left edge ─────────── */
+  /* Pin `font-weight` to the base value. Rspress's default jumps to 600
+     on `--active`, which widens the text and reflows the sidebar layout
+     every time the active page changes. The stripe + bg + brand color
+     already mark the row; the bold is redundant. */
   html .rp-sidebar-item--active {
     color: var(--zp-c-text-1);
     background: var(--zp-c-bg-soft);
+    font-weight: 400;
     position: relative;
   }
 

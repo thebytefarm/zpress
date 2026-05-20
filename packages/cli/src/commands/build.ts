@@ -1,10 +1,13 @@
 import { command } from '@kidd-cli/core'
-import { createPaths, generateAssets, loadConfig, sync } from '@zpress/core'
-import type { AssetConfig } from '@zpress/core'
+import { loadConfig } from '@zpress/config/loader'
 import { z } from 'zod'
 
+import { generateAssets } from '../lib/banner/index.ts'
+import type { AssetConfig } from '../lib/banner/index.ts'
 import { presentResults, runBuildCheck, runConfigCheck } from '../lib/check.ts'
+import { createPaths } from '../lib/paths.ts'
 import { buildSite } from '../lib/rspress.ts'
+import { sync } from '../lib/sync/index.ts'
 import { clean } from './clean.ts'
 
 /**

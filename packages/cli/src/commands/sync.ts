@@ -1,6 +1,9 @@
 import { command } from '@kidd-cli/core'
-import { createPaths, loadConfig, sync } from '@zpress/core'
+import { loadConfig } from '@zpress/config/loader'
 import { z } from 'zod'
+
+import { createPaths } from '../lib/paths.ts'
+import { sync } from '../lib/sync/index.ts'
 
 /**
  * Registers the `sync` CLI command — runs the sync engine and exits.

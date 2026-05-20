@@ -1,0 +1,26 @@
+/**
+ * NavLogo slot — portaled into `.rp-nav__title__link` to render zpress's
+ * default `<ZpressLogo />` wordmark or the user's function-form logo.
+ *
+ * When this slot has content (function logo or default wordmark), Rspress's
+ * fallback title <span> is suppressed so we don't double-render the brand.
+ * String logos are rendered by Rspress directly and the slot stays empty —
+ * the `.rp-nav__title__link:has(.zp-nav-logo)` guard means the fallback only
+ * hides when our slot actually mounted.
+ */
+
+.zp-nav-logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.zp-nav-logo > svg {
+  display: block;
+  height: 1.75rem;
+  width: auto;
+}
+
+.rp-nav__title__link:has(.zp-nav-logo) > span {
+  display: none;
+}

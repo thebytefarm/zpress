@@ -28,6 +28,7 @@ import type {
   HomeCtaConfig,
   HomeTrustConfig,
   IconId,
+  LogoFn,
   NavItem,
   ResolvedPage,
   Section,
@@ -47,6 +48,8 @@ import type {
 const titleTransformSchema = z.custom<(text: string, slug: string) => string>(isFunction)
 const sortFnSchema = z.custom<(a: ResolvedPage, b: ResolvedPage) => number>(isFunction)
 const contentFnSchema = z.custom<() => string | Promise<string>>(isFunction)
+const logoFnSchema = z.custom<LogoFn>(isFunction)
+const logoConfigSchema = z.union([z.string(), logoFnSchema])
 
 const frontmatterSchema = z
   .object({
@@ -418,6 +421,7 @@ export const zpressConfigSchema = z
     theme: themeConfigSchema.optional(),
     themes: z.array(zpressThemeInputSchema).optional(),
     icon: iconIdSchema.optional(),
+    logo: logoConfigSchema.optional(),
     tagline: z.string().optional(),
     apps: z.array(workspaceItemSchema).optional(),
     packages: z.array(workspaceItemSchema).optional(),

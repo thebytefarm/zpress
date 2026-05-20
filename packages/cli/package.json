@@ -20,7 +20,8 @@
     "zpress": "./dist/index.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "templates"
   ],
   "type": "module",
   "exports": {
@@ -41,19 +42,27 @@
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
+    "@clack/prompts": "^1.2.0",
     "@kidd-cli/core": "^0.23.1",
     "@rspress/core": "catalog:",
-    "@zpress/core": "workspace:*",
+    "@zpress/config": "workspace:*",
     "@zpress/templates": "workspace:*",
     "@zpress/theme": "workspace:*",
     "@zpress/ui": "workspace:*",
     "es-toolkit": "catalog:",
+    "fast-glob": "^3.3.3",
     "get-port": "^7.2.0",
+    "gray-matter": "^4.0.3",
     "ink": "^7.0.1",
     "ink-big-text": "^2.0.0",
     "ink-gradient": "^4.0.0",
+    "jiti": "^2.6.1",
+    "liquidjs": "^10.25.6",
+    "massaman": "^0.2.0",
     "react": "^19.2.5",
     "ts-pattern": "catalog:",
+    "yaml": "^2.9.0",
     "zod": "catalog:"
   },
   "devDependencies": {

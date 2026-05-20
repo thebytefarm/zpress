@@ -1,7 +1,8 @@
 import { command } from '@kidd-cli/core'
-import { createPaths, loadConfig } from '@zpress/core'
+import { loadConfig } from '@zpress/config/loader'
 import { z } from 'zod'
 
+import { createPaths } from '../lib/paths.ts'
 import { openBrowser, serveSite } from '../lib/rspress.ts'
 
 /**

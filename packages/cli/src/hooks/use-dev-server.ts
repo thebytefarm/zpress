@@ -1,6 +1,6 @@
-import type { SyncResult } from '@zpress/core'
-import { createPaths, loadConfig, sync } from '@zpress/core'
+import { loadConfig } from '@zpress/config/loader'
 import { attemptAsync, mapValues } from 'es-toolkit'
+import { toError } from 'massaman/conversion'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { clean } from '../commands/clean.ts'
@@ -14,8 +14,10 @@ import type {
   WatcherHandle,
   WatcherStatus,
 } from '../lib/dev-types.ts'
-import { toError } from '../lib/error.ts'
+import { createPaths } from '../lib/paths.ts'
 import { startDevServer } from '../lib/rspress.ts'
+import { sync } from '../lib/sync/index.ts'
+import type { SyncResult } from '../lib/sync/index.ts'
 import { createWatcher } from '../lib/watcher.ts'
 
 /**

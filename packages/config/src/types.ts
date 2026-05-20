@@ -6,6 +6,7 @@ import type {
   IconColor,
   ZpressThemeInput,
 } from '@zpress/theme'
+import type React from 'react'
 
 export type {
   ThemeConfig,
@@ -65,6 +66,22 @@ export type IconConfig = IconId | { readonly id: IconId; readonly color: IconCol
  * File-system path (absolute or relative).
  */
 type FilePath = string
+
+/**
+ * All user-project paths derived from a single root directory.
+ *
+ * Materialised at CLI runtime via `createPaths(dir)` in `@zpress/cli` —
+ * this interface lives in `@zpress/config` so plugins (e.g. `@zpress/ui`)
+ * can type their inputs without depending on the CLI.
+ */
+export interface Paths {
+  readonly repoRoot: string
+  readonly outputRoot: string
+  readonly contentDir: string
+  readonly publicDir: string
+  readonly distDir: string
+  readonly cacheDir: string
+}
 
 /**
  * URL path segment (e.g. `"/api"`, `"/guides/auth"`).
@@ -1192,6 +1209,90 @@ export interface SiteConfig {
 }
 
 /**
+ * Live theme context passed to a `LogoFn` at render time.
+ *
+ * Re-derived from `<html>`'s `data-zp-theme` / `data-zp-variant` attributes
+ * and the resolved CSS custom properties (`--rp-c-*`). Updates when the user
+ * switches theme or variant, so the function re-runs and the logo retints
+ * without a page reload.
+ */
+export interface LogoContext {
+  /**
+   * Active theme name (e.g. `'default'`, `'midnight'`, or a user-defined name).
+   */
+  readonly name: string
+  /**
+   * Active variant.
+   */
+  readonly variant: 'light' | 'dark'
+  /**
+   * Convenience: `variant === 'dark'`.
+   */
+  readonly isDark: boolean
+  /**
+   * Resolved brand and surface colors for the active theme + variant.
+   * Each value is the computed CSS color string (hex, rgb, etc.) — safe
+   * to embed directly in inline styles or SVG `fill` attributes.
+   */
+  readonly colors: {
+    readonly brand: string
+    readonly brandHover: string
+    readonly brandSoft: string
+    readonly bg: string
+    readonly text: string
+  }
+}
+
+/**
+ * Image-props object returned by a `LogoFn` when the function picks an
+ * image path based on the active theme. The slot spreads these props onto
+ * an internal `<img>` element matching Rspress's logo classes so styling
+ * stays consistent.
+ *
+ * @example
+ * ```ts
+ * logo: ({ theme }) => ({
+ *   src: theme.isDark ? '/logo-dark.svg' : '/logo-light.svg',
+ *   alt: 'Acme',
+ * })
+ * ```
+ */
+export interface LogoImage {
+  readonly src: string
+  readonly alt?: string
+  readonly width?: number | string
+  readonly height?: number | string
+}
+
+/**
+ * Function form of `logo`. Called at render time with the live theme
+ * context; can return either a `LogoImage` (image-props object) or any
+ * React node (inline JSX, a custom component, etc.).
+ *
+ * @example
+ * ```tsx
+ * import { defineConfig, ZpressLogo } from 'zpress'
+ *
+ * export default defineConfig({
+ *   logo: ({ theme }) => <ZpressLogo color={theme.colors.brand} />,
+ * })
+ * ```
+ */
+export type LogoFn = (params: { readonly theme: LogoContext }) => LogoImage | React.ReactNode
+
+/**
+ * Logo configuration accepted on `ZpressConfig.logo`.
+ *
+ * - `string` — image path (forwarded to Rspress's `logo` field as-is).
+ * - `LogoFn` — function called at render time; receives the live theme
+ *   context and returns either a `LogoImage` or a React node.
+ *
+ * When omitted, the topbar renders the default themed `<ZpressLogo />`
+ * wordmark.
+ */
+export type LogoConfig = string | LogoFn
+
+/**
  * zpress configuration.
  *
  * Schema: `zpressConfigSchema` in schema.ts validates this shape.
@@ -1242,6 +1343,32 @@ export interface ZpressConfig {
    * only — the topbar logo position does not accept colored icon configs.
    */
   readonly icon?: IconId
+  /**
+   * Brand logo rendered in the topbar. Three forms:
+   *
+   * - **omit** — render the default themed `<ZpressLogo />` wordmark.
+   * - `string` — image path; forwarded to Rspress's `logo` field as-is.
+   * - `({ theme }) => LogoImage | ReactNode` — function called at render
+   *   time with the live theme context. Return a `LogoImage` (image-props
+   *   object) or inline JSX. The function re-runs on theme/variant change.
+   *
+   * @example
+   * ```ts
+   * // Image path
+   * logo: '/logo.svg'
+   *
+   * // Theme-aware image swap
+   * logo: ({ theme }) => ({
+   *   src: theme.isDark ? '/logo-dark.svg' : '/logo-light.svg',
+   *   alt: 'Acme',
+   * })
+   *
+   * // Inline JSX with a custom component
+   * import { ZpressLogo } from 'zpress'
+   * logo: ({ theme }) => <ZpressLogo />
+   * ```
+   */
+  readonly logo?: LogoConfig
   /**
    * Short marketing tagline rendered under the site title on the home hero.
    */

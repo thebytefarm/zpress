@@ -6,9 +6,7 @@
     "bench": "vitest bench",
     "bench:run": "vitest bench --run"
   },
-  "dependencies": {
-    "@zpress/core": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@codspeed/vitest-plugin": "^5.0.0",
     "vitest": "catalog:"

@@ -26,6 +26,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
+    "./loader": {
+      "types": "./dist/loader.d.ts",
+      "import": "./dist/loader.mjs"
+    },
     "./schema": {
       "default": "./schemas/schema.json"
     }
@@ -52,10 +56,19 @@
   "devDependencies": {
     "@rslib/core": "catalog:",
     "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
     "tsx": "^4.21.0",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "zod-to-json-schema": "^3.25.2"
+  },
+  "peerDependencies": {
+    "react": "^19.2.5"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=24.0.0"

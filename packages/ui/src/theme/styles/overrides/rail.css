@@ -43,7 +43,7 @@ html body {
 html .rp-doc-layout__container {
   width: auto;
   margin: 0 var(--zp-frame-gutter);
-  background: var(--zp-c-bg-elv);
+  background: var(--zp-c-bg);
   border-left: 1px solid var(--zp-c-border);
   border-right: 1px solid var(--zp-c-border);
 }
@@ -51,28 +51,107 @@ html .rp-doc-layout__container {
 html .rp-doc-layout__menu {
   width: auto;
   margin: 0 var(--zp-frame-gutter);
-  background: var(--zp-c-bg-elv);
+  background: var(--zp-c-bg);
   border-left: 1px solid var(--zp-c-border);
   border-right: 1px solid var(--zp-c-border);
-  border-bottom: 1px solid var(--zp-c-border);
+  /* Mobile-only menu drawer — on desktop it renders as an empty 1px-tall
+     element, so a `border-bottom` here paints a duplicate hairline right
+     beneath the topbar's own `border-bottom`. Drop it; the drawer when
+     actually expanded gets visual structure from its own chrome. */
 }
 
 /* ── Sidebar / content / outline dividers ──────────────── */
 html .rp-doc-layout__sidebar {
-  background: var(--zp-c-bg-elv);
+  background: var(--zp-c-bg);
   border-right: 1px solid var(--zp-c-border);
+  /* Flex column so the bottom band can grow to fill remaining space
+     (sidebar layout: nav items stack from the top, bottom band fills
+     the rest). No vertical padding — the sticky top/bottom wrappers
+     supply their own internal padding so they hug the actual edges
+     (sticky `top: 0` / `bottom: 0` would otherwise sit inside the
+     padding box and leave a "see-through" gap above/below). The
+     `:first-child:not(.zp-sidebar-top)` rule below restores top
+     breathing room for nav items when no above-links are configured. */
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px;
+  /* Hide the sidebar's scrollbar entirely — modern doc-site pattern.
+     Avoids both the reserved scrollbar gutter (which would push the
+     bottom band's edge 12px short of the right border) and the visual
+     confusion of a scrollbar appearing to extend through the sticky
+     bottom band. Scrolling still works via wheel/trackpad/keyboard. */
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+
+html .rp-doc-layout__sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Sidebar sticky bands ──────────────────────────────────
+ * The sidebar itself is the scrolling container; the top and bottom
+ * regions sit `position: sticky` against the viewport edges so only the
+ * middle nav tree scrolls. Backgrounds are required so the scrolling
+ * nav-tree content doesn't bleed through.
+ *
+ * Wrappers come from `nav/layout.tsx` and only render when there's
+ * something to pin (above-links for the top, below-links + promo for
+ * the bottom). When neither is configured, the sidebar scrolls cleanly
+ * with no empty bands.
+ * ────────────────────────────────────────────────────────── */
+html .zp-sidebar-top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--zp-c-bg);
+  border-bottom: 1px solid var(--zp-c-divider);
+  /* Edge-to-edge horizontal extension over the sidebar's 8px padding
+     so the divider hairline spans the full sidebar width. */
+  margin: 0 -8px;
+  padding: 12px 8px;
+}
+
+/* Without a top wrapper, the first nav item butts right against the
+   topbar's border-bottom — give it breathing room. */
+html .rp-doc-layout__sidebar > :first-child:not(.zp-sidebar-top) {
+  margin-top: 12px;
+}
+
+html .zp-sidebar-bottom {
+  /* Grow to fill the remaining sidebar space so the nav tree stacks
+     from the top and this band occupies everything below it. When the
+     nav tree is short, the band is tall and its content (promo +
+     below-links) sits at its bottom via `justify-content: flex-end`. */
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* When the sidebar scrolls (nav tree taller than viewport), this band
+     stays glued to the viewport bottom so the promo is always visible.
+     `z-index: 3` so the band paints above the thin overlay scrollbar
+     thumb so it doesn't appear to "go through" the band region. */
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: var(--zp-c-bg);
+  border-top: 1px solid var(--zp-c-divider);
+  /* Negative left/right margins extend the band edge-to-edge over the
+     sidebar's horizontal padding so the divider hairline (and the
+     band's bg) run flush to the sidebar's right border, covering any
+     scrollbar lane that would otherwise show through. */
+  margin: 0 -8px;
   padding: 12px 8px;
 }
 
 html .rp-doc-layout__outline {
-  background: var(--zp-c-bg-elv);
+  background: var(--zp-c-bg);
   border-left: 1px solid var(--zp-c-border);
   box-shadow: none;
   padding: 24px 16px;
 }
 
 html .rp-doc-layout__doc {
-  background: var(--zp-c-bg-elv);
+  background: var(--zp-c-bg);
 }
 
 /* Cap the prose reading width INSIDE the doc-container — sidebar and
@@ -104,7 +183,7 @@ html .rp-aside a {
    No vertical hairlines on the navbar — only the body grid has them. */
 html .rspress-nav,
 html .rp-nav {
-  background: var(--zp-c-bg-elv);
+  background: var(--zp-c-bg);
   border-bottom: 1px solid var(--zp-c-border);
   padding: 0 16px;
   backdrop-filter: blur(8px);
@@ -115,6 +194,15 @@ html .rp-nav-menu__item,
 html .rp-nav-menu a,
 html .rp-nav__menu a {
   font-size: 13px;
+}
+
+/* Pin `font-weight` on active states so the box doesn't reflow when the
+   active page changes. Rspress's defaults jump to 600 on `--active`,
+   widening the text and shifting the layout. Color change alone marks
+   active in these surfaces. */
+html .rp-hover-group__item--active,
+html .rp-nav-screen-menu-item--active {
+  font-weight: 500;
 }
 
 /* ── Landing page navbar — wraps the rail with vertical hairlines so

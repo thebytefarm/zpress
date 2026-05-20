@@ -1,6 +1,10 @@
 import { command } from '@kidd-cli/core'
-import { createPaths, loadConfig, loadManifest, resolveEntries } from '@zpress/core'
-import type { ResolvedEntry, SyncContext } from '@zpress/core'
+import { loadConfig } from '@zpress/config/loader'
+
+import { createPaths } from '../lib/paths.ts'
+import { loadManifest } from '../lib/sync/manifest.ts'
+import { resolveEntries } from '../lib/sync/resolve/index.ts'
+import type { ResolvedEntry, SyncContext } from '../lib/sync/types.ts'
 
 /**
  * Slim shape for JSON output — drops page data and keeps only the navigation tree.

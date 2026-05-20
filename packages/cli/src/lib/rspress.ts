@@ -4,12 +4,14 @@ import { Server } from 'node:http'
 import { platform } from 'node:os'
 
 import { dev, build, serve } from '@rspress/core'
-import type { Paths, ThemeVariant, ZpressConfig } from '@zpress/core'
-import { createRspressConfig } from '@zpress/ui'
+import type { ZpressConfig } from '@zpress/config'
+import type { ThemeVariant } from '@zpress/theme'
+import { createRspressConfig } from '@zpress/ui/node'
 import getPort, { portNumbers } from 'get-port'
+import { toError } from 'massaman/conversion'
 import { match } from 'ts-pattern'
 
-import { toError } from './error'
+import type { Paths } from './paths.ts'
 
 /**
  * Default port for the dev server.

@@ -84,7 +84,7 @@ interface RawBrandPalette {
  * without introducing a circular import.
  *
  * `light` / `lighter` shades feed the Rspress compat block — they live on the
- * brand surface so `LEGACY_RP_VAR_MAP` can pick them up by token path.
+ * brand surface so `RSPRESS_COMPAT_MAP` can pick them up by token path.
  */
 const BRAND_PALETTES: Readonly<Record<BuiltInThemeName, RawBrandPalette>> = Object.freeze({
   default: {
@@ -241,19 +241,82 @@ const SHARED_GRADIENT_COLORS = {
 } as const
 
 /**
- * Mapping of legacy Rspress (`--rp-*`) compatibility variables to the zpress
- * token path that supplies each value. Emitted by `themeToCss` after the
- * canonical `--zp-*` declaration block so Rspress's internal components stay
- * themed without referencing zpress-specific names.
+ * Full mapping of Rspress (`--rp-*`) CSS variables to the zpress token path
+ * that supplies each value. Emitted by `themeToCss` after the canonical
+ * `--zp-*` declaration block so every Rspress internal component reads
+ * from the zpress design system — Rspress is an implementation detail,
+ * zpress tokens are the canonical surface.
  *
- * `--rp-c-link` reuses the brand primary; `--rp-c-bg-mute` reuses the elevated
- * surface — both are derived in the original CSS files at HEAD and recreated
- * here so the emitted CSS matches the legacy token surface.
+ * Grouped by category for readability. New rspress vars should be added
+ * here when they appear; rspress vars that map to a missing concept can
+ * stay unmapped (rspress's default value remains in force).
+ *
+ * Surfaces — every page surface flattens to the single `bg` token so the
+ * doc layout, sidebar drawer, and home page share one base color.
+ * Elevated surfaces (cards, hero panels) keep using `--zp-c-bg-elv` /
+ * `--zp-c-bg-soft` directly inside our own component CSS.
+ *
+ *   --rp-c-bg                 surface.bg
+ *   --rp-c-bg-alt             surface.bgAlt        (subtle stripe surfaces)
+ *   --rp-c-bg-dark            surface.gutter       (deepest band — footer/header)
+ *   --rp-c-bg-mute            surface.bg           (flattened — was bgElv pre-v1)
+ *   --rp-c-bg-soft            surface.bgSoft
+ *
+ * Brand —
+ *
+ *   --rp-c-brand              brand.primary
+ *   --rp-c-brand-light        brand.light
+ *   --rp-c-brand-lighter      brand.lighter
+ *   --rp-c-brand-dark         brand.hover
+ *   --rp-c-brand-darker       brand.active
+ *   --rp-c-brand-tint         brand.soft
+ *
+ * Borders / dividers —
+ *
+ *   --rp-c-divider            border.divider
+ *   --rp-c-divider-dark       border.border       (stronger stroke)
+ *   --rp-c-divider-light      border.divider      (same as base)
+ *
+ * Links —
+ *
+ *   --rp-c-link               brand.primary
+ *
+ * Text —
+ *
+ *   --rp-c-text-1             text.text1
+ *   --rp-c-text-2             text.text2
+ *   --rp-c-text-3             text.text3
+ *   --rp-c-text-4             text.text3          (no `text4` token; alias)
+ *   --rp-c-text-code          text.text1
+ *
+ * Code blocks —
+ *
+ *   --rp-code-block-bg        surface.codeBlockBg
+ *
+ * Home —
+ *
+ *   --rp-home-background-bg          surface.homeBg
+ *   --rp-home-feature-bg             surface.bgSoft
+ *   --rp-home-hero-secondary-color   text.text2
+ *   --rp-home-hero-title-color       text.text1
+ *
+ * Intentionally unmapped (rspress defaults remain in force):
+ *  - `--rp-c-brand-rgb`: needs `r, g, b` tuple, no equivalent token
+ *  - `--rp-c-gray*`: rspress internal neutrals, low surface area
+ *  - `--rp-container-*` (admonitions): styled by zpress's own MDX overrides
+ *  - `--rp-c-overview-group-*`: superseded by our SectionCard component
+ *  - `--rp-code-block-border|color|shadow`, `--rp-code-title-*`,
+ *    `--rp-code-line-highlight-color`: rspress's shiki defaults are fine
+ *  - `--rp-banner-background`: we don't use rspress's banner
+ *  - Layout/size/z-index vars: zpress sets these via `--zp-*` directly on
+ *    its own components; rspress's layout chrome uses its own defaults
  */
-const LEGACY_RP_VAR_MAP: Readonly<Record<string, TokenPath>> = Object.freeze({
+const RSPRESS_COMPAT_MAP: Readonly<Record<string, TokenPath>> = Object.freeze({
   '--rp-c-bg': 'colors.surface.bg',
+  '--rp-c-bg-alt': 'colors.surface.bgAlt',
+  '--rp-c-bg-dark': 'colors.surface.gutter',
+  '--rp-c-bg-mute': 'colors.surface.bg',
   '--rp-c-bg-soft': 'colors.surface.bgSoft',
-  '--rp-c-bg-mute': 'colors.surface.bgElv',
   '--rp-c-brand': 'colors.brand.primary',
   '--rp-c-brand-light': 'colors.brand.light',
   '--rp-c-brand-lighter': 'colors.brand.lighter',
@@ -261,18 +324,25 @@ const LEGACY_RP_VAR_MAP: Readonly<Record<string, TokenPath>> = Object.freeze({
   '--rp-c-brand-darker': 'colors.brand.active',
   '--rp-c-brand-tint': 'colors.brand.soft',
   '--rp-c-divider': 'colors.border.divider',
+  '--rp-c-divider-dark': 'colors.border.border',
+  '--rp-c-divider-light': 'colors.border.divider',
   '--rp-c-link': 'colors.brand.primary',
   '--rp-c-text-1': 'colors.text.text1',
   '--rp-c-text-2': 'colors.text.text2',
   '--rp-c-text-3': 'colors.text.text3',
+  '--rp-c-text-4': 'colors.text.text3',
+  '--rp-c-text-code': 'colors.text.text1',
   '--rp-code-block-bg': 'colors.surface.codeBlockBg',
   '--rp-home-background-bg': 'colors.surface.homeBg',
+  '--rp-home-feature-bg': 'colors.surface.bgSoft',
+  '--rp-home-hero-secondary-color': 'colors.text.text2',
+  '--rp-home-hero-title-color': 'colors.text.text1',
 })
 
 /**
  * Declared-order list of `--rp-*` keys for deterministic emission ordering.
  */
-const LEGACY_RP_VAR_NAMES: readonly string[] = Object.freeze(Object.keys(LEGACY_RP_VAR_MAP))
+const RSPRESS_COMPAT_VAR_NAMES: readonly string[] = Object.freeze(Object.keys(RSPRESS_COMPAT_MAP))
 
 /**
  * Shared OpenAPI / OAS badge palette — light-mode values from the
@@ -691,7 +761,7 @@ export function defineTheme(input: ZpressThemeInput): ZpressTheme {
  *
  * For each variant V in `theme.variants` the emitter writes one
  * `html[data-zp-theme='{name}'][data-zp-variant='{V}']` block. Iteration
- * order is fixed by `TOKEN_TO_CSS_VAR` (then `LEGACY_RP_VAR_MAP`) so the
+ * order is fixed by `TOKEN_TO_CSS_VAR` (then `RSPRESS_COMPAT_MAP`) so the
  * output is byte-deterministic given the same input.
  *
  * The default theme additionally emits a `:root { ... }` FOUC block that
@@ -798,14 +868,14 @@ function renderDeclaration(
  * @returns CSS declaration line (no trailing newline)
  */
 function renderRpDeclaration(cssVar: string, tokens: ZpressTokens): string {
-  const path = LEGACY_RP_VAR_MAP[cssVar] as TokenPath
+  const path = RSPRESS_COMPAT_MAP[cssVar] as TokenPath
   const value = resolveBySegments((path as string).split('.'), tokens)
   return `  ${cssVar}: ${value};`
 }
 
 /**
  * Render the full declaration body — all `--zp-*` tokens in registry order
- * followed by every `--rp-*` compatibility var in `LEGACY_RP_VAR_MAP` order.
+ * followed by every `--rp-*` compatibility var in `RSPRESS_COMPAT_MAP` order.
  *
  * @private
  * @param tokens - Token tree to render
@@ -813,7 +883,7 @@ function renderRpDeclaration(cssVar: string, tokens: ZpressTokens): string {
  */
 function renderDeclarationBody(tokens: ZpressTokens): string {
   const zpLines = TOKEN_RENDER_PLAN.map((entry) => renderDeclaration(entry, tokens))
-  const rpLines = LEGACY_RP_VAR_NAMES.map((name) => renderRpDeclaration(name, tokens))
+  const rpLines = RSPRESS_COMPAT_VAR_NAMES.map((name) => renderRpDeclaration(name, tokens))
   return [...zpLines, ...rpLines].join('\n')
 }
 

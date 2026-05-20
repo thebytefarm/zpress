@@ -1,4 +1,4 @@
-import type { ZpressConfig } from '@zpress/core'
+import type { ZpressConfig } from '@zpress/config'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock(import('./rspress.ts'), () => ({

@@ -1,4 +1,4 @@
-import type { SyncResult } from '@zpress/core'
+import type { SyncResult } from './sync/index.ts'
 
 /**
  * A single entry in the dev server activity log.

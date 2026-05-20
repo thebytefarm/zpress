@@ -1,15 +1,6 @@
-export {
-  defineConfig,
-  loadConfig,
-  sync,
-  resolveEntries,
-  loadManifest,
-  createPaths,
-  hasGlobChars,
-} from '@zpress/core'
-
-export { defineTheme } from '@zpress/core'
-export { createRspressConfig, zpressPlugin } from '@zpress/ui'
+export { defineConfig, defineTheme, hasGlobChars } from '@zpress/config'
+export { ZpressLogo } from '@zpress/ui'
+export type { ZpressLogoProps } from '@zpress/ui'
 
 // Config types — what consumers fill in when writing `zpress.config.ts`.
 export type {
@@ -49,7 +40,11 @@ export type {
   IconColor,
   IconId,
   IconPrefix,
-} from '@zpress/core'
+  LogoConfig,
+  LogoContext,
+  LogoFn,
+  LogoImage,
+} from '@zpress/config'
 
 // Theme types — what `defineTheme` accepts and returns.
 export type {
@@ -64,21 +59,7 @@ export type {
   ThemeConfig,
   BuiltInThemeName,
   BuiltInIconColor,
-} from '@zpress/core'
+} from '@zpress/theme'
 
 // Config loader option types.
-export type { LoadConfigOptions } from '@zpress/core'
-
-// Sync engine types — exposed for advanced consumers running `sync` /
-// `loadManifest` directly. Most users don't touch these.
-export type {
-  Paths,
-  SyncResult,
-  SyncOptions,
-  SyncContext,
-  PageData,
-  ResolvedEntry,
-  SidebarItem,
-  Manifest,
-  ManifestEntry,
-} from '@zpress/core'
+export type { LoadConfigOptions } from '@zpress/config'

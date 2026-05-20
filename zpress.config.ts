@@ -374,6 +374,10 @@ export default defineConfig({
     },
   },
   sidebar: {
+    above: [
+      { text: 'Home', link: '/', icon: 'pixelarticons:home' },
+      { text: 'Changelog', link: '/changelog', icon: 'pixelarticons:notes' },
+    ],
     below: [{ text: 'Contributing', link: '/contributing', icon: 'pixelarticons:git-merge' }],
   },
   actions: [
@@ -443,21 +447,6 @@ export default defineConfig({
           title: 'Changelog',
           path: '/packages/cli/changelog',
           include: 'packages/cli/CHANGELOG.md',
-        },
-      ],
-    },
-    {
-      title: '@zpress/core',
-      icon: { id: 'pixelarticons:cpu', color: 'blue' },
-      description: 'Sync engine and asset utilities for zpress',
-      tags: ['typescript', 'node'],
-      path: '/packages/core',
-      items: [
-        { title: 'Overview', path: '/packages/core', include: 'packages/core/README.md' },
-        {
-          title: 'Changelog',
-          path: '/packages/core/changelog',
-          include: 'packages/core/CHANGELOG.md',
         },
       ],
     },
@@ -953,18 +942,6 @@ export default defineConfig({
               title: 'Changelog',
               path: '/packages/config/changelog',
               include: 'packages/config/CHANGELOG.md',
-            },
-          ],
-        },
-        {
-          title: '@zpress/core',
-          path: '/packages/core',
-          items: [
-            { title: 'Overview', path: '/packages/core', include: 'packages/core/README.md' },
-            {
-              title: 'Changelog',
-              path: '/packages/core/changelog',
-              include: 'packages/core/CHANGELOG.md',
             },
           ],
         },

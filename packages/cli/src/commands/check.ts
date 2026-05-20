@@ -1,7 +1,9 @@
 import { command } from '@kidd-cli/core'
-import { createPaths, loadConfig, sync } from '@zpress/core'
+import { loadConfig } from '@zpress/config/loader'
 
 import { presentResults, runBuildCheck, runConfigCheck } from '../lib/check.ts'
+import { createPaths } from '../lib/paths.ts'
+import { sync } from '../lib/sync/index.ts'
 
 /**
  * Registers the `check` CLI command to validate config and detect deadlinks.
