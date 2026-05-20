@@ -226,6 +226,12 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
           // Uses `import.meta.resolve` (not CJS `require.resolve`) so the
           // package's `"import"` export condition is honored.
           '@zpress/kit': fileURLToPath(import.meta.resolve('@zpress/kit')),
+          // `@zpress/kit/dist/index.mjs` re-exports `ZpressLogo` from bare
+          // `@zpress/ui`, and user MDX may also import components directly
+          // from `@zpress/ui`. Both paths hit the same CJS/ESM exports gap
+          // (`@zpress/ui` declares only the `"import"` condition), so alias
+          // the bare specifier the same way `@zpress/kit` is handled above.
+          '@zpress/ui$': fileURLToPath(import.meta.resolve('@zpress/ui')),
         },
       },
       source: {
