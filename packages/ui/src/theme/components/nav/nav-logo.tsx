@@ -130,9 +130,11 @@ export function NavLogo(): React.ReactElement | null {
 
   // Raw-copied file — plain conditional, no ts-pattern (see packages/ui/CLAUDE.md).
   const rendered =
-    typeof logoConfig === 'function'
-      ? renderLogoFn({ fn: logoConfig, theme: themeContext })
-      : <ZpressLogo />
+    typeof logoConfig === 'function' ? (
+      renderLogoFn({ fn: logoConfig, theme: themeContext })
+    ) : (
+      <ZpressLogo />
+    )
 
   return createPortal(<span className="zp-nav-logo">{rendered}</span>, target)
 }
@@ -156,11 +158,10 @@ function readLogoConfig(mod: unknown): string | LogoFn | undefined {
     return undefined
   }
   const asRecord = mod as Record<string, unknown>
-  const candidate = (
+  const candidate =
     asRecord.default !== null && asRecord.default !== undefined
       ? (asRecord.default as Partial<ZpressConfig>)
       : (mod as Partial<ZpressConfig>)
-  )
   const { logo } = candidate
   if (typeof logo === 'string') {
     return logo
@@ -237,8 +238,7 @@ function isLogoImage(value: unknown): value is LogoImage {
  */
 function readThemeContext(html: HTMLElement): LogoContext {
   const variant: 'light' | 'dark' = html.dataset.zpVariant === 'light' ? 'light' : 'dark'
-  const name =
-    typeof html.dataset.zpTheme === 'string' ? html.dataset.zpTheme : 'default'
+  const name = typeof html.dataset.zpTheme === 'string' ? html.dataset.zpTheme : 'default'
 
   const styles = globalThis.window.getComputedStyle(html)
   function read(cssVar: string, fallback: string): string {

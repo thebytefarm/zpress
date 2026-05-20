@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+
 import { dev } from '@rspress/core'
 import { loadConfig } from '@zpress/config/loader'
 import { createRspressConfig } from '@zpress/ui/node'
