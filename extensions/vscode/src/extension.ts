@@ -224,6 +224,7 @@ export function activate(context: ExtensionContext): void {
     })
   }
 
+  // oxlint-disable-next-line unicorn/consistent-function-scoping
   function setServerStatus(status: 'stopped' | 'starting' | 'running' | 'stopping'): void {
     commands.executeCommand('setContext', 'zpress:serverReady', status === 'running')
     commands.executeCommand(

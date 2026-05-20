@@ -1,11 +1,4 @@
-import type {
-  ThemeConfig,
-  ThemeName,
-  ColorMode,
-  ThemeColors,
-  IconColor,
-  ZpressThemeInput,
-} from '@zpress/theme'
+import type { IconColor, ThemeConfig, ZpressThemeInput } from '@zpress/theme'
 import type React from 'react'
 
 export type {
