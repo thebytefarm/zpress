@@ -7,7 +7,6 @@
     "zpress-vscode": "0.2.2",
     "@zpress/cli": "0.9.1",
     "@zpress/config": "0.5.2",
-    "@zpress/core": "0.11.0",
     "@zpress/templates": "0.1.2",
     "@zpress/theme": "0.3.2",
     "@zpress/ui": "0.9.1",

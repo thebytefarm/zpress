@@ -1,7 +1,6 @@
 ---
 '@zpress/kit': major
 '@zpress/cli': major
-'@zpress/core': major
 '@zpress/config': major
 '@zpress/ui': major
 '@zpress/theme': major
