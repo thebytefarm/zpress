@@ -12,5 +12,5 @@
     "@zpress/ui": "0.9.1",
     "@zpress/kit": "0.2.23"
   },
-  "changesets": ["v1-release"]
+  "changesets": ["upgrade-deps-latest", "v1-rc1-fixes", "v1-release"]
 }

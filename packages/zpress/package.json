@@ -1,6 +1,6 @@
 {
   "name": "@zpress/kit",
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0-rc.1",
   "description": "Documentation framework powered by Rspress with a config-driven information architecture",
   "keywords": [
     "docs",
