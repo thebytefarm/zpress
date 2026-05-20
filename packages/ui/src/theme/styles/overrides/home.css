@@ -135,6 +135,15 @@
     }
   }
 
+  /* Inside doc pages (MDX-driven), the surrounding `.rp-doc` already
+     constrains the content column — additional horizontal padding here
+     just misaligns the feature grid with the body paragraphs above it.
+     Strip it so cards land on the same left edge as prose. */
+  .rp-doc .zp-feature-section {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   /* Eyebrow + title above the feature grid (mockup pattern) */
   .zp-feature-section-head {
     text-align: center;
