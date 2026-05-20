@@ -196,11 +196,22 @@ html .rp-nav__menu a {
   font-size: 13px;
 }
 
-/* Pin `font-weight` across ALL nav item states (idle, hover, active) so
-   the box never reflows when the active page changes or on hover.
-   Rspress defaults jump to 600 on `--active` and some themes bump on
-   hover — both cause layout shift. Color alone marks state. */
+/* Pin `font-weight` AND `font-size` across ALL nav item states (idle,
+   hover, active) so the box never reflows when the active page changes
+   or on hover.
+
+   CRITICAL: Rspress styles the INNER `.rp-nav-menu__item__container`
+   element (not the outer `__item`) and ships rules with `font-size: 14px`
+   on `:hover` and `--active` states + `font-weight: 600` on the mobile
+   screen menu active. Without overriding the container, color flips on
+   hover/active drag the text along with a size + weight change, which
+   reflows the topbar layout.
+
+   Color change alone marks state — pin every size/weight token. */
 html .rp-nav-menu__item,
+html .rp-nav-menu__item .rp-nav-menu__item__container,
+html .rp-nav-menu__item:hover .rp-nav-menu__item__container,
+html .rp-nav-menu__item--active .rp-nav-menu__item__container,
 html .rp-nav-menu a,
 html .rp-nav__menu a,
 html .rp-hover-group__item,
@@ -209,6 +220,7 @@ html .rp-hover-group__item--active,
 html .rp-nav-screen-menu-item,
 html .rp-nav-screen-menu-item:hover,
 html .rp-nav-screen-menu-item--active {
+  font-size: 13px;
   font-weight: 500;
 }
 

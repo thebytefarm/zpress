@@ -136,9 +136,13 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
   // shim falls back to an empty object so the import always resolves even
   // when the user has no config file or only data fields.
   const userConfigAlias = resolveUserConfigAlias(paths.repoRoot)
+  // Only pass strings through to Rspress's native <img> rendering. Function
+  // and missing logos render via the <NavLogo /> globalUIComponent — passing
+  // `''` here makes Rspress emit `<img src="">` (broken image icon), so we
+  // pass `undefined` to suppress the native logo entirely in those cases.
   const resolvedLogo = match(config.logo)
     .with(P.string, (s) => s)
-    .otherwise(() => '')
+    .otherwise(() => undefined)
 
   return {
     root: paths.contentDir,

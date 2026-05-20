@@ -1,7 +1,7 @@
+/* oxlint-disable no-ternary -- raw-copied file; relaxed rules per packages/ui/CLAUDE.md */
 import type { LogoContext, LogoFn, LogoImage, ZpressConfig } from '@zpress/config'
 // oxlint-disable-next-line import/no-unresolved -- alias provided by createRspressConfig's resolve.alias
 import userConfigModule from '@zpress/internal/user-config'
-import { match, P } from 'massaman/match'
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -62,25 +62,39 @@ export function NavLogo(): React.ReactElement | null {
     const html = globalThis.document.documentElement
     setThemeContext(readThemeContext(html))
 
-    // Resolve the portal target. Because NavLogo can mount before Rspress
-    // renders the nav, we observe DOM mutations until `.rp-nav__title__link`
-    // appears, then stop observing childList to keep the observer cheap.
     function findTarget() {
       return globalThis.document.querySelector('.rp-nav__title__link') as HTMLElement | null
     }
 
-    const initialTarget = findTarget()
-    if (initialTarget !== null) {
-      setTarget(initialTarget)
+    // Try immediately, then poll on requestAnimationFrame ticks until the
+    // nav renders. Rspress's CSR nav can mount AFTER this effect fires,
+    // so a single querySelector at effect time misses the element. We
+    // belt-and-suspenders with both rAF polling AND MutationObserver in
+    // case the polling stops before the nav appears (e.g. tab inactive).
+    // oxlint-disable-next-line functional/no-let -- raf id retained for cleanup
+    let rafId: number | null = null
+    // oxlint-disable-next-line functional/no-let -- captured below for closure equality
+    let resolved = false
+
+    function tryResolve() {
+      if (resolved) {
+        return
+      }
+      const link = findTarget()
+      if (link !== null) {
+        // oxlint-disable-next-line functional/immutable-data -- flag flip to stop polling
+        resolved = true
+        setTarget(link)
+        return
+      }
+      rafId = globalThis.requestAnimationFrame(tryResolve)
     }
+    tryResolve()
 
     const observer = new MutationObserver(() => {
       setThemeContext(readThemeContext(html))
-      if (initialTarget === null) {
-        const link = findTarget()
-        if (link !== null) {
-          setTarget(link)
-        }
+      if (!resolved) {
+        tryResolve()
       }
     })
     observer.observe(html, {
@@ -90,7 +104,12 @@ export function NavLogo(): React.ReactElement | null {
       subtree: true,
     })
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      if (rafId !== null) {
+        globalThis.cancelAnimationFrame(rafId)
+      }
+    }
   }, [])
 
   const logoConfig = readLogoConfig(userConfigModule)
@@ -106,9 +125,13 @@ export function NavLogo(): React.ReactElement | null {
     return null
   }
 
-  const rendered = match(logoConfig)
-    .with(P.nullish, () => <ZpressLogo />)
-    .otherwise((fn) => renderLogoFn({ fn, theme: themeContext }))
+  // Raw-copied file — Rspress's webpack compiles this independently and
+  // ts-pattern/massaman may not resolve reliably here. Plain conditionals
+  // are explicitly permitted (see packages/ui/CLAUDE.md).
+  const rendered =
+    logoConfig === null || logoConfig === undefined
+      ? <ZpressLogo />
+      : renderLogoFn({ fn: logoConfig, theme: themeContext })
 
   return createPortal(<span className="zp-nav-logo">{rendered}</span>, target)
 }
@@ -128,10 +151,15 @@ export { NavLogo as default }
  * @returns The `logo` value or `undefined` when none is configured
  */
 function readLogoConfig(mod: unknown): string | LogoFn | undefined {
-  const candidate = match(mod)
-    .with({ default: P.nonNullable }, (m) => m.default as Partial<ZpressConfig>)
-    .with(P.nonNullable, (m) => m as Partial<ZpressConfig>)
-    .otherwise(() => ({}) as Partial<ZpressConfig>)
+  if (mod === null || mod === undefined) {
+    return undefined
+  }
+  const asRecord = mod as Record<string, unknown>
+  const candidate = (
+    asRecord.default !== null && asRecord.default !== undefined
+      ? (asRecord.default as Partial<ZpressConfig>)
+      : (mod as Partial<ZpressConfig>)
+  )
   const { logo } = candidate
   if (typeof logo === 'string') {
     return logo
@@ -207,12 +235,9 @@ function isLogoImage(value: unknown): value is LogoImage {
  * @returns Live theme context snapshot
  */
 function readThemeContext(html: HTMLElement): LogoContext {
-  const variant: 'light' | 'dark' = match(html.dataset.zpVariant)
-    .with('light', () => 'light' as const)
-    .otherwise(() => 'dark' as const)
-  const name = match(html.dataset.zpTheme)
-    .with(P.string, (s) => s)
-    .otherwise(() => 'default')
+  const variant: 'light' | 'dark' = html.dataset.zpVariant === 'light' ? 'light' : 'dark'
+  const name =
+    typeof html.dataset.zpTheme === 'string' ? html.dataset.zpTheme : 'default'
 
   const styles = globalThis.window.getComputedStyle(html)
   function read(cssVar: string, fallback: string): string {
