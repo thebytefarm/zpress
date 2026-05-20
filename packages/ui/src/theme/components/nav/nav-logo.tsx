@@ -5,8 +5,6 @@ import userConfigModule from '@zpress/internal/user-config'
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { ZpressLogo } from '../shared/zpress-logo'
-
 import './nav-logo.css'
 
 /**
@@ -114,10 +112,10 @@ export function NavLogo(): React.ReactElement | null {
 
   const logoConfig = readLogoConfig(userConfigModule)
 
-  // String logos are rendered by Rspress's native NavTitle — bail out so
-  // we don't double-render. The slot does nothing in this case.
-  const isStringLogo = typeof logoConfig === 'string'
-  if (isStringLogo) {
+  // Rspress's native <img> handles the default case (`/logo.svg`) and
+  // string-form user logos directly. NavLogo only takes over when the
+  // user passes a FUNCTION (theme-aware logos that need live render).
+  if (typeof logoConfig !== 'function') {
     return null
   }
 
@@ -125,15 +123,12 @@ export function NavLogo(): React.ReactElement | null {
     return null
   }
 
-  // Raw-copied file — Rspress's webpack compiles this independently and
-  // ts-pattern/massaman may not resolve reliably here. Plain conditionals
-  // are explicitly permitted (see packages/ui/CLAUDE.md).
-  const rendered =
-    logoConfig === null || logoConfig === undefined
-      ? <ZpressLogo />
-      : renderLogoFn({ fn: logoConfig, theme: themeContext })
-
-  return createPortal(<span className="zp-nav-logo">{rendered}</span>, target)
+  return createPortal(
+    <span className="zp-nav-logo">
+      {renderLogoFn({ fn: logoConfig, theme: themeContext })}
+    </span>,
+    target
+  )
 }
 
 export { NavLogo as default }

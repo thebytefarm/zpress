@@ -136,12 +136,16 @@ export function createRspressConfig(options: CreateRspressConfigOptions): UserCo
   // shim falls back to an empty object so the import always resolves even
   // when the user has no config file or only data fields.
   const userConfigAlias = resolveUserConfigAlias(paths.repoRoot)
-  // Only pass strings through to Rspress's native <img> rendering. Function
-  // and missing logos render via the <NavLogo /> globalUIComponent — passing
-  // `''` here makes Rspress emit `<img src="">` (broken image icon), so we
-  // pass `undefined` to suppress the native logo entirely in those cases.
+  // Logo resolution:
+  // - String → pass through to Rspress's native <img> rendering.
+  // - Function → suppress Rspress's native logo (NavLogo portal renders).
+  // - Missing → default to the auto-generated `/logo.svg` (banner module
+  //   writes this at sync time). The portal pattern proved unreliable for
+  //   the default case, so we now ship a static SVG that Rspress renders
+  //   directly. Theme-aware function logos still go through NavLogo.
   const resolvedLogo = match(config.logo)
     .with(P.string, (s) => s)
+    .with(P.nullish, () => '/logo.svg')
     .otherwise(() => undefined)
 
   return {
