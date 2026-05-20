@@ -4,8 +4,8 @@ import path from 'node:path'
 
 import type { ZpressConfig } from '@zpress/config'
 import { loadConfig } from '@zpress/config/loader'
-import { debounce } from 'es-toolkit'
 import { toError } from 'massaman/conversion'
+import { debounce } from 'massaman/function'
 
 import type { WatcherCallbacks, WatcherHandle } from './dev-types.ts'
 import type { Paths } from './paths.ts'

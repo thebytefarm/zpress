@@ -6,8 +6,10 @@ import {
   serializeIcon,
 } from '@zpress/config'
 import type { ConfigWarning, Section, TitleConfig, Workspace, ZpressConfig } from '@zpress/config'
-import { isNil, isString, isUndefined, kebabCase, omitBy } from 'es-toolkit'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
+import { omitBy } from 'massaman/object'
+import { isNil, isString, isUndefined } from 'massaman/predicate'
+import { kebabCase } from 'massaman/string'
 
 import { buildWorkspaceCardJsx } from './sidebar/landing.ts'
 import type { ResolvedEntry } from './types.ts'

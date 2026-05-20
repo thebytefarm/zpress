@@ -5,7 +5,7 @@
  * and other data from a parsed OpenAPI spec object.
  */
 
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 /**
  * All HTTP methods recognised by the OpenAPI specification.

@@ -4,7 +4,7 @@ import path from 'node:path'
 import { command } from '@kidd-cli/core'
 import { createRegistry, render, toSlug } from '@zpress/templates'
 import type { Template } from '@zpress/templates'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 import { z } from 'zod'
 
 const registry = createRegistry()

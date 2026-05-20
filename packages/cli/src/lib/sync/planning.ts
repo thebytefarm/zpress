@@ -2,8 +2,9 @@ import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { groupBy, range } from 'es-toolkit'
 import fg from 'fast-glob'
+import { groupBy } from 'massaman/array'
+import { range } from 'massaman/math'
 
 import { linkToOutputPath } from './resolve/path.ts'
 import { deriveText, kebabToTitle } from './resolve/text.ts'

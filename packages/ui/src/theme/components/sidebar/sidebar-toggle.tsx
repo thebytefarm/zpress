@@ -1,5 +1,5 @@
+import { match } from 'massaman/match'
 import React, { useCallback, useEffect, useState } from 'react'
-import { match } from 'ts-pattern'
 
 import './sidebar-toggle.css'
 

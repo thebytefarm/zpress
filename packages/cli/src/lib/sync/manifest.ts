@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import { attemptAsync, difference, uniq } from 'es-toolkit'
+import { difference, uniq } from 'massaman/array'
+import { attemptAsync } from 'massaman/control'
 
 import type { Manifest } from './types.ts'
 

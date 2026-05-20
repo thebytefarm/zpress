@@ -1,5 +1,5 @@
+import { match } from 'massaman/match'
 import type React from 'react'
-import { match } from 'ts-pattern'
 
 import { safeUrl } from '../../lib/safe-url.ts'
 import type { HeroAction } from './hero'

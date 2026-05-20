@@ -1,5 +1,5 @@
 import { THEME_NAMES, THEME_VARIANTS } from '@zpress/theme'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import { configError, configErrorFromZod } from './errors.ts'
 import type { ConfigError, ConfigResult } from './errors.ts'

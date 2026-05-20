@@ -1,6 +1,6 @@
+import { match, P } from 'massaman/match'
 import type React from 'react'
 import { Button, Disclosure, DisclosurePanel } from 'react-aria-components'
-import { match, P } from 'ts-pattern'
 
 import { ChevronIcon } from './icons'
 import { SchemaViewer } from './schema-viewer'

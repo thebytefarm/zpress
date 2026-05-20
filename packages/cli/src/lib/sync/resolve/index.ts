@@ -5,7 +5,7 @@ import { log } from '@clack/prompts'
 import { hasAnyGlobInclude, isSingleFileInclude, normalizeInclude } from '@zpress/config'
 import type { Section, Frontmatter } from '@zpress/config'
 import fg from 'fast-glob'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import { syncError, collectResults } from '../errors.ts'
 import type { SyncError, SyncOutcome } from '../errors.ts'

@@ -1,6 +1,6 @@
 import { Link } from '@rspress/core/runtime'
+import { match, P } from 'massaman/match'
 import type React from 'react'
-import { match, P } from 'ts-pattern'
 
 import { safeUrl } from '../../lib/safe-url.ts'
 

@@ -50,7 +50,6 @@
     "@zpress/templates": "workspace:*",
     "@zpress/theme": "workspace:*",
     "@zpress/ui": "workspace:*",
-    "es-toolkit": "catalog:",
     "fast-glob": "^3.3.3",
     "get-port": "^7.2.0",
     "gray-matter": "^4.0.3",
@@ -61,7 +60,6 @@
     "liquidjs": "^10.25.6",
     "massaman": "^0.2.0",
     "react": "^19.2.5",
-    "ts-pattern": "catalog:",
     "yaml": "^2.9.0",
     "zod": "catalog:"
   },

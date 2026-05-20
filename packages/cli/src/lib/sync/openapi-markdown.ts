@@ -6,11 +6,11 @@
  * markdown strings for the "Copy Markdown" button.
  */
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { Liquid } from 'liquidjs'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import {
   extractBodyExample,
@@ -149,8 +149,19 @@ export function renderOverviewMarkdown(input: OverviewInput): string {
  * @returns Raw template string
  */
 function loadTemplate(filename: string): string {
-  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reads from known templates directory
-  return readFileSync(join(import.meta.dirname, '..', 'templates', filename), 'utf8')
+  // When bundled (dist/), templates live at ../templates relative to the
+  // bundle. When running from source (src/lib/sync/), the package root is
+  // three levels up. Probe both so source-mode consumers (benchmarks,
+  // tests) work without a build step. Falls through to the bundled path
+  // when neither exists so readFileSync surfaces a clear ENOENT.
+  const bundled = join(import.meta.dirname, '..', 'templates', filename)
+  const source = join(import.meta.dirname, '..', '..', '..', 'templates', filename)
+  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- candidates derived from package-relative paths
+  const resolved = match(existsSync(source))
+    .with(true, () => source)
+    .otherwise(() => bundled)
+  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- path resolved above from trusted candidates
+  return readFileSync(resolved, 'utf8')
 }
 
 /**

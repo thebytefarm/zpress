@@ -1,7 +1,7 @@
 import { stories, withFullScreen, withLayout } from '@kidd-cli/core/stories'
 import { Alert, Box, Spacer, Spinner, Text } from '@kidd-cli/core/ui'
+import { match } from 'massaman/match'
 import type React from 'react'
-import { match } from 'ts-pattern'
 import { z } from 'zod'
 
 import { Banner } from '../components/banner.tsx'

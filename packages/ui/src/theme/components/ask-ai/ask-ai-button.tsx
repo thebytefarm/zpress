@@ -1,5 +1,5 @@
+import { match } from 'massaman/match'
 import React, { useCallback } from 'react'
-import { match } from 'ts-pattern'
 
 import './ask-ai-button.css'
 

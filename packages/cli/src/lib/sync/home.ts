@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { hasGlobChars, resolveOptionalIcon, serializeIcon } from '@zpress/config'
 import type { Feature, Section, Workspace, ZpressConfig } from '@zpress/config'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import { parse as parseFrontmatter, stringify as stringifyFrontmatter } from './frontmatter.ts'
 import { resolveSectionTitle } from './resolve/text.ts'

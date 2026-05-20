@@ -66,11 +66,11 @@
     "@zpress/config": "workspace:*",
     "@zpress/theme": "workspace:*",
     "katex": "^0.16.45",
+    "massaman": "^0.2.0",
     "mermaid": "^10.9.5",
     "openapi-sampler": "^1.7.2",
     "react-aria-components": "^1.17.0",
     "ts-morph": "^27.0.2",
-    "ts-pattern": "catalog:",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {

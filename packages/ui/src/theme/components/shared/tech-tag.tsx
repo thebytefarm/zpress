@@ -1,5 +1,5 @@
+import { match, P } from 'massaman/match'
 import type React from 'react'
-import { match, P } from 'ts-pattern'
 
 import { TECH_ICONS } from '../../icons/index.ts'
 import { Icon } from './icon'

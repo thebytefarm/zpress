@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 
 import { command } from '@kidd-cli/core'
-import { compact } from 'es-toolkit'
+import { compact } from 'massaman/array'
 
 import { createPaths } from '../lib/paths.ts'
 import type { Paths } from '../lib/paths.ts'

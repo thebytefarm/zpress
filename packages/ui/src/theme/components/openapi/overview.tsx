@@ -1,6 +1,6 @@
+import { match, P } from 'massaman/match'
 import type React from 'react'
 import { useMemo } from 'react'
-import { match, P } from 'ts-pattern'
 
 import { LockIcon } from './icons'
 import { HTTP_METHODS } from './spec-utils'

@@ -21,10 +21,10 @@ import {
   themeToCss,
 } from '@zpress/theme'
 import type { ThemeVariant, ZpressTheme } from '@zpress/theme'
+import { match, P } from 'massaman/match'
 import fileTree from 'rspress-plugin-file-tree'
 import katex from 'rspress-plugin-katex'
 import supersub from 'rspress-plugin-supersub'
-import { match, P } from 'ts-pattern'
 
 import { getThemeCss } from './css.ts'
 import { readJs } from './head/read.ts'

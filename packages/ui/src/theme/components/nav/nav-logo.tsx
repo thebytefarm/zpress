@@ -1,9 +1,9 @@
 import type { LogoContext, LogoFn, LogoImage, ZpressConfig } from '@zpress/config'
 // oxlint-disable-next-line import/no-unresolved -- alias provided by createRspressConfig's resolve.alias
 import userConfigModule from '@zpress/internal/user-config'
+import { match, P } from 'massaman/match'
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { match, P } from 'ts-pattern'
 
 import { ZpressLogo } from '../shared/zpress-logo'
 

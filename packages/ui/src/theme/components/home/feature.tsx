@@ -1,7 +1,7 @@
 import { useFrontmatter } from '@rspress/core/runtime'
 import type { HomeGridConfig } from '@zpress/config'
+import { match, P } from 'massaman/match'
 import type React from 'react'
-import { match, P } from 'ts-pattern'
 
 import { useZpress } from '../../hooks/use-zpress'
 import { FeatureCard } from './feature-card'

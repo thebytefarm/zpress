@@ -9,7 +9,7 @@
  * 5. Fake CLI output showing a dev server startup
  */
 
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import { renderFigletText, renderPixelText } from './figlet.ts'
 import {

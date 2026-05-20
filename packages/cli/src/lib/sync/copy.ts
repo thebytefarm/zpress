@@ -4,7 +4,7 @@ import path from 'node:path'
 
 import { log } from '@clack/prompts'
 import type { Frontmatter } from '@zpress/config'
-import { match } from 'ts-pattern'
+import { match } from 'massaman/match'
 
 import { parse as parseFrontmatter, stringify as stringifyFrontmatter } from './frontmatter.ts'
 import { rewriteImages } from './images.ts'

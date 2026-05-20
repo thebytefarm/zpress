@@ -1,8 +1,8 @@
 import { TOKEN_TO_CSS_VAR } from '@zpress/theme'
 import type { ThemeColors, ThemeVariant, TokenPath } from '@zpress/theme'
+import { match, P } from 'massaman/match'
 import { useEffect, useLayoutEffect } from 'react'
 import type React from 'react'
-import { match, P } from 'ts-pattern'
 
 declare const __ZPRESS_THEME_NAME__: string
 declare const __ZPRESS_DEFAULT_VARIANT__: string

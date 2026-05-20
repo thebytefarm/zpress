@@ -1,6 +1,6 @@
 import { useFrontmatter } from '@rspress/core/runtime'
+import { match } from 'massaman/match'
 import type React from 'react'
-import { match } from 'ts-pattern'
 
 import { SiteFooter } from '../footer/site-footer'
 import { CTA } from './cta'

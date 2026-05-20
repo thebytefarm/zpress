@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import { match } from 'ts-pattern'
+import { match } from 'massaman/match'
 
 import type { PageData } from './types.ts'
 

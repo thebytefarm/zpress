@@ -39,7 +39,7 @@
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
-    "es-toolkit": "catalog:"
+    "massaman": "^0.2.0"
   },
   "devDependencies": {
     "@rslib/core": "catalog:",

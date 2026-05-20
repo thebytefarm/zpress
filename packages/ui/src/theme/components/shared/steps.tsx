@@ -1,5 +1,5 @@
+import { match, P } from 'massaman/match'
 import React from 'react'
-import { match, P } from 'ts-pattern'
 
 import { Icon } from './icon'
 

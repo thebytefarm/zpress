@@ -9,7 +9,7 @@ import type { ThemeVariant } from '@zpress/theme'
 import { createRspressConfig } from '@zpress/ui/node'
 import getPort, { portNumbers } from 'get-port'
 import { toError } from 'massaman/conversion'
-import { match } from 'ts-pattern'
+import { match } from 'massaman/match'
 
 import type { Paths } from './paths.ts'
 

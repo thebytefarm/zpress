@@ -1,4 +1,4 @@
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 const SAFE_PROTOCOLS: ReadonlySet<string> = new Set(['http:', 'https:', 'mailto:', 'tel:'])
 

@@ -1,6 +1,6 @@
+import { match, P } from 'massaman/match'
 import type React from 'react'
 import { Button, OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components'
-import { match, P } from 'ts-pattern'
 
 import { safeUrl } from '../../lib/safe-url.ts'
 

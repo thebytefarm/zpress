@@ -1,8 +1,8 @@
 import { useFrontmatter } from '@rspress/core/runtime'
 import { Layout as OriginalLayout } from '@rspress/core/theme-original'
 import type { SiteEditConfig, SiteReportConfig } from '@zpress/config'
+import { match, P } from 'massaman/match'
 import type React from 'react'
-import { match, P } from 'ts-pattern'
 
 import { useZpress } from '../../hooks/use-zpress'
 import { AnnouncementBar } from '../announcement/announcement-bar'

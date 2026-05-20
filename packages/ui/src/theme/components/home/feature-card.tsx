@@ -1,5 +1,5 @@
+import { match, P } from 'massaman/match'
 import type React from 'react'
-import { match, P } from 'ts-pattern'
 
 import './feature-card.css'
 import { Card } from '../shared/card'

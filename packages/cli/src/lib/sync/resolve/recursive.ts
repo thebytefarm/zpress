@@ -4,7 +4,7 @@ import { log } from '@clack/prompts'
 import { normalizeInclude } from '@zpress/config'
 import type { Section, Frontmatter } from '@zpress/config'
 import fg from 'fast-glob'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import type { ResolvedEntry, SyncContext } from '../types.ts'
 import { extractBaseDir, linkToOutputPath, sourceExt } from './path.ts'

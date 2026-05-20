@@ -1,6 +1,6 @@
 import { SocialLinks } from '@rspress/core/theme-original'
+import { match } from 'massaman/match'
 import type React from 'react'
-import { match } from 'ts-pattern'
 
 import { useZpress } from '../../hooks/use-zpress'
 import { safeUrl } from '../../lib/safe-url.ts'

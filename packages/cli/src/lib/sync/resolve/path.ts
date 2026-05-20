@@ -1,6 +1,6 @@
 import { dirname, extname } from 'node:path'
 
-import { match } from 'ts-pattern'
+import { match } from 'massaman/match'
 
 /**
  * Slugs that identify entry/overview pages, in priority order.

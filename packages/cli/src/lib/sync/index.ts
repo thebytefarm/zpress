@@ -5,7 +5,7 @@ import path from 'node:path'
 import { log } from '@clack/prompts'
 import type { Section, ZpressConfig } from '@zpress/config'
 import { collectAllWorkspaceItems } from '@zpress/config'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import { generateAssets } from '../banner/index.ts'
 import type { AssetConfig } from '../banner/types.ts'

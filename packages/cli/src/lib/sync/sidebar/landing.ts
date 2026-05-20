@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 
 import { resolveOptionalIcon, serializeIcon } from '@zpress/config'
 import type { IconColor } from '@zpress/config'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import { parse as parseFrontmatter } from '../frontmatter.ts'
 import type { ResolvedEntry } from '../types.ts'

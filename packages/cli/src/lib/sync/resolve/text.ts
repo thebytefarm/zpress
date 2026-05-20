@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
 
 import type { Section } from '@zpress/config'
-import { capitalize, words } from 'es-toolkit'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
+import { capitalize, words } from 'massaman/string'
 
 import { parse as parseFrontmatter } from '../frontmatter.ts'
 

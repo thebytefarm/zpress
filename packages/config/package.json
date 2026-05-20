@@ -48,8 +48,7 @@
   "dependencies": {
     "@zpress/theme": "workspace:*",
     "c12": "4.0.0-beta.4",
-    "es-toolkit": "catalog:",
-    "ts-pattern": "catalog:",
+    "massaman": "^0.2.0",
     "type-fest": "catalog:",
     "zod": "catalog:"
   },

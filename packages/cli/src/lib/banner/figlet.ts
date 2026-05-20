@@ -6,7 +6,7 @@
  * 2. `renderPixelText` — compact pixel-art (retro fallback for long titles)
  */
 
-import { range } from 'es-toolkit'
+import { range } from 'massaman/math'
 
 import {
   FIGLET_CHARS,

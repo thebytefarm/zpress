@@ -1,7 +1,7 @@
 import { basename, extname } from 'node:path'
 
 import type { ResolvedPage } from '@zpress/config'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import type { ResolvedEntry } from '../types.ts'
 import { entrySlugRank } from './path.ts'

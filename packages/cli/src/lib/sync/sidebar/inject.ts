@@ -1,6 +1,6 @@
 import { ICON_COLORS, resolveOptionalIcon, serializeIcon } from '@zpress/config'
 import type { IconColor, Section, Workspace } from '@zpress/config'
-import { match, P } from 'ts-pattern'
+import { match, P } from 'massaman/match'
 
 import { linkToOutputPath } from '../resolve/path.ts'
 import type { ResolvedEntry } from '../types.ts'
